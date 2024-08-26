@@ -5,7 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 export default function Page() {
   const savePost = async (content, section) => {
-    const response = await fetch("http://localhost:3000/api/post", {
+    const response = await fetch("/api/post", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
