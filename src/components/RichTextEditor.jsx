@@ -27,7 +27,8 @@ const RichTextEditor = ({ placeholder, onSave }) => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-        }
+        },
+        cache: 'no-store'
       });
       res = await res.json();
       setSections(res.section);
