@@ -94,7 +94,7 @@ const RichTextEditor = ({ placeholder, onSave }) => {
         {modal && session && <Modal onClose={modalHandler}/>}
        <select id='section' onChange={(e) => setSelectedSection(e.target.value)} className='w-1/2'>
         <option value="">Select Section</option>
-        {sections.length > 0 && sections.map(section => <option value={section}>{section}</option>)} 
+        {sections.length > 0 && sections.map((section,i) => <option key={i} value={section}>{section}</option>)} 
         </select>
         <button className='px-5 py-2 bg-blue-500 hover:bg-blue-600 text-white' onClick={modalHandler}>Add new section</button>
        </div>
