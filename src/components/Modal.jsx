@@ -10,7 +10,7 @@ function Modal({onClose}) {
   const submitHandler = async(e) => {
     e.preventDefault();
     try{
-      const response = await fetch("http://localhost:3000/api/post", {
+      const response = await fetch("/api/post", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
