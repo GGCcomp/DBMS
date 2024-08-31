@@ -5,7 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 function Modal({onClose}) {
 
-  const [section, setSection] = useState("");
+  const [title, setTitle] = useState("");
 
   const submitHandler = async(e) => {
     e.preventDefault();
@@ -15,7 +15,7 @@ function Modal({onClose}) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ section, content: [] }),
+        body: JSON.stringify({ title, content: [] }),
       });
   
       if (response.ok) {
@@ -28,14 +28,14 @@ function Modal({onClose}) {
     }
   }
   return (
-    <div className='absolute left-[10%] md:left-[65%] top-[270%] w-9/12 md:w-1/2 z-50 h-32 flex justify-between bg-white rounded-md shadow-md'>
+    <div className='absolute left-10 w-9/12 md:w-80 z-50 h-32 flex justify-between bg-white rounded-md shadow-md'>
       <div className='order-2'>
       <button onClick={() => onClose()} className='bg-red-400 p-2 rounded-tr-md'>X</button>
       </div>
         <form onSubmit={submitHandler}>
             <div className='flex flex-col justify-center gap-3 h-full pl-10'>
                 <label htmlFor="section">New Section:</label>
-                <input type="text" name="section" id="section" onChange={(e) => setSection(e.target.value)} required
+                <input type="text" name="section" id="section" onChange={(e) => setTitle(e.target.value)} required
                   className='border'
                 />
                 <button className='px-3 py-1 bg-blue-300'>Add Section</button>

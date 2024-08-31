@@ -1,8 +1,22 @@
 import mongoose from "mongoose";
 
 const PostSchema = new mongoose.Schema({
-  section: { type: String, required: true },
-  content: { type: [String], default: [] }
+  section: [
+  { title: String, 
+    content: { type: [String], default: [] },
+    subSection: [{
+      title: String,
+      content: { type: [String], default: [] },
+      subSection1: [{
+        title: String,
+        content: { type: [String], default: [] },
+        subSection2: [{
+          title: String,
+          content: { type: [String], default: [] } 
+        }]
+      }]
+    }]
+  }],
 });
 
 

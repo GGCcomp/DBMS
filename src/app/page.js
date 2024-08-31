@@ -4,13 +4,13 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 export default function Page() {
-  const savePost = async (content, section) => {
+  const savePost = async (content, selectedTitle) => {
     const response = await fetch("/api/post", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ content, section }),
+      body: JSON.stringify({ content, selectedTitle }),
     });
 
     if (response.ok) {
