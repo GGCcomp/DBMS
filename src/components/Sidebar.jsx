@@ -1,11 +1,11 @@
 import { useState } from 'react';
 
-const Sidebar = ({ sections, onTitleChange }) => {
+const Sidebar = ({ sections, onTitleChange, onIDchange }) => {
   const [expandedSections, setExpandedSections] = useState({});
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
 
-  const toggleSection = (sectionTitle, parentTitle) => {
+  const toggleSection = (sectionTitle, id, parentTitle) => {
     setExpandedSections((prev) => ({
       ...prev,
       [sectionTitle]: !prev[sectionTitle],
@@ -13,6 +13,7 @@ const Sidebar = ({ sections, onTitleChange }) => {
 
     const fullTitle = parentTitle ? `${parentTitle} > ${sectionTitle}` : sectionTitle;
     onTitleChange(fullTitle);
+    onIDchange(id);
   };
 
 
@@ -42,7 +43,7 @@ const Sidebar = ({ sections, onTitleChange }) => {
             <li key={i} className='p-4'>
               <div
                 className='cursor-pointer rounded-md hover:text-white'
-                onClick={() => toggleSection(section.title)}
+                onClick={() => toggleSection(section.title, section._id)}
               >
                 {section.title}
               </div>
@@ -52,7 +53,7 @@ const Sidebar = ({ sections, onTitleChange }) => {
                     <li key={j} className='p-2'>
                       <div
                         className='cursor-pointer rounded-md hover:text-white'
-                        onClick={() => toggleSection(subSec.title, section.title)}
+                        onClick={() => toggleSection(subSec.title, subSec._id, section.title)}
                       >
                         {subSec.title}
                       </div>
@@ -62,7 +63,7 @@ const Sidebar = ({ sections, onTitleChange }) => {
                             <li key={k} className='p-2'>
                               <div
                                 className='cursor-pointer rounded-md hover:text-white'
-                                onClick={() => toggleSection(subSec1.title, `${section.title} > ${subSec.title}`)}
+                                onClick={() => toggleSection(subSec1.title,  subSec1._id, `${section.title} > ${subSec.title}`)}
                               >
                                 {subSec1.title}
                               </div>
@@ -72,7 +73,7 @@ const Sidebar = ({ sections, onTitleChange }) => {
                                     <li key={l} className='p-2'>
                                       <div
                                         className='cursor-pointer rounded-md hover:text-white'
-                                        onClick={() => toggleSection(subSec2.title, `${section.title} > ${subSec.title} > ${subSec1.title}`)}
+                                        onClick={() => toggleSection(subSec2.title, subSec2._id, `${section.title} > ${subSec.title} > ${subSec1.title}`)}
                                       >
                                         {subSec2.title}
                                       </div>

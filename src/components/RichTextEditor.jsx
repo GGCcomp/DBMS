@@ -17,6 +17,7 @@ const RichTextEditor = ({ placeholder, onSave }) => {
   const [content, setContent] = useState('');
   const [contentData, setContentData] = useState([]);
   const [sections, setSections] = useState([]);
+  const [sectionID, setSectionID] = useState('');
   const [dataSaved, setDataSaved] = useState(false);
   const [selectedTitle, setselectedTitle] = useState('Please select a section');
   const { data: session } = useSession();
@@ -39,7 +40,6 @@ const RichTextEditor = ({ placeholder, onSave }) => {
     }
     getSection();
   }, [selectedTitle, dataSaved]);
- console.log(sections);
  
 
   const config = useMemo(
@@ -77,12 +77,16 @@ const RichTextEditor = ({ placeholder, onSave }) => {
     }
     setModal(!modal);
   }
+console.log(selectedTitle);
+
+  console.log(sectionID);
+  
 
   return (
     <>
     <div className="flex h-screen">
       {/* Sidebar */}
-      <Sidebar sections={sections} onTitleChange={(data)=>setselectedTitle(data)} />
+      <Sidebar sections={sections} onTitleChange={(data)=>setselectedTitle(data)} onIDchange={(id)=>setSectionID(id)} />
 
       {/* Main content */}
       <div className="flex-1 w-[90vw] mx-auto p-4">
@@ -110,7 +114,7 @@ const RichTextEditor = ({ placeholder, onSave }) => {
         <div className='flex flex-col w-full'>
           <label htmlFor="section" className="text-lg font-medium mb-2">Select a section first!</label>
           <div className='relative flex flex-col md:flex-row gap-4 py-3'>
-            {modal && session && <Modal onClose={modalHandler} />}
+            {modal && session && <Modal onClose={modalHandler} id={sectionID} selectedSection={selectedTitle}/>}
 
             <button
               className='px-5 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md self-start md:self-center'

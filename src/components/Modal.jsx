@@ -1,49 +1,61 @@
-"use client"
-import {useState} from 'react';
+"use client";
+import { useState } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-function Modal({onClose}) {
-
+function Modal({ onClose, id, selectedSection }) {
   const [title, setTitle] = useState("");
 
-  const submitHandler = async(e) => {
+  const submitHandler = async (e) => {
     e.preventDefault();
-    try{
-      const response = await fetch("/api/post", {
+
+    try {
+      const response = await fetch("/api/post/newSection", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ title, content: [] }),
+        body: JSON.stringify({ title, content: [], id, selectedTitle: selectedSection }),
       });
-  
-      if (response.ok) {
-        toast.success("Post saved successfully!");
+
+      const data = await response.json(); // Ensure the response is converted to JSON
+
+      if (data.success) {
+        toast.success(data.message);
       } else {
-        toast.error("Failed to save post");
+        toast.error(data.error);
       }
-    }catch(err){
-      console.log(err);
+    } catch (err) {
+      console.error("Error:", err);
+      toast.error("An error occurred while adding the section.");
     }
-  }
+  };
+
+  const sections = selectedSection.split('>');
+  const trimmedSections = sections.map(section => section.trim());
+  const lastSection = trimmedSections[trimmedSections.length - 1];
+
   return (
-    <div className='absolute left-10 w-9/12 md:w-80 z-50 h-32 flex justify-between bg-white rounded-md shadow-md'>
-      <div className='order-2'>
-      <button onClick={() => onClose()} className='bg-red-400 p-2 rounded-tr-md'>X</button>
+    <div className="absolute left-10 w-96 z-50 h-56 flex justify-between bg-white rounded-md shadow-md">
+      <div className="order-2">
+        <button onClick={onClose} className="bg-red-400 p-2 rounded-tr-md">X</button>
       </div>
-        <form onSubmit={submitHandler}>
-            <div className='flex flex-col justify-center gap-3 h-full pl-10'>
-                <label htmlFor="section">New Section:</label>
-                <input type="text" name="section" id="section" onChange={(e) => setTitle(e.target.value)} required
-                  className='border'
-                />
-                <button className='px-3 py-1 bg-blue-300'>Add Section</button>
-            </div>
-            
-        </form>
+      <form onSubmit={submitHandler} className="flex flex-col justify-center gap-3 h-full pl-10">
+        <p>{lastSection}:</p>
+        <label htmlFor="section">New Section:</label>
+        <input
+          type="text"
+          name="section"
+          id="section"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+          className="border"
+        />
+        <button type="submit" className="px-3 py-1 bg-blue-300">Add Section</button>
+      </form>
     </div>
-  )
+  );
 }
 
 export default Modal;

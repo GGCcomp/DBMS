@@ -16,7 +16,8 @@ const PostSchema = new mongoose.Schema({
         }]
       }]
     }]
-  }],
+  }
+],
 });
 
 

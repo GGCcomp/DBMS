@@ -12,7 +12,6 @@ export async function GET(request) {
     const sections = posts.flatMap(sec => sec.section);
     
     const titles = decodeURIComponent(selectedTitle).split(' > ');
-    console.log(titles);
 
     const pipeline = [
       { $unwind: '$section' },
@@ -63,11 +62,10 @@ export async function POST(request) {
 
   try {
     const { selectedTitle, content } = await request.json();
-    console.log( selectedTitle, content );
     
     const titles = decodeURIComponent(selectedTitle).split(' > ');
 
-    // Find the appropriate section or subsection based on titles array
+    // Construct the base query
     const updateQuery = { 'section.title': titles[0] };
     let updateField = 'section.$.content';
 
@@ -92,17 +90,19 @@ export async function POST(request) {
       titles.length > 3 ? { 'l.title': titles[3] } : null,
     ].filter(Boolean); // remove null values
 
-    const result = await Post.updateOne(
-      updateQuery,
-      { $push: { [updateField]: content } },
-      { arrayFilters }
-    );
-
-    if (result.nModified > 0) {
-      return NextResponse.json({ success: true });
-    } else {
-      return NextResponse.json({ success: false, error: "Failed to find the section to update" });
-    }
+    
+      let result = await Post.updateOne(
+        updateQuery,
+        { $push: { [updateField]: content } },
+        { arrayFilters }
+      );
+ 
+      if (result.nModified > 0) {
+        return NextResponse.json({ success: true, message: 'Content added to existing section' });
+      } else {
+        return NextResponse.json({ success: false, error: "Failed to find the section to update" });
+      }
+    
   } catch (error) {
     console.error("Error saving post:", error);
     return NextResponse.json({ success: false, error: "Failed to save post" });
