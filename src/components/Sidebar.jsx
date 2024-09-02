@@ -31,7 +31,7 @@ const Sidebar = ({ sections, onTitleChange, onIDchange }) => {
       </button>
 
       <div
-        className={`z-40 fixed top-100 left-0 h-screen w-56 bg-gray-300 text-black transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`z-40 absolute top-100 left-0 min-h-screen h-auto w-56 bg-gray-300 text-black transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
           } md:translate-x-0 md:static md:w-56 md:bg-gray-300 md:text-black`}
       >
         <div className="flex justify-between items-center p-4 md:hidden">

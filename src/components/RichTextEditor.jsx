@@ -84,7 +84,7 @@ console.log(selectedTitle);
 
   return (
     <>
-    <div className="flex h-screen">
+    <div className="relative flex">
       {/* Sidebar */}
       <Sidebar sections={sections} onTitleChange={(data)=>setselectedTitle(data)} onIDchange={(id)=>setSectionID(id)} />
 
