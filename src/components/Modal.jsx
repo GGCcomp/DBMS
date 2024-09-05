@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-function Modal({ onClose, id, selectedSection, api }) {
+function Modal({ onClose, id, selectedSection, api, onSectionAdded }) {
   const [title, setTitle] = useState("");
 
   const submitHandler = async (e) => {
@@ -22,6 +22,8 @@ function Modal({ onClose, id, selectedSection, api }) {
 
       if (data.success) {
         toast.success(data.message);
+        onSectionAdded();
+        onClose();
       } else {
         toast.error(data.error);
       }

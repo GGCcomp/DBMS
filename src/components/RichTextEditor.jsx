@@ -40,7 +40,10 @@ const RichTextEditor = ({ placeholder, onSave, api, pageTitle, addAPI }) => {
     }
     getSection();
   }, [selectedTitle, dataSaved]);
- 
+
+  const handleSectionAdded = () => {
+    setDataSaved(true);
+  };
 
   const config = useMemo(
     () => ({
@@ -111,7 +114,7 @@ const RichTextEditor = ({ placeholder, onSave, api, pageTitle, addAPI }) => {
         <div className='flex flex-col w-full'>
           <label htmlFor="section" className="text-lg font-medium mb-2">Select a section first!</label>
           <div className='relative flex flex-col md:flex-row gap-4 py-3'>
-            {modal && session && <Modal onClose={modalHandler} id={sectionID} selectedSection={selectedTitle} api={addAPI} />}
+            {modal && session && <Modal onClose={modalHandler} id={sectionID} selectedSection={selectedTitle} api={addAPI} onSectionAdded={handleSectionAdded} />}
 
             <button
               className='px-5 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md self-start md:self-center'
