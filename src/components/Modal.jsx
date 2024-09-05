@@ -1,14 +1,16 @@
 "use client";
 import { useState } from 'react';
 import { toast } from 'react-toastify';
+import { ClipLoader } from 'react-spinners';
 import 'react-toastify/dist/ReactToastify.css';
 
 function Modal({ onClose, id, selectedSection, api, onSectionAdded }) {
   const [title, setTitle] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const submitHandler = async (e) => {
     e.preventDefault();
-
+    setLoading(true);
     try {
       const response = await fetch(api, {
         method: "POST",
@@ -30,6 +32,8 @@ function Modal({ onClose, id, selectedSection, api, onSectionAdded }) {
     } catch (err) {
       console.error("Error:", err);
       toast.error("An error occurred while adding the section.");
+    }finally{
+      setLoading(false);
     }
   };
 
@@ -54,7 +58,15 @@ function Modal({ onClose, id, selectedSection, api, onSectionAdded }) {
           required
           className="border"
         />
-        <button type="submit" className="px-3 py-1 bg-blue-300">Add Section</button>
+        <button type="submit" className="px-3 py-1 bg-blue-300 flex justify-center items-center" disabled={loading}>
+        {loading ? <ClipLoader
+          color="white"
+          loading={loading}
+          size={25}
+          aria-label="Loading Spinner"
+          data-testid="loader"
+        /> : 'Add Section'}
+        </button>
       </form>
     </div>
   );

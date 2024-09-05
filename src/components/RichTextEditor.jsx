@@ -14,6 +14,7 @@ const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 const RichTextEditor = ({ placeholder, onSave, api, pageTitle, addAPI }) => {
   const editor = useRef(null);
   const [modal, setModal] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [content, setContent] = useState('');
   const [contentData, setContentData] = useState([]);
   const [sections, setSections] = useState([]);
@@ -25,6 +26,7 @@ const RichTextEditor = ({ placeholder, onSave, api, pageTitle, addAPI }) => {
 
   useEffect(() => {
     const getSection = async () => {
+      setLoading(true);
       let res = await fetch(`${api}?selectedTitle=${selectedTitle}`, {
         method: "GET",
         headers: {
@@ -36,6 +38,7 @@ const RichTextEditor = ({ placeholder, onSave, api, pageTitle, addAPI }) => {
 
       setSections(res.section);
       setContentData(res.content);
+      setLoading(false);
       setDataSaved(false);
     }
     getSection();
@@ -86,7 +89,7 @@ const RichTextEditor = ({ placeholder, onSave, api, pageTitle, addAPI }) => {
     <>
     <div className="relative flex">
       {/* Sidebar */}
-      <Sidebar sections={sections} onTitleChange={(data)=>setselectedTitle(data)} onIDchange={(id)=>setSectionID(id)} />
+      <Sidebar sections={sections} onTitleChange={(data)=>setselectedTitle(data)} onIDchange={(id)=>setSectionID(id)} loading={loading} />
 
       {/* Main content */}
       <div className="flex-1 w-[90vw] mx-auto p-4">
