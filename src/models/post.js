@@ -27,5 +27,6 @@ export const Research = mongoose.models.Research || mongoose.model("Research", P
 export const Development = mongoose.models.Development || mongoose.model("Development", PostSchema);
 export const ISO = mongoose.models.ISO || mongoose.model("ISO", PostSchema);
 export const Sale = mongoose.models.Sale || mongoose.model("Sale", PostSchema);
+export const Marketing = mongoose.models.Marketing || mongoose.model("Marketing", PostSchema);
 
 

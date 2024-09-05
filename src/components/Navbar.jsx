@@ -10,6 +10,7 @@ function Navbar() {
             <li className='hover:underline underline-offset-4'><Link href='/research'>Research</Link></li>
             <li className='hover:underline underline-offset-4'><Link href='/development'>Development</Link></li>
             <li className='hover:underline underline-offset-4'><Link href='/iso'>ISO</Link></li>
+            <li className='hover:underline underline-offset-4'><Link href='/marketing'>Marketing</Link></li>
             <li className='hover:underline underline-offset-4'><Link href='/sales'>Sales</Link></li>
         </ul>
     </nav>
