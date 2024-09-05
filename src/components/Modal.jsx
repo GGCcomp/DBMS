@@ -3,14 +3,14 @@ import { useState } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-function Modal({ onClose, id, selectedSection }) {
+function Modal({ onClose, id, selectedSection, api }) {
   const [title, setTitle] = useState("");
 
   const submitHandler = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await fetch("/api/post/newSection", {
+      const response = await fetch(api, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

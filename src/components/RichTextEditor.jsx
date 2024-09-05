@@ -11,7 +11,7 @@ import Sidebar from './Sidebar';
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
-const RichTextEditor = ({ placeholder, onSave }) => {
+const RichTextEditor = ({ placeholder, onSave, api, pageTitle, addAPI }) => {
   const editor = useRef(null);
   const [modal, setModal] = useState(false);
   const [content, setContent] = useState('');
@@ -25,7 +25,7 @@ const RichTextEditor = ({ placeholder, onSave }) => {
 
   useEffect(() => {
     const getSection = async () => {
-      let res = await fetch(`/api/post?selectedTitle=${selectedTitle}`, {
+      let res = await fetch(`${api}?selectedTitle=${selectedTitle}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -64,7 +64,7 @@ const RichTextEditor = ({ placeholder, onSave }) => {
     }
 
     if (onSave) {
-      onSave(plainTextContent, selectedTitle);
+      onSave(plainTextContent, selectedTitle, api='/api/post');
       setDataSaved(true);
     }
     setContent('')
@@ -77,9 +77,6 @@ const RichTextEditor = ({ placeholder, onSave }) => {
     }
     setModal(!modal);
   }
-console.log(selectedTitle);
-
-  console.log(sectionID);
   
 
   return (
@@ -91,7 +88,7 @@ console.log(selectedTitle);
       {/* Main content */}
       <div className="flex-1 w-[90vw] mx-auto p-4">
         <div className='flex justify-between'>
-          <h1 className='text-2xl font-semibold py-3'>NiveshJano DataBank</h1>
+          <h1 className='text-2xl font-semibold py-3'>NiveshJano: {pageTitle}</h1>
           {session ? (
             <div className='flex gap-3 items-center'>
               <p className='hidden md:block text-xl'>Welcome, {session.user.name}</p>
@@ -114,7 +111,7 @@ console.log(selectedTitle);
         <div className='flex flex-col w-full'>
           <label htmlFor="section" className="text-lg font-medium mb-2">Select a section first!</label>
           <div className='relative flex flex-col md:flex-row gap-4 py-3'>
-            {modal && session && <Modal onClose={modalHandler} id={sectionID} selectedSection={selectedTitle}/>}
+            {modal && session && <Modal onClose={modalHandler} id={sectionID} selectedSection={selectedTitle} api={addAPI} />}
 
             <button
               className='px-5 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md self-start md:self-center'

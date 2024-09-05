@@ -22,5 +22,10 @@ const PostSchema = new mongoose.Schema({
 
 
 export const Post = mongoose.models.Post || mongoose.model("Post", PostSchema);
+export const Hr = mongoose.models.Hr || mongoose.model("Hr", PostSchema);
+export const Research = mongoose.models.Research || mongoose.model("Research", PostSchema);
+export const Development = mongoose.models.Development || mongoose.model("Development", PostSchema);
+export const ISO = mongoose.models.ISO || mongoose.model("ISO", PostSchema);
+export const Sale = mongoose.models.Sale || mongoose.model("Sale", PostSchema);
 
 

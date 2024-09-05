@@ -1,5 +1,6 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
+import Navbar from "@/components/Navbar";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AuthProvider from "@/components/AuthProvider";
@@ -16,6 +17,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={inter.className}>
         <AuthProvider>
+          <Navbar />
         {children}
         <ToastContainer position="bottom-right" />
         </AuthProvider>

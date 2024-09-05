@@ -1,5 +1,5 @@
 import connectMongo from "@/lib/db";
-import { Post } from "@/models/post";
+import { Sale } from "@/models/post";
 import { NextResponse } from "next/server";
 
 
@@ -9,13 +9,12 @@ export async function POST(request) {
     try {
       const { selectedTitle, title } = await request.json();
       const titles = decodeURIComponent(selectedTitle).split(' > ');
-  console.log(titles);
   
-      // Fetch all posts
-      const posts = await Post.find();
+      // Fetch all Hrs
+      const Hrs = await Sale.find();
   
       // Flatten sections to easily search
-      const sections = posts.flatMap(post => post.section);
+      const sections = Hrs.flatMap(Hr => Hr.section);
   
       // Initialize the parent section and update path
       let parentSection = null;
@@ -23,7 +22,7 @@ export async function POST(request) {
   
       // Find the parent section based on the title hierarchy
       if (titles[0] === 'Please select a section') {
-        const newPost = new Post({
+        const newHr = new Sale({
           section: [{
             title,
             content: [],
@@ -31,10 +30,10 @@ export async function POST(request) {
           }]
         });
       
-        // Save the new Post to the database
-        await newPost.save();
+        // Save the new Hr to the database
+        await newHr.save();
       
-        return NextResponse.json({ success: true, message: "New post created successfully." });
+        return NextResponse.json({ success: true, message: "New Hr created successfully." });
       }
      else if (titles.length === 1) {
         parentSection = sections.find(section => section.title === titles[0]);
@@ -68,7 +67,7 @@ export async function POST(request) {
       };
   
       // Update the document by pushing the new section in the appropriate location
-      const updateResult = await Post.updateOne(
+      const updateResult = await Sale.updateOne(
         { 'section.title': titles[0] }, // No need for `_id`, match based on the root section title
         { $push: { [updatePath]: newSection } },
         {
@@ -88,6 +87,6 @@ export async function POST(request) {
   
     } catch (error) {
       console.error("Error saving post:", error);
-      return NextResponse.json({ success: false, error: "Failed to save post." });
+      return NextResponse.json({ success: false, error: "Failed to save Hr." });
     }
   }
