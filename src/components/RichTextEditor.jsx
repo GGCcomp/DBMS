@@ -11,7 +11,7 @@ import Sidebar from './Sidebar';
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
-const RichTextEditor = ({ placeholder, onSave, api, pageTitle, addAPI }) => {
+const RichTextEditor = ({ placeholder, onSave, onUpdate, api, pageTitle, addAPI }) => {
   const editor = useRef(null);
   const [modal, setModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -143,7 +143,7 @@ const RichTextEditor = ({ placeholder, onSave, api, pageTitle, addAPI }) => {
         >
           {!session ? 'Login first' : 'Save'}
         </button>
-        {session && <Content content={contentData} title={selectedTitle} />}
+        {session && <Content content={contentData} title={selectedTitle} onUpdate={onUpdate} dataSave={setDataSaved} />}
       </div>
     </div>
   </>

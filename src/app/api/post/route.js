@@ -109,3 +109,56 @@ export async function POST(request) {
   }
 }
 
+
+export async function PUT(request) {
+  await connectMongo();
+
+  try {
+    const { updatedContent, hierarchicalTitle } = await request.json();
+    
+    const titles = decodeURIComponent(hierarchicalTitle).split(' > ');
+
+    // Construct the base query for updating
+    const updateQuery = { 'section.title': titles[0] };
+    let updateField = 'section.$.content';
+
+    if (titles.length > 1) {
+      updateQuery['section.subSection.title'] = titles[1];
+      updateField = 'section.$[i].subSection.$[j].content';
+    }
+    if (titles.length > 2) {
+      updateQuery['section.subSection.subSection1.title'] = titles[2];
+      updateField = 'section.$[i].subSection.$[j].subSection1.$[k].content';
+    }
+    if (titles.length > 3) {
+      updateQuery['section.subSection.subSection1.subSection2.title'] = titles[3];
+      updateField = 'section.$[i].subSection.$[j].subSection1.$[k].subSection2.$[l].content';
+    }
+
+    // Define the array filters for nested updates
+    const arrayFilters = [
+      { 'i.title': titles[0] },
+      titles.length > 1 ? { 'j.title': titles[1] } : null,
+      titles.length > 2 ? { 'k.title': titles[2] } : null,
+      titles.length > 3 ? { 'l.title': titles[3] } : null,
+    ].filter(Boolean); // remove null values
+
+    // Perform the update operation
+    let result = await Post.updateOne(
+      updateQuery,
+      { $set: { [updateField]: updatedContent } },  // Use $set instead of $push to replace the content
+      { arrayFilters }
+    );
+
+    if (result.nModified > 0) {
+      return NextResponse.json({ success: true, message: 'Post updated successfully' });
+    } else {
+      return NextResponse.json({ success: false, error: "Failed to find the section to update or no changes made" });
+    }
+
+  } catch (error) {
+    console.error("Error updating post:", error);
+    return NextResponse.json({ success: false, error: "Failed to update post" });
+  }
+}
+
