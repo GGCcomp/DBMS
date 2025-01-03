@@ -114,25 +114,30 @@ export async function PUT(request) {
   await connectMongo();
 
   try {
-    const { updatedContent, hierarchicalTitle } = await request.json();
-    
+    const { updatedContent, hierarchicalTitle, newTitle } = await request.json(); // Get updated content and new title
+
     const titles = decodeURIComponent(hierarchicalTitle).split(' > ');
 
     // Construct the base query for updating
     const updateQuery = { 'section.title': titles[0] };
     let updateField = 'section.$.content';
+    let titleUpdateField = 'section.$.title'; // Default to updating the section title
 
+    // Dynamically build the query for deeper sections
     if (titles.length > 1) {
       updateQuery['section.subSection.title'] = titles[1];
       updateField = 'section.$[i].subSection.$[j].content';
+      titleUpdateField = 'section.$[i].subSection.$[j].title';
     }
     if (titles.length > 2) {
       updateQuery['section.subSection.subSection1.title'] = titles[2];
       updateField = 'section.$[i].subSection.$[j].subSection1.$[k].content';
+      titleUpdateField = 'section.$[i].subSection.$[j].subSection1.$[k].title';
     }
     if (titles.length > 3) {
       updateQuery['section.subSection.subSection1.subSection2.title'] = titles[3];
       updateField = 'section.$[i].subSection.$[j].subSection1.$[k].subSection2.$[l].content';
+      titleUpdateField = 'section.$[i].subSection.$[j].subSection1.$[k].subSection2.$[l].title';
     }
 
     // Define the array filters for nested updates
@@ -141,12 +146,24 @@ export async function PUT(request) {
       titles.length > 1 ? { 'j.title': titles[1] } : null,
       titles.length > 2 ? { 'k.title': titles[2] } : null,
       titles.length > 3 ? { 'l.title': titles[3] } : null,
-    ].filter(Boolean); // remove null values
+    ].filter(Boolean); // Remove null values
+
+    // Construct the update object
+    const updateObject = {
+      $set: {
+        [updateField]: updatedContent, // Update content
+      },
+    };
+
+    // If a new title is provided, update the last section's title
+    if (newTitle) {
+      updateObject.$set[titleUpdateField] = newTitle;
+    }
 
     // Perform the update operation
-    let result = await Post.updateOne(
+    const result = await Post.updateOne(
       updateQuery,
-      { $set: { [updateField]: updatedContent } },  // Use $set instead of $push to replace the content
+      updateObject,  // Apply the constructed update object
       { arrayFilters }
     );
 
@@ -161,4 +178,5 @@ export async function PUT(request) {
     return NextResponse.json({ success: false, error: "Failed to update post" });
   }
 }
+
 

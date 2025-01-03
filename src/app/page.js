@@ -20,13 +20,13 @@ export default function Page() {
     }
   };
 
-  const updatePost = async (updatedContent, hierarchicalTitle) => {
+  const updatePost = async (updatedContent, hierarchicalTitle, newTitle) => {
     const response = await fetch("/api/post", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ updatedContent, hierarchicalTitle }),
+      body: JSON.stringify({ updatedContent, hierarchicalTitle, newTitle }),
     });
   
     if (response.ok) {
