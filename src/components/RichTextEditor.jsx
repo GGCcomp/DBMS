@@ -1,4 +1,5 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 import Modal from './Modal';
@@ -11,7 +12,7 @@ import * as XLSX from 'xlsx'; // Import xlsx library
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
-const RichTextEditor = ({ placeholder, onSave, onUpdate, api, pageTitle, addAPI }) => {
+const RichTextEditor = ({ placeholder, onSave, onUpdate, api, pageTitle, addAPI, onApproval, approvals }) => {
   const editor = useRef(null);
   const [modal, setModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -22,6 +23,7 @@ const RichTextEditor = ({ placeholder, onSave, onUpdate, api, pageTitle, addAPI 
   const [dataSaved, setDataSaved] = useState(false);
   const [selectedTitle, setselectedTitle] = useState('Please select a section');
   const { data: session } = useSession();
+  const pathName = usePathname();
 
   useEffect(() => {
     const getSection = async () => {
@@ -69,7 +71,7 @@ const RichTextEditor = ({ placeholder, onSave, onUpdate, api, pageTitle, addAPI 
     }
 
     if (onSave) {
-      onSave(plainTextContent, selectedTitle, api='/api/post');
+      onSave(plainTextContent, selectedTitle, api = '/api/post');
       setDataSaved(true);
     }
     setContent('');
@@ -156,6 +158,7 @@ const RichTextEditor = ({ placeholder, onSave, onUpdate, api, pageTitle, addAPI 
               >
                 Add new section
               </button>
+
             </div>
           </div>
 
@@ -169,6 +172,38 @@ const RichTextEditor = ({ placeholder, onSave, onUpdate, api, pageTitle, addAPI 
               className="border p-2 rounded-md"
             />
           </div>}
+
+          { pathName === '/softwareNeeded' &&
+                <div>
+                  <p className="text-2xl font-bold mb-4">Approvals</p>
+                  <div className="flex items-center space-x-4 mb-6">
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={approvals.Alok}
+                        onChange={() => onApproval("Alok")}
+                      />
+                      Alok
+                    </label>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={approvals.Abhishek}
+                        onChange={() => onApproval("Abhishek")}
+                      />
+                      Abhishek
+                    </label>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={approvals.Ashu}
+                        onChange={() => onApproval("Ashu")}
+                      />
+                      Ashu
+                    </label>
+                  </div>
+                </div>
+              }
 
           <JoditEditor
             ref={editor}

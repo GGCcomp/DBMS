@@ -33,7 +33,7 @@ export async function POST(request) {
         // Save the new Hr to the database
         await newHr.save();
       
-        return NextResponse.json({ success: true, message: "New Hr created successfully." });
+        return NextResponse.json({ success: true, message: "New Section created successfully." });
       }
      else if (titles.length === 1) {
         parentSection = sections.find(section => section.title === titles[0]);
@@ -87,6 +87,6 @@ export async function POST(request) {
   
     } catch (error) {
       console.error("Error saving post:", error);
-      return NextResponse.json({ success: false, error: "Failed to save Hr." });
+      return NextResponse.json({ success: false, error: "Failed to save." });
     }
   }

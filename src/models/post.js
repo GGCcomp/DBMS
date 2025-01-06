@@ -28,5 +28,6 @@ export const Development = mongoose.models.Development || mongoose.model("Develo
 export const ISO = mongoose.models.ISO || mongoose.model("ISO", PostSchema);
 export const Sale = mongoose.models.Sale || mongoose.model("Sale", PostSchema);
 export const Marketing = mongoose.models.Marketing || mongoose.model("Marketing", PostSchema);
+export const SoftwareNeeded = mongoose.models.SoftwareNeeded || mongoose.model("SoftwareNeeded", PostSchema);
 
 

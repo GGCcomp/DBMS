@@ -1,5 +1,5 @@
 import connectMongo from "@/lib/db";
-import { Hr } from "@/models/post";
+import { SoftwareNeeded } from "@/models/post";
 import { NextResponse } from "next/server";
 
 
@@ -11,7 +11,7 @@ export async function POST(request) {
       const titles = decodeURIComponent(selectedTitle).split(' > ');
   
       // Fetch all Hrs
-      const Hrs = await Hr.find();
+      const Hrs = await SoftwareNeeded.find();
   
       // Flatten sections to easily search
       const sections = Hrs.flatMap(Hr => Hr.section);
@@ -22,7 +22,7 @@ export async function POST(request) {
   
       // Find the parent section based on the title hierarchy
       if (titles[0] === 'Please select a section') {
-        const newHr = new Hr({
+        const newHr = new SoftwareNeeded({
           section: [{
             title,
             content: [],
@@ -67,7 +67,7 @@ export async function POST(request) {
       };
   
       // Update the document by pushing the new section in the appropriate location
-      const updateResult = await Hr.updateOne(
+      const updateResult = await SoftwareNeeded.updateOne(
         { 'section.title': titles[0] }, // No need for `_id`, match based on the root section title
         { $push: { [updatePath]: newSection } },
         {
