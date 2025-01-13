@@ -8,7 +8,7 @@ export async function POST(request) {
     try {
       const { email, password } = await request.json(); 
   
-      const user = await User.findOne({ email });
+      const user = await User.findOne({ email }).populate("leaves");
       if (!user) {
         return NextResponse.json({ message: "No user found!", ok: false }, { status: 404 });
       }
@@ -18,7 +18,7 @@ export async function POST(request) {
         return NextResponse.json({ message: "Email or password is incorrect!", ok: false }, { status: 401 });
       }
   
-      return NextResponse.json({ email: user.email, name: user.name, ok: true }); // Ensure the response contains necessary fields
+      return NextResponse.json({ email: user.email, name: user.name, role: user.role, ok: true }); // Ensure the response contains necessary fields
     } catch (e) {
       console.error("Error during authentication:", e.message);
       return NextResponse.json({ message: "Something went wrong!", error: e.message, ok: false }, { status: 500 });
