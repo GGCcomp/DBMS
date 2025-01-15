@@ -1,12 +1,11 @@
-'use client';
-
-import { useEffect, useState } from 'react';
+"use client";
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-export default function RegisterForm() {
+function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams(); // Access query parameters
   const token = searchParams.get('token');
@@ -24,16 +23,17 @@ export default function RegisterForm() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`/api/register?token=${token}`,{
+        const response = await fetch(`/api/register?token=${token}`, {
           headers: {
             'Content-Type': 'application/json',
-          }});
+          },
+        });
         if (!response.ok) {
           throw new Error((await response.json()).error || 'Failed to fetch data');
         }
         const data = await response.json();
         console.log(data);
-        
+
         setFormData((prev) => ({
           ...prev,
           email: data.email,
@@ -41,7 +41,7 @@ export default function RegisterForm() {
         }));
       } catch (error) {
         toast.error('Invalid or expired token');
-        //router.push('/'); // Redirect to the homepage if token is invalid
+        // router.push('/'); // Redirect to the homepage if token is invalid
       }
     };
 
@@ -78,7 +78,7 @@ export default function RegisterForm() {
           email: formData.email,
           password: formData.password,
           role: formData.role,
-          token, 
+          token,
         }),
       });
 
@@ -176,5 +176,13 @@ export default function RegisterForm() {
         </div>
       </form>
     </div>
+  );
+}
+
+export default function SuspendedRegisterForm() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RegisterForm />
+    </Suspense>
   );
 }
