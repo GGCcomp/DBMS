@@ -8,7 +8,7 @@ export async function POST(request) {
     try {
       const { email, password } = await request.json(); 
   
-      const user = await User.findOne({ email }).populate("leaves");
+      const user = await User.findOne({ email });
       if (!user) {
         return NextResponse.json({ message: "No user found!", ok: false }, { status: 404 });
       }
