@@ -3,6 +3,7 @@ import { getToken } from 'next-auth/jwt';
 
 const roleAccessMap = {
   '/admin': ['admin'],
+  '/approvals': ['admin'],
   '/dbms': ['admin', 'DBMS'],
   '/hr': ['admin', 'HR'],
   '/research': ['admin', 'Analyst'],
@@ -55,6 +56,7 @@ export async function middleware(req) {
 export const config = {
   matcher: [
     '/admin/:path*',
+    '/approvals/:path*',
     '/hr/:path*',
     '/dbms/:path*',
     '/research/:path*',

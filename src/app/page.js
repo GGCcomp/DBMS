@@ -33,7 +33,7 @@ export default function Page() {
         <div className="max-w-7xl mx-auto">
           {/* Dashboard Cards */}
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {["Admin", "HR", "IT", "Research", "Analyst", "Development", "ISO", "Marketing", "Sales"].map((role) => (
+            {["Admin", "HR", "IT", "Research", "Analyst", "Development", "ISO", "Marketing & Sales", "Profile", "Task & Management"].map((role) => (
               <div key={role} className="p-8 bg-white shadow-lg rounded-xl hover:shadow-2xl transform transition-all duration-300 ease-in-out">
                 <h2 className="text-2xl font-semibold text-blue-700 mb-4">{role} Portal</h2>
                 <p className="text-lg text-gray-600 mb-6">

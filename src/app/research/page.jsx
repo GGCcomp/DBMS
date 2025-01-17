@@ -4,21 +4,6 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 export default function Page() {
-  const savePost = async (content, selectedTitle) => {
-    const response = await fetch("/api/research", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ content, selectedTitle })
-    });
-
-    if (response.ok) {
-      toast.success("Post saved successfully!");
-    } else {
-      toast.error("Failed to save post");
-    }
-  };
 
   const updatePost = async (updatedContent, hierarchicalTitle) => {
     const response = await fetch("/api/research", {
@@ -38,7 +23,7 @@ export default function Page() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <RichTextEditor placeholder="Start typing your post..." onSave={savePost} onUpdate={updatePost} api={'/api/research'} pageTitle={'Research Section'} addAPI={'/api/research/newSection'} />
+      <RichTextEditor placeholder="Start typing your post..." onUpdate={updatePost} api={'/api/research'} pageTitle={'Research Section'} addAPI={'/api/research/newSection'} />
     </div>
   );
 }

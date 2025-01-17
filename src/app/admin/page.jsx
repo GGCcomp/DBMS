@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useSession } from "next-auth/react";
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { FiSend } from 'react-icons/fi';
@@ -144,6 +145,12 @@ export default function AdminPanel() {
             <h2 className="text-xl font-semibold text-gray-700">Leave Requests</h2>
             <p className="text-3xl font-bold text-blue-500">{leaveRequests.length}</p>
           </div>
+
+          <Link href='/approvals'
+            className="bg-white shadow-md rounded-lg p-6 text-center content-center h-full cursor-pointer"
+          >
+            <h2 className="text-xl font-semibold text-gray-700">Approval Requests</h2>
+          </Link>
 
         </div>
 

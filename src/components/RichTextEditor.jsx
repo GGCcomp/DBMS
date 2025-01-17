@@ -9,16 +9,19 @@ import Link from 'next/link';
 import Content from './Content';
 import Sidebar from './Sidebar';
 import * as XLSX from 'xlsx'; // Import xlsx library
+import ApprovalCard from './ApprovalCard';
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
-const RichTextEditor = ({ placeholder, onSave, onUpdate, api, pageTitle, addAPI, onApproval, approvals }) => {
+const RichTextEditor = ({ placeholder, onUpdate, api, pageTitle, addAPI, onApproval, approvals }) => {
   const editor = useRef(null);
   const [modal, setModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState('');
   const [contentData, setContentData] = useState([]);
   const [sections, setSections] = useState([]);
+  const [dataApprovals, setDataApprovals] = useState([]);
+  const [approvalModal, setApprovalModal] = useState(false);
   const [sectionID, setSectionID] = useState('');
   const [dataSaved, setDataSaved] = useState(false);
   const [selectedTitle, setselectedTitle] = useState('Please select a section');
@@ -45,6 +48,24 @@ const RichTextEditor = ({ placeholder, onSave, onUpdate, api, pageTitle, addAPI,
     getSection();
   }, [selectedTitle, dataSaved]);
 
+
+  const fetchApprovals = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/data_approval/${session.user.email}`);
+      const data = await response.json();
+      setDataApprovals(data);
+      setApprovalModal(true);
+    } catch (error) {
+      console.error('Error fetching approvals:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  console.log(dataApprovals);
+
+
   const handleSectionAdded = () => {
     setDataSaved(true);
   };
@@ -57,7 +78,7 @@ const RichTextEditor = ({ placeholder, onSave, onUpdate, api, pageTitle, addAPI,
     [placeholder]
   );
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const plainTextContent = content;
 
     if (selectedTitle === 'Please select a section') {
@@ -70,9 +91,24 @@ const RichTextEditor = ({ placeholder, onSave, onUpdate, api, pageTitle, addAPI,
       return;
     }
 
-    if (onSave) {
-      onSave(plainTextContent, selectedTitle, api = '/api/post');
-      setDataSaved(true);
+    try {
+      let res = await fetch('/api/data_approval', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content: plainTextContent, title: selectedTitle, url: api, email: session.user.email, name: session.user.name, role: session.user.role })
+      })
+      res = await res.json();
+      if (res.success) {
+        toast.success(res.message);
+        setDataSaved(true);
+      }
+      else {
+        toast.error('Something went wrong!');
+      }
+    } catch (err) {
+      console.log(err);
     }
     setContent('');
   };
@@ -121,6 +157,36 @@ const RichTextEditor = ({ placeholder, onSave, onUpdate, api, pageTitle, addAPI,
   return (
     <>
       <div className="relative flex">
+        {approvalModal && (
+          <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-500 bg-opacity-50">
+            <div className="bg-white w-[95%] p-6 rounded-lg relative">
+              {/* Close Button */}
+              <button
+                className="absolute -top-1 -right-1 text-lg font-bold text-gray-700 p-3"
+                onClick={() => setApprovalModal(false)}
+              >
+                &times; {/* Close icon */}
+              </button>
+
+              {/* Modal Content */}
+              {loading ? (
+                <p>Loading...</p> // Show loading while data is being fetched
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {dataApprovals.length > 0 ? dataApprovals.map((approval, i) => (
+                    <ApprovalCard
+                      key={i}
+                      approval={approval}
+                      onClose={() => setApprovalModal(false)}
+                      isOpen={approvalModal}
+                    />
+                  )) : <p className='text-center font-semibold'>No Data To Show!</p>}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Sidebar */}
         <Sidebar sections={sections} onTitleChange={(data) => setselectedTitle(data)} onIDchange={(id) => setSectionID(id)} loading={loading} />
 
@@ -158,7 +224,12 @@ const RichTextEditor = ({ placeholder, onSave, onUpdate, api, pageTitle, addAPI,
               >
                 Add new section
               </button>
-
+              <button
+                className='px-5 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md self-start md:self-center'
+                onClick={fetchApprovals}
+              >
+                Fetch Data Approvals
+              </button>
             </div>
           </div>
 
@@ -173,37 +244,37 @@ const RichTextEditor = ({ placeholder, onSave, onUpdate, api, pageTitle, addAPI,
             />
           </div>}
 
-          { pathName === '/softwareNeeded' &&
-                <div>
-                  <p className="text-2xl font-bold mb-4">Approvals</p>
-                  <div className="flex items-center space-x-4 mb-6">
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={approvals.Alok}
-                        onChange={() => onApproval("Alok")}
-                      />
-                      Alok
-                    </label>
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={approvals.Abhishek}
-                        onChange={() => onApproval("Abhishek")}
-                      />
-                      Abhishek
-                    </label>
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={approvals.Ashu}
-                        onChange={() => onApproval("Ashu")}
-                      />
-                      Ashu
-                    </label>
-                  </div>
-                </div>
-              }
+          {pathName === '/softwareNeeded' &&
+            <div>
+              <p className="text-2xl font-bold mb-4">Approvals</p>
+              <div className="flex items-center space-x-4 mb-6">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={approvals.Alok}
+                    onChange={() => onApproval("Alok")}
+                  />
+                  Alok
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={approvals.Abhishek}
+                    onChange={() => onApproval("Abhishek")}
+                  />
+                  Abhishek
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={approvals.Ashu}
+                    onChange={() => onApproval("Ashu")}
+                  />
+                  Ashu
+                </label>
+              </div>
+            </div>
+          }
 
           <JoditEditor
             ref={editor}
@@ -218,7 +289,7 @@ const RichTextEditor = ({ placeholder, onSave, onUpdate, api, pageTitle, addAPI,
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
             disabled={!session}
           >
-            {!session ? 'Login first' : 'Save'}
+            {!session ? 'Login first' : 'Send For Approval'}
           </button>
           {session && <Content content={contentData} title={selectedTitle} onUpdate={onUpdate} dataSave={setDataSaved} />}
         </div>
