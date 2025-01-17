@@ -1,5 +1,4 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 import Modal from './Modal';
@@ -26,7 +25,6 @@ const RichTextEditor = ({ placeholder, onUpdate, api, pageTitle, addAPI, onAppro
   const [dataSaved, setDataSaved] = useState(false);
   const [selectedTitle, setselectedTitle] = useState('Please select a section');
   const { data: session } = useSession();
-  const pathName = usePathname();
 
   useEffect(() => {
     const getSection = async () => {
@@ -62,8 +60,6 @@ const RichTextEditor = ({ placeholder, onUpdate, api, pageTitle, addAPI, onAppro
       setLoading(false);
     }
   };
-
-  console.log(dataApprovals);
 
 
   const handleSectionAdded = () => {
@@ -243,38 +239,6 @@ const RichTextEditor = ({ placeholder, onUpdate, api, pageTitle, addAPI, onAppro
               className="border p-2 rounded-md"
             />
           </div>}
-
-          {pathName === '/softwareNeeded' &&
-            <div>
-              <p className="text-2xl font-bold mb-4">Approvals</p>
-              <div className="flex items-center space-x-4 mb-6">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={approvals.Alok}
-                    onChange={() => onApproval("Alok")}
-                  />
-                  Alok
-                </label>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={approvals.Abhishek}
-                    onChange={() => onApproval("Abhishek")}
-                  />
-                  Abhishek
-                </label>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={approvals.Ashu}
-                    onChange={() => onApproval("Ashu")}
-                  />
-                  Ashu
-                </label>
-              </div>
-            </div>
-          }
 
           <JoditEditor
             ref={editor}

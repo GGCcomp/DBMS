@@ -6,7 +6,9 @@ export async function GET(request) {
   await connectMongo();
   const { searchParams } = new URL(request.url);
   const selectedTitle = searchParams.get('selectedTitle');
-
+  console.log(selectedTitle);
+  
+  
   try {
     const posts = await Development.find();
     const sections = posts.flatMap(sec => sec.section);
@@ -97,7 +99,7 @@ export async function POST(request) {
         { arrayFilters }
       );
  
-      if (result.nModified > 0) {
+      if (result.modifiedCount > 0) {
         return NextResponse.json({ success: true, message: 'Content added to existing section' });
       } else {
         return NextResponse.json({ success: false, error: "Failed to find the section to update" });
@@ -149,7 +151,7 @@ export async function PUT(request) {
       { arrayFilters }
     );
 
-    if (result.nModified > 0) {
+    if (result.modifiedCount > 0) {
       return NextResponse.json({ success: true, message: 'Post updated successfully' });
     } else {
       return NextResponse.json({ success: false, error: "Failed to find the section to update or no changes made" });

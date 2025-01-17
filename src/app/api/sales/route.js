@@ -97,7 +97,7 @@ export async function POST(request) {
         { arrayFilters }
       );
  
-      if (result.nModified > 0) {
+      if (result.modifiedCount > 0) {
         return NextResponse.json({ success: true, message: 'Content added to existing section' });
       } else {
         return NextResponse.json({ success: false, error: "Failed to find the section to update" });

@@ -150,7 +150,7 @@ export async function PUT(request) {
       { arrayFilters }
     );
 
-    if (result.nModified > 0) {
+    if (result.modifiedCount > 0) {
       return NextResponse.json({ success: true, message: 'Post updated successfully' });
     } else {
       return NextResponse.json({ success: false, error: "Failed to find the section to update or no changes made" });
