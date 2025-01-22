@@ -12,7 +12,7 @@ import ApprovalCard from './ApprovalCard';
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
-const RichTextEditor = ({ placeholder, onUpdate, api, pageTitle, addAPI, onApproval, approvals }) => {
+const RichTextEditor = ({ placeholder, onUpdate, api, pageTitle, addAPI }) => {
   const editor = useRef(null);
   const [showEditor, setShowEditor] = useState(false);
   const [modal, setModal] = useState(false);

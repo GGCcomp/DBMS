@@ -1,7 +1,10 @@
 "use client";
-import RichTextEditor from '@/components/RichTextEditor';
+import dynamic from 'next/dynamic';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+
+const RichTextEditor = dynamic(() => import('@/components/RichTextEditor'), { ssr: false });
 
 export default function Page() {
 
