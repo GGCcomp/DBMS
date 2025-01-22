@@ -17,8 +17,6 @@ export async function POST(req, { params }) {
       const { id } = params; // Extract user ID (email in this case) from params
       const { title, body: messageBody, link } = body; // Destructure notification data
   
-      console.log("Notification Data:", { title, messageBody, link });
-  
       // Fetch the user with the given email
       const user = await User.findOne({ email: id });
       if (!user) {

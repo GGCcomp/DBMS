@@ -2,6 +2,7 @@ import React from "react";
 
 function Modal({ isOpen, onClose, title, data, type }) {
   if (!isOpen) return null;
+  console.log(data);
   
   // Function to handle approval/rejection actions
   const handleAction = async (action, item) => {
@@ -161,7 +162,7 @@ function Modal({ isOpen, onClose, title, data, type }) {
                         </td>
                       );
                     })}
-                    {type === "leaveRequests" && item.approval === "requested" && (
+                    {item.approval === "requested" && (
                       <td className="border border-gray-300 px-6 py-3 text-sm font-medium text-gray-700">
                         <div className="flex justify-end space-x-2">
                           <button
