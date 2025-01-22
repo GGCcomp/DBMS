@@ -14,6 +14,7 @@ const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
 const RichTextEditor = ({ placeholder, onUpdate, api, pageTitle, addAPI, onApproval, approvals }) => {
   const editor = useRef(null);
+  const [showEditor, setShowEditor] = useState(false);
   const [modal, setModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState('');
@@ -194,13 +195,10 @@ const RichTextEditor = ({ placeholder, onUpdate, api, pageTitle, addAPI, onAppro
               <div className='flex gap-3 items-center'>
                 <p className='hidden md:block text-xl'>Welcome, {session.user.name}</p>
                 <button
-                  onClick={() => {
-                    signOut();
-                    toast.error('User Logged Out!');
-                  }}
+                  onClick={() => setShowEditor(!showEditor)}
                   className='bg-red-400 text-white hover:bg-red-500 px-3 py-1 rounded-sm'
                 >
-                  Sign Out
+                  {showEditor ? "Close Editor" : "Open Editor"}
                 </button>
               </div>
             ) : (
@@ -209,7 +207,7 @@ const RichTextEditor = ({ placeholder, onUpdate, api, pageTitle, addAPI, onAppro
               </div>
             )}
           </div>
-          <div className='flex flex-col w-full'>
+          {showEditor && <div className='flex flex-col w-full'>
             <label htmlFor="section" className="text-lg font-medium mb-2">Select a section first!</label>
             <div className='relative flex flex-col md:flex-row gap-4 py-3'>
               {modal && session && <Modal onClose={modalHandler} id={sectionID} selectedSection={selectedTitle} api={addAPI} onSectionAdded={handleSectionAdded} />}
@@ -227,10 +225,10 @@ const RichTextEditor = ({ placeholder, onUpdate, api, pageTitle, addAPI, onAppro
                 Fetch Data Approvals
               </button>
             </div>
-          </div>
+          </div>}
 
           {/* File upload button */}
-          {session && <div className='my-4'>
+          {session && showEditor && <div className='my-4'>
             <label className="block text-lg font-medium mb-2">Upload Excel File:</label>
             <input
               type="file"
@@ -240,21 +238,27 @@ const RichTextEditor = ({ placeholder, onUpdate, api, pageTitle, addAPI, onAppro
             />
           </div>}
 
-          <JoditEditor
-            ref={editor}
-            value={content}
-            config={config}
-            tabIndex={1}
-            onBlur={(newContent) => setContent(newContent)}
-            onChange={(newContent) => setContent(newContent)}
-          />
-          <button
-            onClick={handleSave}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            disabled={!session}
-          >
-            {!session ? 'Login first' : 'Send For Approval'}
-          </button>
+          <div>
+            {showEditor && (
+              <JoditEditor
+                ref={editor}
+                value={content}
+                config={config}
+                tabIndex={1}
+                onBlur={(newContent) => setContent(newContent)}
+                onChange={(newContent) => setContent(newContent)}
+              />
+            )}
+            {showEditor && <button
+              onClick={handleSave}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              disabled={!session}
+              aria-label="Submit content for approval"
+            >
+              {!session ? "Login first" : "Send For Approval"}
+            </button>}
+          </div>
+
           {session && <Content content={contentData} title={selectedTitle} onUpdate={onUpdate} dataSave={setDataSaved} />}
         </div>
       </div>

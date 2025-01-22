@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useSession } from "next-auth/react";
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
@@ -64,7 +65,6 @@ export default function AdminPanel() {
 
       const result = await res.json();
       if (res.ok) {
-        alert('Invitation sent successfully!');
         setInvitations((prev) => [...prev, { email, role, expiryDate: new Date(Date.now() + 24 * 60 * 60 * 1000) }]);
         setEmail('');
         setRole('');
@@ -72,7 +72,6 @@ export default function AdminPanel() {
         setError(result.error || 'Failed to send invitation.');
       }
     } catch (error) {
-      console.error(error);
       setError('Something went wrong.');
     } finally {
       setInviteLoading(false);
@@ -95,9 +94,18 @@ export default function AdminPanel() {
       });
 
       if (res.ok) {
-        alert('Announcement added successfully!');
+        let res = await fetch('/api/notifications/announcement',{
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({title: "From Admin", body: 'A new annoucement is made!', link: 'http://localhost:3000/'})
+        });
+        res = await res.json();
+        if(res.ok){
         setAnnouncementText('');
         setAnnouncementDate('');
+        }
       } else {
         setError('Failed to add announcement.');
       }
@@ -118,114 +126,151 @@ export default function AdminPanel() {
 
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-7xl mx-auto space-y-8">
-        <h1 className="text-4xl font-bold text-gray-800 mb-6 text-center">Admin Panel</h1>
-
-        {/* Overview Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div
-            className="bg-white shadow-md rounded-lg p-6 text-center cursor-pointer"
-            onClick={() => openModal('Total Employees', users, 'Total Employees')}
+      <div className="min-h-screen bg-gradient-to-r from-blue-500 to-purple-500 flex flex-col justify-center items-center text-white">
+        <motion.div
+          className="w-full max-w-7xl px-8 py-12"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1 }}
+        >
+          <motion.h1
+            className="text-5xl font-extrabold text-center mb-10"
+            initial={{ y: -50 }}
+            animate={{ y: 0 }}
+            transition={{ duration: 1 }}
           >
-            <h2 className="text-xl font-semibold text-gray-700">Total Employees</h2>
-            <p className="text-3xl font-bold text-blue-500">{users.length}</p>
-          </div>
-          <div
-            className="bg-white shadow-md rounded-lg p-6 text-center cursor-pointer"
-            onClick={() => openModal('Invitations Sent', invitations, 'Invitations Sent')}
+            Admin Panel
+          </motion.h1>
+  
+          {/* Overview Section */}
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1.5 }}
           >
-            <h2 className="text-xl font-semibold text-gray-700">Invitations Sent</h2>
-            <p className="text-3xl font-bold text-blue-500">{invitations.length}</p>
-          </div>
-          <div
-            className="bg-white shadow-md rounded-lg p-6 text-center cursor-pointer"
-            onClick={() => openModal('Leave Requests', leaveRequests, 'leaveRequests')}
-          >
-            <h2 className="text-xl font-semibold text-gray-700">Leave Requests</h2>
-            <p className="text-3xl font-bold text-blue-500">{leaveRequests.length}</p>
-          </div>
-
-          <Link href='/approvals'
-            className="bg-white shadow-md rounded-lg p-6 text-center content-center h-full cursor-pointer"
-          >
-            <h2 className="text-xl font-semibold text-gray-700">Approval Requests</h2>
-          </Link>
-
-        </div>
-
-        {/* Invitation Section */}
-        <div className="bg-white shadow-md rounded-lg p-6">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-4">Send Registration Invitation</h2>
-          {error && <p className="text-red-500 mb-4">{error}</p>}
-          <div className="flex flex-wrap gap-4 items-center">
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="w-full md:w-auto border px-4 py-2 rounded-lg focus:ring focus:ring-blue-300"
+            <motion.div
+              className="bg-white rounded-lg p-6 shadow-lg text-gray-800 text-center hover:scale-105 transform transition-all duration-300 cursor-pointer"
+              whileHover={{ scale: 1.05 }}
+              onClick={() => openModal('Total Employees', users, 'Total Employees')}
             >
-              <option value="">Select Role</option>
-              {roles.map((r) => (
-                <option key={r} value={r}>
-                  {r}
-                </option>
-              ))}
-            </select>
-
-            <input
-              type="email"
-              placeholder="Enter email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="flex-grow border px-4 py-2 rounded-lg focus:ring focus:ring-blue-300"
-            />
-
-            <button
-              onClick={handleInvite}
-              className="flex items-center bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
-              disabled={inviteLoading}
+              <h2 className="text-2xl font-bold mb-4">Total Employees</h2>
+              <p className="text-4xl font-extrabold text-blue-500">{users.length}</p>
+            </motion.div>
+            <motion.div
+              className="bg-white rounded-lg p-6 shadow-lg text-gray-800 text-center hover:scale-105 transform transition-all duration-300 cursor-pointer"
+              whileHover={{ scale: 1.05 }}
+              onClick={() => openModal('Invitations Sent', invitations, 'Invitations Sent')}
             >
-              {inviteLoading ? <AiOutlineLoading3Quarters className="animate-spin mr-2" /> : <FiSend className="mr-2" />}
-              {inviteLoading ? 'Sending...' : 'Send Invite'}
-            </button>
-          </div>
-        </div>
-
-        {/* Announcements Section */}
-        <div className="bg-white shadow-md rounded-lg p-6">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-4">Create Announcement</h2>
-          <textarea
-            placeholder="Enter announcement text"
-            value={announcementText}
-            onChange={(e) => setAnnouncementText(e.target.value)}
-            className="w-full border px-4 py-2 rounded-lg mb-4 focus:ring focus:ring-blue-300"
-          ></textarea>
-          <div className="flex gap-4">
-            <input
-              type="date"
-              value={announcementDate}
-              onChange={(e) => setAnnouncementDate(e.target.value)}
-              className="border px-4 py-2 rounded-lg focus:ring focus:ring-blue-300"
-            />
-            <button
-              onClick={handleAnnouncement}
-              className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
-              disabled={announceLoading}
+              <h2 className="text-2xl font-bold mb-4">Invitations Sent</h2>
+              <p className="text-4xl font-extrabold text-blue-500">{invitations.length}</p>
+            </motion.div>
+            <motion.div
+              className="bg-white rounded-lg p-6 shadow-lg text-gray-800 text-center hover:scale-105 transform transition-all duration-300 cursor-pointer"
+              whileHover={{ scale: 1.05 }}
+              onClick={() => openModal('Leave Requests', leaveRequests, 'Leave Requests')}
             >
-              {announceLoading ? <AiOutlineLoading3Quarters className="animate-spin" /> : 'Add Announcement'}
-            </button>
-          </div>
-        </div>
-
-        {/* Modal for displaying data */}
-        <Modal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          title={modalTitle}
-          data={modalData}
-          type={modalType}
-        />
+              <h2 className="text-2xl font-bold mb-4">Leave Requests</h2>
+              <p className="text-4xl font-extrabold text-blue-500">{leaveRequests.length}</p>
+            </motion.div>
+            <motion.div
+              className="bg-white rounded-lg p-6 shadow-lg text-gray-800 text-center hover:scale-105 transform transition-all duration-300"
+              whileHover={{ scale: 1.05 }}
+            >
+              <Link href="/approvals">
+                <h2 className="text-2xl font-bold mb-4">Approval Requests</h2>
+              </Link>
+            </motion.div>
+          </motion.div>
+  
+          {/* Invitation Section */}
+          <motion.div
+            className="bg-white rounded-lg p-6 shadow-lg text-gray-800 mb-12"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1.5 }}
+          >
+            <h2 className="text-3xl font-bold mb-6">Send Registration Invitation</h2>
+            {error && <p className="text-red-500 mb-4">{error}</p>}
+            <div className="flex flex-wrap gap-4 items-center">
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="w-full md:w-auto border px-4 py-3 rounded-lg focus:ring focus:ring-blue-300"
+              >
+                <option value="">Select Role</option>
+                {roles.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="email"
+                placeholder="Enter email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="flex-grow border px-4 py-3 rounded-lg focus:ring focus:ring-blue-300"
+              />
+              <button
+                onClick={handleInvite}
+                className="flex items-center bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
+                disabled={inviteLoading}
+              >
+                {inviteLoading ? (
+                  <AiOutlineLoading3Quarters className="animate-spin mr-2" />
+                ) : (
+                  <FiSend className="mr-2" />
+                )}
+                {inviteLoading ? 'Sending...' : 'Send Invite'}
+              </button>
+            </div>
+          </motion.div>
+  
+          {/* Announcements Section */}
+          <motion.div
+            className="bg-white rounded-lg p-6 shadow-lg text-gray-800"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1.5 }}
+          >
+            <h2 className="text-3xl font-bold mb-6">Create Announcement</h2>
+            <textarea
+              placeholder="Enter announcement text"
+              value={announcementText}
+              onChange={(e) => setAnnouncementText(e.target.value)}
+              className="w-full border px-4 py-3 rounded-lg mb-4 focus:ring focus:ring-blue-300"
+            ></textarea>
+            <div className="flex gap-4">
+              <input
+                type="date"
+                value={announcementDate}
+                onChange={(e) => setAnnouncementDate(e.target.value)}
+                className="border px-4 py-3 rounded-lg focus:ring focus:ring-blue-300"
+              />
+              <button
+                onClick={handleAnnouncement}
+                className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
+                disabled={announceLoading}
+              >
+                {announceLoading ? (
+                  <AiOutlineLoading3Quarters className="animate-spin" />
+                ) : (
+                  'Add Announcement'
+                )}
+              </button>
+            </div>
+          </motion.div>
+  
+          {/* Modal */}
+          <Modal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            title={modalTitle}
+            data={modalData}
+            type={modalType}
+          />
+        </motion.div>
       </div>
-    </div>
   );
 }

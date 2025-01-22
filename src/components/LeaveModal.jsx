@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
+import LeaveEdit from "./LeaveEdit";
 
 function LeaveModal({ onClose, name, role, email }) {
   const [leaves, setLeaves] = useState([]);
+  const [edit, setEdit] = useState(false);
+  const [isUpdated, setIsUpdated] = useState(false);
+  const [editData, setEditData] = useState({id: '', reason: '', fromDate: '', toDate: ''});
   const [leaveData, setLeaveData] = useState({
     reason: "",
     fromDate: "",
@@ -36,7 +40,7 @@ function LeaveModal({ onClose, name, role, email }) {
     };
 
     getData();
-  }, [email]);
+  }, [email, isUpdated]);
 
   // Handle form data change
   const handleChange = (e) => {
@@ -58,8 +62,17 @@ function LeaveModal({ onClose, name, role, email }) {
       });
       await response.json();
       if (response.ok) {
-        alert("Leave Request submitted successfully");
-        onClose(); // Close modal after successful submission
+       let res =  await fetch('/api/notifications/leave',{
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({title: name, body: 'Requested for leave!', link: 'http://localhost:3000/admin'})
+        })
+        res = await res.json();
+        if(res.ok){
+          onClose(); // Close modal after successful submission
+        } 
       } else {
         alert("Failed to submit leave data");
       }
@@ -68,23 +81,14 @@ function LeaveModal({ onClose, name, role, email }) {
     }
   };
 
-  // Determine if the form should be shown
-  const showForm =
-    leaves.length === 0 || // No leaves exist
-    leaves.every((leave) => leave.toDate < currentDate || leave.approval === "rejected"); // All leaves expired or rejected
-
-  // Get the active leave status message
-  const activeLeaveMessage = leaves.some(
-    (leave) =>
-      leave.approval === "approved" && leave.toDate >= currentDate
-  )
-    ? "You already have an approved leave."
-    : leaves.some((leave) => leave.approval === "requested")
-    ? "Your leave request is pending."
-    : null;
+  const editHandler = (id, reason, fromDate, toDate) => {
+    setEditData({id, reason, fromDate, toDate});
+    setEdit(!edit);
+  }  
 
   return (
     <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center z-50">
+      {edit && <LeaveEdit data={editData} onClose={() => setEdit(!edit)} isUpdated={setIsUpdated} />}
       <div className="bg-white w-[80%] sm:w-[60%] lg:w-[40%] p-6 rounded-lg overflow-auto">
         {leaves.length > 0 && (
           <div className="mb-4">
@@ -126,6 +130,9 @@ function LeaveModal({ onClose, name, role, email }) {
                       }`}
                     >
                       {leave.approval}
+                      {leave.approval === "requested" && <button onClick={() => editHandler(leave._id, leave.reason,new Date(leave.fromDate).toLocaleDateString(),
+                      new Date(leave.toDate).toLocaleDateString()
+                      )} className="ml-2 text-black bg-yellow-200 px-3 py-1 rounded-md">Edit</button>}
                     </td>
                   </tr>
                 ))}
@@ -134,9 +141,6 @@ function LeaveModal({ onClose, name, role, email }) {
           </div>
         )}
 
-        {/* Show form or message based on conditions */}
-        {showForm ? (
-          <>
             <h2 className="text-2xl font-semibold mb-4 text-black">Request Leave</h2>
             <form onSubmit={handleSubmit} className="text-black">
               {/* Form fields */}
@@ -205,21 +209,6 @@ function LeaveModal({ onClose, name, role, email }) {
                 </button>
               </div>
             </form>
-          </>
-        ) : (
-          <div className="text-center">
-            <h2 className="text-xl font-semibold text-yellow-600">
-              {activeLeaveMessage}
-            </h2>
-            <button
-              type="button"
-              className="px-6 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400 transition duration-300"
-              onClick={onClose}
-            >
-              Close
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

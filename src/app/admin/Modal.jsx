@@ -2,7 +2,7 @@ import React from "react";
 
 function Modal({ isOpen, onClose, title, data, type }) {
   if (!isOpen) return null;
-
+  
   // Function to handle approval/rejection actions
   const handleAction = async (action, item) => {
     const updatedApproval = action === "Approve" ? "approved" : "rejected";
@@ -20,8 +20,18 @@ function Modal({ isOpen, onClose, title, data, type }) {
 
       const result = await response.json();
       if (response.ok) {
-        alert(`Leave request ${updatedApproval}`);
-        onClose(); // Close modal after action
+        let res = await fetch('/api/notifications/leave_approval/'+item.email,{
+          method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: 'Leave Approval!', body: `${item.name} your leave request is ${updatedApproval}`, link:'http://localhost:3000/'}),
+        })
+        res = await res.json();
+        if(res.ok){
+          onClose();
+        }
       } else {
         alert(`Error: ${result.message}`);
       }

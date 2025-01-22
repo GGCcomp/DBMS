@@ -13,7 +13,7 @@ export const authOptions = {
       },
       authorize: async (credentials) => {
         // Extract credentials
-        const { email, password } = credentials;
+        const { email, password, fcmToken } = credentials;
 
         try {
           const res = await fetch(`${NEXT_PUBLIC_HOST_URL}/api/login`, {
@@ -22,7 +22,7 @@ export const authOptions = {
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ email, password }), // Send only email and password
+            body: JSON.stringify({ email, password, fcmToken }), // Send only email and password
           });
 
           const result = await res.json();

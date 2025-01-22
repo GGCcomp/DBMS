@@ -46,3 +46,25 @@ export async function PATCH(req, { params }) {
       return NextResponse.json({ message: 'Something went wrong', error: error.message }, { status: 500 });
     }
   }
+
+  export async function PUT(req, {params}){
+    try{
+      const { id } = params; // Extract the `id` from the URL parameters
+      const payload = await req.json();
+      await connectMongo();
+
+      const updatedLeave = await Leave.findByIdAndUpdate(
+        id,
+        { $set: payload }, // Update the approval status
+        { new: true } // Return the updated document
+      );
+
+      if (!updatedLeave) {
+        return NextResponse.json({ message: 'Leave request not found' }, { status: 404 });
+      }
+
+      return NextResponse.json({ok: true});
+    }catch(error){
+      return NextResponse.json({ message: 'Something went wrong', error: error.message }, { status: 500 });
+    }
+  }

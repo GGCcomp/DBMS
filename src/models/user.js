@@ -5,7 +5,8 @@ const userSchema = new mongoose.Schema({
   email: { type: String, unique: true, required: true },
   password: { type: String, required: true },
   role: { type: String, required: true },
-  leaves: [{ type: mongoose.Schema.Types.ObjectId, ref: "Leave" }] 
+  leaves: [{ type: mongoose.Schema.Types.ObjectId, ref: "Leave" }],
+  fcmToken: { type: String, required: false }
 }, { timestamps: true });
 
 

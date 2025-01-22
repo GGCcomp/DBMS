@@ -10,6 +10,10 @@
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
+    "firebase": "^11.2.0",
+    "firebase-admin": "^13.0.2",
+    "framer-motion": "^11.18.1",
+    "html2pdf.js": "^0.10.2",
     "import": "^0.0.6",
     "jodit-react": "^4.1.2",
     "jsonwebtoken": "^9.0.2",

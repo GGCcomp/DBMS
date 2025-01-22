@@ -16,7 +16,7 @@ function Navbar() {
   
 
   return (
-    <header className="bg-blue-700 text-white shadow-lg py-4 relative">
+    <header className="bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg py-4 relative">
       <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8">
       {isLeaveModal && <LeaveModal onClose={closeModal} name={session.user.name} role={session.user.role} email={session.user.email} />}
         {/* Logo / Title */}

@@ -6,8 +6,8 @@ import { User } from "@/models/user";
 export async function POST(request) {
     await connectMongo();
     try {
-      const { email, password } = await request.json(); 
-  
+      const { email, password, fcmToken } = await request.json(); 
+    
       const user = await User.findOne({ email });
       if (!user) {
         return NextResponse.json({ message: "No user found!", ok: false }, { status: 404 });
@@ -16,6 +16,11 @@ export async function POST(request) {
       const isPasswordCorrect = await bcrypt.compare(password, user.password);
       if (!isPasswordCorrect) {
         return NextResponse.json({ message: "Email or password is incorrect!", ok: false }, { status: 401 });
+      }
+
+      if (fcmToken && fcmToken !== user.fcmToken) {
+        user.fcmToken = fcmToken;
+        await user.save();
       }
   
       return NextResponse.json({ email: user.email, name: user.name, role: user.role, ok: true }); // Ensure the response contains necessary fields

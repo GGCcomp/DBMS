@@ -4,6 +4,7 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "react-toastify";
+import { messaging, getToken } from "@/lib/firebase";
 import "react-toastify/dist/ReactToastify.css";
 
 function LoginForm() {
@@ -30,10 +31,21 @@ function LoginForm() {
     e.preventDefault();
     setLoading(true);
 
+    const token = await getToken(messaging, {
+      vapidKey: process.env.NEXT_PUBLIC_FIREBASE_FCM_VAPID_KEY,
+    });
+
+    if (!token) {
+      toast.error("Unable to generate FCM token.");
+      setLoading(false);
+      return;
+    }
+
     const result = await signIn("credentials", {
       redirect: false,
       email: formData.email,
       password: formData.password,
+      fcmToken: token
     });
 
     if (result.error) {

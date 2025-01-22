@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AuthProvider from "@/components/AuthProvider";
+import FirebaseSetup from "@/components/FirebaseSetup";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,6 +20,7 @@ export default function RootLayout({ children }) {
         <AuthProvider>
           <Navbar />
         {children}
+        <FirebaseSetup />
         <ToastContainer position="bottom-right" />
         </AuthProvider>
         </body>
