@@ -4,12 +4,12 @@ importScripts('https://www.gstatic.com/firebasejs/9.21.0/firebase-messaging-comp
 
 // Initialize Firebase in the service worker
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_APPID
+  apiKey: "AIzaSyASrWv-YiTQLKf2bhB3nqvONvgekcYbgR0",
+  authDomain: "fcm-mis-2d94d.firebaseapp.com",
+  projectId: "fcm-mis-2d94d",
+  storageBucket: "fcm-mis-2d94d.firebasestorage.app",
+  messagingSenderId: "772792722842",
+  appId: "1:772792722842:web:9f74b2be9cd938c179c623"
 };
 
 firebase.initializeApp(firebaseConfig);
