@@ -161,10 +161,11 @@ export default function Page() {
               transition={{ duration: 0.8 }}
             >
               {[
-                'Compliance Resources',
-                'Training Modules',
-                'Policies & Procedures',
-                'Employee Directory',
+                'Operations',
+                'Product',
+                'Legal',
+                'Finance',
+                'Tech',
               ].map((link) => (
                 <a
                   key={link}
@@ -188,7 +189,7 @@ export default function Page() {
       {/* Footer */}
       <footer className="text-white py-6 mt-20 border-t border-blue-400">
         <div className="max-w-7xl mx-auto text-center">
-          <p className="text-sm">&copy; 2024 Innate Gamma Private Limited. All rights reserved.</p>
+          <p className="text-sm">&copy; 2025 Innate Gamma Private Limited. All rights reserved.</p>
         </div>
       </footer>
     </div>

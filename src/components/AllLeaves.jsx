@@ -1,22 +1,24 @@
-"use client";
-import { useEffect, useState } from "react";
+'use client';
+import { useEffect, useState } from 'react';
 
 function AllLeaves({ onClose }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [searchName, setSearchName] = useState('');
+  const [searchRole, setSearchRole] = useState('');
 
   useEffect(() => {
     const getAllLeaves = async () => {
       setLoading(true);
       try {
-        const res = await fetch("/api/leave_req");
+        const res = await fetch('/api/leave_req');
         if (!res.ok) {
-          throw new Error("Failed to fetch leave data");
+          throw new Error('Failed to fetch leave data');
         }
         const result = await res.json();
         setData(result);
       } catch (err) {
-        console.error("Error fetching leave data:", err);
+        console.error('Error fetching leave data:', err);
       } finally {
         setLoading(false);
       }
@@ -25,7 +27,14 @@ function AllLeaves({ onClose }) {
     getAllLeaves();
   }, []);
 
-  const approvedLeaves = data.filter((leave) => leave.approval === "approved");
+  // Filter leaves based on approval and search input
+  const filteredLeaves = data
+    .filter((leave) => leave.approval === 'approved')
+    .filter((leave) => {
+      const nameMatch = leave.name.toLowerCase().includes(searchName.toLowerCase());
+      const roleMatch = leave.role.toLowerCase().includes(searchRole.toLowerCase());
+      return nameMatch && roleMatch;
+    });
 
   return (
     <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
@@ -36,9 +45,38 @@ function AllLeaves({ onClose }) {
             X
           </button>
         </div>
+
+        {/* Search Filters */}
+        <div className="my-4">
+          <div className="flex space-x-4">
+            <div className="flex flex-col">
+              <label htmlFor="name" className="text-sm font-medium text-gray-700">Search by Name</label>
+              <input
+                id="name"
+                type="text"
+                placeholder="Enter name"
+                value={searchName}
+                onChange={(e) => setSearchName(e.target.value)}
+                className="mt-1 p-2 border border-gray-300 rounded-lg"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label htmlFor="role" className="text-sm font-medium text-gray-700">Search by Role</label>
+              <input
+                id="role"
+                type="text"
+                placeholder="Enter role"
+                value={searchRole}
+                onChange={(e) => setSearchRole(e.target.value)}
+                className="mt-1 p-2 border border-gray-300 rounded-lg"
+              />
+            </div>
+          </div>
+        </div>
+
         {loading ? (
           <p className="text-center">Loading...</p>
-        ) : approvedLeaves.length > 0 ? (
+        ) : filteredLeaves.length > 0 ? (
           <table className="w-full table-auto border-collapse border border-gray-300">
             <thead>
               <tr className="bg-gray-200 text-black">
@@ -49,7 +87,7 @@ function AllLeaves({ onClose }) {
               </tr>
             </thead>
             <tbody>
-              {approvedLeaves.map((leave, i) => (
+              {filteredLeaves.map((leave, i) => (
                 <tr key={i}>
                   <td className="border border-gray-300 px-4 py-2">{leave.name}</td>
                   <td className="border border-gray-300 px-4 py-2">{leave.role}</td>
