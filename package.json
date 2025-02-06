@@ -17,6 +17,7 @@
     "import": "^0.0.6",
     "jodit-react": "^4.1.2",
     "jsonwebtoken": "^9.0.2",
+    "lucide-react": "^0.474.0",
     "mongoose": "^8.5.3",
     "next": "14.2.5",
     "next-auth": "^4.24.7",
