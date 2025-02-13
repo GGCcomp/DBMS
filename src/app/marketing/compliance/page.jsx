@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 
-export default function page() {
+export default function Page() {
   const [complianceLogs, setComplianceLogs] = useState([]);
   const [materialName, setMaterialName] = useState("");
   const [approvalStatus, setApprovalStatus] = useState("Pending");

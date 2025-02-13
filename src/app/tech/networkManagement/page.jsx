@@ -1,7 +1,7 @@
 "use client"
 import { useState } from "react";
 
-export default function page() {
+export default function Page() {
   const [vpnLogs, setVpnLogs] = useState([
     { id: 1, type: "VPN Access", user: "John Doe", status: "Connected" },
     { id: 2, type: "Remote Desktop", user: "Alice Smith", status: "Failed" },

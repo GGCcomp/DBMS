@@ -3,7 +3,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
 
-export default function page() {
+export default function Page() {
   // Time Range for Filtering
   const [timeRange, setTimeRange] = useState("Monthly");
 

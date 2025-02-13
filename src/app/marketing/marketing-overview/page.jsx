@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
 
-export default function pagee() {
+export default function Page() {
   // Sample Data
   const campaignData = [
     { name: "Q1", conversion: 15, engagement: 70, ROI: 120 },

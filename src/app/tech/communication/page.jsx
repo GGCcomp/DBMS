@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 
-export default function page() {
+export default function Page() {
   const [announcements, setAnnouncements] = useState([
     { id: 1, title: "Scheduled Maintenance", details: "Servers will be down from 2 AM - 4 AM", type: "⚠️ Alert" },
     { id: 2, title: "Security Update", details: "New security patches applied.", type: "🔒 Security" }

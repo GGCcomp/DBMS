@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 
-const page = () => {
+const Page = () => {
   // Dummy Data
   const data = {
     productCatalog: ["Loans", "Investments", "Payments", "Insurance"],
@@ -79,4 +79,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

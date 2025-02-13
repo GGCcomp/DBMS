@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 
-export default function page() {
+export default function Page() {
   const [backupLogs, setBackupLogs] = useState([
     { id: 1, title: "Daily Backup", details: "Database backup at 2 AM", status: "✅ Successful" },
     { id: 2, title: "Restore Test", details: "Q4 report restore test", status: "🕒 Pending" },

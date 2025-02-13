@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 
-export default function OnboardingOffboarding() {
+export default function Page() {
   const [onboardingDocs, setOnboardingDocs] = useState([
     { id: 1, name: "Offer Letter - John Doe.pdf", type: "Offer Letter" },
     { id: 2, name: "Background Check - Jane Smith.pdf", type: "Verification" },

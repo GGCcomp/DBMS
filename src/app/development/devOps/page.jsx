@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 
-const page = () => {
+const Page = () => {
   const [logs, setLogs] = useState({
     accessControlPolicies: [],
     incidentResponseLogs: [],
@@ -127,4 +127,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

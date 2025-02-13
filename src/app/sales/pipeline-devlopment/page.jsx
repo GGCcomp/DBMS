@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
 
-export default function page() {
+export default function Page() {
   const [pipelineData, setPipelineData] = useState([
     { stage: "Prospecting", count: 5 },
     { stage: "Negotiation", count: 3 },

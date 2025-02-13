@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 
-const page = () => {
+const Page = () => {
   const [complianceLogs, setComplianceLogs] = useState([
     'Adherence to PCI DSS, GDPR, ISO 27001, SOC 2, AML, and KYC regulations.',
     'Audit report for GDPR updated on 01/2025.',
@@ -167,4 +167,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

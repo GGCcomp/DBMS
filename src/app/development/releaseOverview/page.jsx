@@ -41,7 +41,7 @@ const Modal = ({ title, defaultValue, onClose, onSave }) => {
   );
 };
 
-const page = () => {
+const Page = () => {
   const [logs, setLogs] = useState({
     releases: [],
     deployments: [],
@@ -120,4 +120,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

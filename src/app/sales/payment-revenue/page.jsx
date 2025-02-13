@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 
-const page = () => {
+const Page = () => {
   const [activeTab, setActiveTab] = useState("transactions");
   const [search, setSearch] = useState("");
 
@@ -100,4 +100,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

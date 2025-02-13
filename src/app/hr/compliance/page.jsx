@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 
-export default function ComplianceHRPolicies() {
+export default function Page() {
   const [trainingRecords, setTrainingRecords] = useState([
     { id: 1, employee: "John Doe", course: "AML Training", status: "Completed" },
     { id: 2, employee: "Jane Smith", course: "GDPR Compliance", status: "In Progress" },

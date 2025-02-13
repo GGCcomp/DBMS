@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-export default function ReferralPartnerTracking() {
+export default function Page() {
   const [referrals, setReferrals] = useState([
     { id: 1, name: "Avantika", referrals: 5, bonus: "₹50" },
     { id: 2, name: "Priyam", referrals: 8, bonus: "₹80" },

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 
-export default function page() {
+export default function Page() {
   // Campaign Data
   const [campaigns, setCampaigns] = useState([
     { id: 1, name: "Social Media Ads", date: "2025-02-15", budget: 5000, status: "Pending", channel: "Digital" },

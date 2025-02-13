@@ -3,7 +3,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
 
-export default function page() {
+export default function Page() {
   const [leads, setLeads] = useState([
     { source: "Website", count: 120 },
     { source: "Campaigns", count: 80 },

@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 
-export default function page() {
+export default function Page() {
   const [tickets, setTickets] = useState([
     { id: 1, issue: "Laptop not connecting to VPN", status: "In Progress" },
     { id: 2, issue: "New software installation", status: "Resolved" },

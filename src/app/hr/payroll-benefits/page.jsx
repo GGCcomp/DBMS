@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 
-export default function PayrollExpenseTracking() {
+export default function Page() {
   const [salarySlips, setSalarySlips] = useState([
     { id: 1, month: "January 2025", link: "#" },
     { id: 2, month: "December 2024", link: "#" },

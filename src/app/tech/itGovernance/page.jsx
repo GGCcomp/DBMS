@@ -1,7 +1,7 @@
 "use client"
 import { useState } from "react";
 
-export default function page() {
+export default function Page() {
   const [changeLogs, setChangeLogs] = useState([
     { id: 1, type: "Software Update", details: "Updated OS to version 11.2", status: "Completed" },
     { id: 2, type: "Configuration Change", details: "Modified firewall rules", status: "Pending" },

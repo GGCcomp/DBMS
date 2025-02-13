@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 
-export default function AttendanceLeaveTracking() {
+export default function Page() {
   const [attendanceLogs, setAttendanceLogs] = useState([
     { id: 1, employee: "John Doe", date: "2025-02-10", status: "Present" },
     { id: 2, employee: "Jane Smith", date: "2025-02-10", status: "Absent" },

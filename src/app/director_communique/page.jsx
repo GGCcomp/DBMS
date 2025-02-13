@@ -2,7 +2,7 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
-const page = () => {
+const Page = () => {
   return (
     <div className="min-h-screen bg-gradient-to-r from-blue-500 to-purple-500 flex flex-col justify-center items-center text-white">
       <motion.div
@@ -96,4 +96,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

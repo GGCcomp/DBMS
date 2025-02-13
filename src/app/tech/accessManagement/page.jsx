@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 
-export default function page() {
+export default function Page() {
   const [accessRecords, setAccessRecords] = useState([
     { id: 1, user: "John Doe", action: "Logged in via SSO", status: "Success" },
     { id: 2, user: "Jane Smith", action: "MFA enabled", status: "Completed" },

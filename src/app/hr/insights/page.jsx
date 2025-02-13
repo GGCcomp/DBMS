@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Bar, BarChart, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
 
-export default function HRComplianceInsights() {
+export default function Page() {
   const [lifecycleLogs, setLifecycleLogs] = useState([
     { id: 1, name: "John Doe", event: "Promoted to Senior Developer", date: "2025-01-15" },
     { id: 2, name: "Jane Smith", event: "Transferred to Finance", date: "2024-12-10" },

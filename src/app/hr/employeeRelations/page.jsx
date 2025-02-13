@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 
-export default function EmployeeSelfService() {
+export default function Page() {
   const [employees, setEmployees] = useState([
     {
       id: 1,

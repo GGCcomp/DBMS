@@ -17,7 +17,7 @@ import {
   Cell,
 } from "recharts";
 
-export default function page() {
+export default function Page() {
   // State for data
   const [attributionData, setAttributionData] = useState([
     { model: "First-Touch", value: 40 },
