@@ -43,7 +43,7 @@ const page = () => {
             <h2 className="text-2xl font-semibold mb-4">Employee Relations</h2>
             <p>Handle employee engagement, communication, and collaboration efficiently.</p>
             <Link
-              href="/hr/employee-relations"
+              href="/hr/employeeRelations"
               className="mt-4 inline-block text-blue-500 hover:text-blue-700 transition"
             >
               Manage Relations &rarr;
@@ -55,13 +55,13 @@ const page = () => {
             className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
             whileHover={{ scale: 1.05 }}
           >
-            <h2 className="text-2xl font-semibold mb-4">Feedback & Grievances</h2>
-            <p>Submit feedback or raise grievances anonymously and securely.</p>
+            <h2 className="text-2xl font-semibold mb-4">Compliance & HR Policies</h2>
+            <p>Read the Compliance & HR Policies.</p>
             <Link
-              href="/hr/feedback-grievances"
+              href="/hr/compliance"
               className="mt-4 inline-block text-blue-500 hover:text-blue-700 transition"
             >
-              Submit Feedback &rarr;
+             Compliance &rarr;
             </Link>
           </motion.div>
 
@@ -94,6 +94,34 @@ const page = () => {
               Explore Payroll & Benefits &rarr;
             </Link>
           </motion.div>
+
+          <motion.div
+            className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
+            whileHover={{ scale: 1.05 }}
+          >
+            <h2 className="text-2xl font-semibold mb-4">Boarding</h2>
+            <p>On and Off Boarding.</p>
+            <Link
+              href="/hr/boarding"
+              className="mt-4 inline-block text-blue-500 hover:text-blue-700 transition"
+            >
+              Boarding &rarr;
+            </Link>
+          </motion.div>
+
+          <motion.div
+            className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
+            whileHover={{ scale: 1.05 }}
+          >
+            <h2 className="text-2xl font-semibold mb-4">HR Compliance & Insights</h2>
+            <p>Read the Insights.</p>
+            <Link
+              href="/hr/insights"
+              className="mt-4 inline-block text-blue-500 hover:text-blue-700 transition"
+            >
+              HR Insights &rarr;
+            </Link>
+          </motion.div>
         </motion.div>
 
         {/* Button Section */}
@@ -103,13 +131,6 @@ const page = () => {
           animate={{ y: 0 }}
           transition={{ duration: 1 }}
         >
-          <Link
-            href="/hr/services"
-            className="bg-pink-500 text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-pink-600 transition"
-          >
-            Explore All HR Services
-          </Link>
-
           <Link
             href="/hr/data-entry"
             className="bg-pink-500 text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-pink-600 transition"

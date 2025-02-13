@@ -63,7 +63,7 @@ export default function Page() {
               'Analyst',
               'Development',
               'ISO',
-              'Marketing & Sales',
+              'Marketing',
               'Profile',
               'Task & Management',
             ].map((role, i) => (
@@ -81,10 +81,10 @@ export default function Page() {
                     ? 'Access financial reports, metrics, and company performance insights.'
                     : 'Manage your tasks, submit tickets, and access resources.'}
                 </p>
-                {!session && (
+                {(
                   <button
                     className="w-full py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-all duration-300"
-                    onClick={() => router.push(`/login?login=${role.toLowerCase()}`)}
+                    onClick={() => router.push(`/${role.toLowerCase()}`)}
                   >
                     Go to {role} Portal
                   </button>

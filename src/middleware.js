@@ -57,13 +57,13 @@ export const config = {
   matcher: [
     '/admin/:path*',
     '/approvals/:path*',
-    '/hr/:path*',
+    // '/hr/:path*',
     '/dbms/:path*',
     '/research/:path*',
-    '/development/:path*',
+    // '/development/:path*',
     '/iso/:path*',
-    '/marketing/:path*',
-    '/sales/:path*',
+    // '/marketing/:path*',
+    // '/sales/:path*',
     '/softwareNeeded/:path*',
   ],
 };

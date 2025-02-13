@@ -29,6 +29,7 @@
     "react-quill": "^2.0.0",
     "react-spinners": "^0.14.1",
     "react-toastify": "^10.0.5",
+    "recharts": "^2.15.1",
     "rtf": "^0.0.4",
     "xlsx": "^0.18.5"
   },
