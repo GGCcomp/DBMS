@@ -59,7 +59,7 @@ export const config = {
     '/approvals/:path*',
     // '/hr/:path*',
     '/dbms/:path*',
-    '/research/:path*',
+    // '/research/:path*',
     // '/development/:path*',
     '/iso/:path*',
     // '/marketing/:path*',

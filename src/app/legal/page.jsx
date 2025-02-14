@@ -30,7 +30,7 @@ const page = () => {
 
         {/* Legal Sections */}
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 cursor-pointer"
+          className="grid grid-cols-1 md:grid-cols-2  gap-8 cursor-pointer"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1.5 }}
@@ -39,7 +39,7 @@ const page = () => {
             className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
             whileHover={{ scale: 1.05 }}
           >
-            <h2 className="text-2xl font-semibold mb-4">Compliance Monitoring</h2>
+            <h2 className="text-2xl font-semibold mb-4">Regulatory Compliance</h2>
             <p>Ensure all legal protocols and standards are met effectively.</p>
             <Link
               href="/legal/compliance-monitoring"
@@ -71,6 +71,20 @@ const page = () => {
             <p>Resolve disputes efficiently and securely with expert tools.</p>
             <Link
               href="/legal/dispute-resolution"
+              className="mt-4 inline-block text-blue-500 hover:text-blue-700 transition"
+            >
+              Learn More &rarr;
+            </Link>
+          </motion.div>
+
+          <motion.div
+            className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
+            whileHover={{ scale: 1.05 }}
+          >
+            <h2 className="text-2xl font-semibold mb-4">Corporate Compliance</h2>
+            <p>Operational & Corporate Compliance with expert tools.</p>
+            <Link
+              href="/legal/operational-compliance"
               className="mt-4 inline-block text-blue-500 hover:text-blue-700 transition"
             >
               Learn More &rarr;
