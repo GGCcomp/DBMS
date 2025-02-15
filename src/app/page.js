@@ -166,6 +166,7 @@ export default function Page() {
                 'Legal',
                 'Finance',
                 'Tech',
+                'CRM'
               ].map((link) => (
                 <a
                   key={link}
