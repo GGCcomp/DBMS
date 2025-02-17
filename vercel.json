@@ -1,0 +1,14 @@
+{
+    "functions": {
+      "api/tickets/reminder": {
+        "runtime": "nodejs18.x"
+      }
+    },
+    "cron": [
+      {
+        "path": "/api/ticketService/reminder",
+        "schedule": "0 9 * * *"
+      }
+    ]
+  }
+  

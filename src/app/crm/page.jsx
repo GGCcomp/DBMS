@@ -1,157 +1,241 @@
-'use client';
-import { motion } from 'framer-motion';
-import Link from 'next/link';
+"use client";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { Toaster, toast } from 'sonner';
 
-const Page = () => {
+export default function Page() {
+  const route = useRouter();
+  const [tickets, setTickets] = useState({
+    Open: [],
+    Unresolved: [],
+    Resolved: [],
+    "In Progress": [],
+    Closed: []
+  });
+  const [activeTab, setActiveTab] = useState("All");
+  const [isModalOpen, setModalOpen] = useState(null);
+  const [newTicket, setNewTicket] = useState({ title: "", description: "", email: "" });
+  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+
+  // 🔹 Fetch tickets from the backend
+  useEffect(() => {
+    async function fetchTickets() {
+      try {
+        const res = await fetch("/api/ticketService/ticket");
+        const data = await res.json();
+        if (data.success) {
+          const groupedTickets = {
+            Open: [],
+            Unresolved: [],
+            Resolved: [],
+            "In Progress": [],
+            Closed: []
+          };
+          data.tickets.forEach((ticket) => {
+            groupedTickets[ticket.status]?.push(ticket);
+          });
+          setTickets(groupedTickets);
+        }
+      } catch (error) {
+        console.error("Error fetching tickets:", error);
+      }
+    }
+    fetchTickets();
+  }, []);
+
+  // 🔹 Handle moving tickets between statuses
+  const handleMoveTicket = async (ticket, fromTab, toTab) => {
+    try {
+      const res = await fetch("/api/ticketService/ticket", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticketId: ticket._id, newStatus: toTab }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setTickets((prev) => {
+          const updatedFrom = prev[fromTab].filter((t) => t._id !== ticket._id);
+          const updatedTo = [...prev[toTab], data.ticket];
+          toast.success("Ticket Status Updated!");
+          return { ...prev, [fromTab]: updatedFrom, [toTab]: updatedTo };
+        });
+      }
+    } catch (error) {
+      toast.error("Error in updating the status!");
+      console.error("Error updating ticket status:", error);
+    }
+    setModalOpen(null);
+  };
+
+  // 🔹 Create a new ticket
+  const handleCreateTicket = async () => {
+    if (newTicket.title.trim() === "" || newTicket.email.trim() === "") return;
+    
+    try {
+      const res = await fetch("/api/ticketService/ticket", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: newTicket.email,
+          subject: newTicket.title,
+          message: newTicket.description,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setTickets((prev) => ({
+          ...prev,
+          Open: [...prev.Open, data.ticket],
+        }));
+        setNewTicket({ title: "", description: "", email: "" });
+        toast.success("Ticket Created!");
+        setCreateModalOpen(false);
+      }
+    } catch (error) {
+      toast.error("Failed to Created!");
+      console.error("Error creating ticket:", error);
+    }
+  };
+
+  const allTickets = Object.values(tickets).flat();
+  const displayedTickets = activeTab === "All" ? allTickets : tickets[activeTab];
+
+  const chartData = Object.keys(tickets).map((status) => ({
+    name: status,
+    count: tickets[status].length,
+  }));
+
   return (
-    <div className="min-h-screen bg-gradient-to-r from-blue-500 to-purple-500 flex flex-col justify-center items-center text-white">
-      <motion.div
-        className="w-full max-w-7xl px-8 py-12 text-center"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1 }}
-      >
-        <motion.h1
-          className="text-5xl font-extrabold mb-6 flex justify-evenly py-2"
-          initial={{ y: -50 }}
-          animate={{ y: 0 }}
-          transition={{ duration: 1 }}
+    <div className="p-6 bg-gradient-to-r from-blue-500 to-purple-500 min-h-screen text-white">
+      <Toaster richColors={true} position="bottom-right" visibleToasts={1}/>
+      <h1 className="text-2xl font-bold mb-4">Dashboard & Ticket Overview</h1>
+
+      {/* Tabs */}
+      <div className="flex gap-4 mb-4">
+        <button
+          className={`px-4 py-2 rounded-md ${activeTab === "All" ? "bg-white text-black" : "bg-gray-300 text-black"}`}
+          onClick={() => setActiveTab("All")}
         >
-          CRM Dashboard
-        </motion.h1>
-        <motion.p
-          className="text-xl mb-8"
-          initial={{ y: 50 }}
-          animate={{ y: 0 }}
-          transition={{ duration: 1 }}
-        >
-          Streamline Sales processes, manage sales insights, and access crucial services all in one place.
-        </motion.p>
-
-        {/* HR Categories */}
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 cursor-pointer"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1.5 }}
-        >
-          <motion.div
-            className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
-            whileHover={{ scale: 1.05 }}
+          All ({allTickets.length})
+        </button>
+        {Object.keys(tickets).map((tab) => (
+          <button
+            key={tab}
+            className={`px-4 py-2 rounded-md ${activeTab === tab ? "bg-white text-black" : "bg-gray-300 text-black"}`}
+            onClick={() => setActiveTab(tab)}
           >
-            <h2 className="text-2xl font-semibold mb-4">Dashboard</h2>
-            <p>Provides insights into sales performance and revenue trends.</p>
-            <Link
-              href="/crm/dashboard"
-              className="mt-4 inline-block text-blue-500 hover:text-blue-700 transition"
-            >
-              Dashboard &rarr;
-            </Link>
-          </motion.div>
+            {tab} ({tickets[tab].length})
+          </button>
+        ))}
+         <button className="px-4 py-2 bg-gray-300 rounded-md text-black" onClick={() => route.push('/crm/reminder')}>Pending</button>
+      </div>
 
-          <motion.div
-            className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
-            whileHover={{ scale: 1.05 }}
-          >
-            <h2 className="text-2xl font-semibold mb-4">Lead & Client Relationship Management</h2>
-            <p>Stores and manages leads and customer data.</p>
-            <Link
-              href="/sales/lead"
-              className="mt-4 inline-block text-blue-500 hover:text-blue-700 transition"
-            >
-             Lead & Client &rarr;
-            </Link>
-          </motion.div>
+      {/* Create Ticket Button */}
+      <button className="bg-green-500 text-white px-4 py-2 rounded-md mb-4" onClick={() => setCreateModalOpen(true)}>
+        Create Ticket
+      </button>
 
-          <motion.div
-            className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
-            whileHover={{ scale: 1.05 }}
+      {/* Tickets List */}
+      <ul className="border p-4 rounded-md bg-gray-100 text-black">
+        {displayedTickets.map((ticket) => (
+          <li
+            key={ticket._id}
+            className="p-2 bg-white mb-2 shadow rounded-md cursor-pointer"
+            onClick={() => setModalOpen(ticket)}
           >
-            <h2 className="text-2xl font-semibold mb-4">Sales Pipeline & Deal Documentation</h2>
-            <p>Tracks and structures Deal progress.</p>
-            <Link
-              href="/sales/pipeline-devlopment"
-              className="mt-4 inline-block text-blue-500 hover:text-blue-700 transition"
-            >
-              Pipeline & Deal Documentation &rarr;
-            </Link>
-          </motion.div>
+            <p className="font-bold">{ticket.subject}</p>
+            <p className="text-sm text-gray-600 truncate">{ticket.message || "No description"}</p>
+          </li>
+        ))}
+      </ul>
 
-          {/* Payroll & Benefits */}
-          <motion.div
-            className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
-            whileHover={{ scale: 1.05 }}
-          >
-            <h2 className="text-2xl font-semibold mb-4">Product & Pricing Documentation</h2>
-            <p>Stores fintech product details and pricing strategies.</p>
-            <Link
-              href="/sales/pricing-documentation"
-              className="mt-4 inline-block text-blue-500 hover:text-blue-700 transition"
-            >
-              Pricing Documentation &rarr;
-            </Link>
-          </motion.div>
+      {/* Chart */}
+      <div className="mt-6 bg-white p-4 rounded-md">
+        <h2 className="text-lg font-bold mb-2 text-black">Trends & Analytics</h2>
+        <ResponsiveContainer width="100%" height={250}>
+          <BarChart data={chartData}>
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="count" fill="#3b82f6" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
 
-          <motion.div
-            className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
-            whileHover={{ scale: 1.05 }}
-          >
-            <h2 className="text-2xl font-semibold mb-4">Payment & Revenue Tracking</h2>
-            <p>Documents sales-related payments and financial records.</p>
-            <Link
-              href="/sales/payment-revenue"
-              className="mt-4 inline-block text-blue-500 hover:text-blue-700 transition"
-            >
-              Payment & Revenue &rarr;
-            </Link>
-          </motion.div>
+      {/* Ticket Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-md text-black w-2/4">
+            <h3 className="text-xl font-bold mb-2">Subject: {isModalOpen.subject}</h3>
+            <p className="text-gray-700">Desc: {isModalOpen.message || "No description available."}</p>
+            <p className="text-gray-700">Status: {isModalOpen.status}</p>
 
-          <motion.div
-            className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
-            whileHover={{ scale: 1.05 }}
-          >
-            <h2 className="text-2xl font-semibold mb-4">Performance & Compliance Monitoring</h2>
-            <p>Ensures compliance with fintech regulations and sales efficiency</p>
-            <Link
-              href="/sales/performance-compliance"
-              className="mt-4 inline-block text-blue-500 hover:text-blue-700 transition"
-            >
-              Compliance Monitoring &rarr;
-            </Link>
-          </motion.div>
+            {activeTab !== "All" && activeTab !== "Resolved" && activeTab !== "Closed" && (
+              <>
+                <p className="mt-4">Move Ticket:</p>
+                <div className="flex gap-2 mt-2">
+                  {Object.keys(tickets).map(
+                    (tab) =>
+                      tab !== activeTab && (
+                        <button
+                          key={tab}
+                          className="bg-gray-300 px-2 py-1 rounded-md"
+                          onClick={() => handleMoveTicket(isModalOpen, activeTab, tab)}
+                        >
+                          Move to {tab}
+                        </button>
+                      )
+                  )}
 
-          <motion.div
-            className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
-            whileHover={{ scale: 1.05 }}
-          >
-            <h2 className="text-2xl font-semibold mb-4">Sales Strategy & Insights Repository</h2>
-            <p>Stores resources to improve sales approaches</p>
-            <Link
-              href="/sales/strategy-insights"
-              className="mt-4 inline-block text-blue-500 hover:text-blue-700 transition"
-            >
-              Insights Repository &rarr;
-            </Link>
-          </motion.div>
-        </motion.div>
+                </div>
+              </>
+            )}
 
-        {/* Button Section */}
-        <motion.div
-          className="mt-12 flex flex-col items-center gap-5"
-          initial={{ y: 50 }}
-          animate={{ y: 0 }}
-          transition={{ duration: 1 }}
-        >
-          <Link
-            href="/sales/data-entry"
-            className="bg-pink-500 text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-pink-600 transition"
-          >
-            Data Entry
-          </Link>
-        </motion.div>
-      </motion.div>
+            <button className="mt-4 bg-red-500 text-white px-4 py-2 rounded-md" onClick={() => setModalOpen(null)}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Create Ticket Modal */}
+      {isCreateModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-md text-black w-96">
+            <h3 className="text-xl font-bold mb-2">Create New Ticket</h3>
+            <input
+              type="email"
+              className="border p-2 w-full mb-2"
+              placeholder="Enter your email"
+              value={newTicket.email}
+              onChange={(e) => setNewTicket({ ...newTicket, email: e.target.value })}
+            />
+            <input
+              type="text"
+              className="border p-2 w-full mb-2"
+              placeholder="Enter ticket subject"
+              value={newTicket.title}
+              onChange={(e) => setNewTicket({ ...newTicket, title: e.target.value })}
+            />
+            <textarea
+              className="border p-2 w-full mb-2"
+              placeholder="Enter ticket description"
+              rows="3"
+              value={newTicket.description}
+              onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
+            />
+            <button className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2" onClick={handleCreateTicket}>
+              Create
+            </button>
+            <button className="bg-gray-300 px-4 py-2 rounded-md" onClick={() => setCreateModalOpen(false)}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
-};
-
-export default Page;
+}

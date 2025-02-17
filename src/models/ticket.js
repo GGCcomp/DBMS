@@ -7,7 +7,8 @@ const ticketSchema = new mongoose.Schema(
     message: { type: String, required: true },
     status: { type: String, enum: ["Open", "In Progress", "Unresolved" ,"Resolved", "Closed"], default: "Open" }, // Added enum for consistency
   },
-  { timestamps: true }
+  { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } }
 );
 
 export const Ticket = mongoose.models.Ticket || mongoose.model("Ticket", ticketSchema);
+
