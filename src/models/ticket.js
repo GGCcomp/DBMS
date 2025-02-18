@@ -28,3 +28,15 @@ const vendorTicketSchema = new mongoose.Schema({
 
 export const VendorTicket =  mongoose.models.VendorTicket || mongoose.model("VendorTicket", vendorTicketSchema);
 
+
+const contactSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, unique: true, sparse: true },
+  phone: { type: String },
+  type: { type: String, enum: ["customer", "vendor", "partner", "employee"], required: true },
+  isFavorite: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now },
+});
+
+export const Contact =  mongoose.models.Contact || mongoose.model("Contact", contactSchema);
+
