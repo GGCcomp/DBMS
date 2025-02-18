@@ -12,3 +12,19 @@ const ticketSchema = new mongoose.Schema(
 
 export const Ticket = mongoose.models.Ticket || mongoose.model("Ticket", ticketSchema);
 
+//Vendor's tickets
+const vendorTicketSchema = new mongoose.Schema({
+  subject: String,
+  vendorEmail: String,
+  status: { type: String, enum: ["open", "pending", "resolved"], default: "open" },
+  messages: [
+    {
+      sender: String, 
+      content: String,
+      timestamp: { type: Date, default: Date.now },
+    },
+  ],
+}, { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } });
+
+export const VendorTicket =  mongoose.models.VendorTicket || mongoose.model("VendorTicket", vendorTicketSchema);
+
