@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 
-export default function TicketsPage() {
+export default function Page() {
     const [tickets, setTickets] = useState([]);
 
     useEffect(() => {

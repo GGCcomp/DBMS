@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 
-export default function ContactTable() {
+export default function Page() {
   const [contacts, setContacts] = useState([]);
   const [search, setSearch] = useState("");
   const [newContact, setNewContact] = useState({ name: "", email: "", phone: "", type: "customer" });

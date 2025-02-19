@@ -15,8 +15,20 @@ export default function Page() {
   });
   const [activeTab, setActiveTab] = useState("All");
   const [isModalOpen, setModalOpen] = useState(null);
-  const [newTicket, setNewTicket] = useState({ title: "", description: "", email: "" });
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+  const [newTicket, setNewTicket] = useState({
+    email: "",
+    subject: "",
+    source: "",
+    priority: "",
+    group: "",
+    agent: "",
+    product: "",
+    message: "",
+    reference: "",
+    tags: [],
+    lastInteraction: new Date().toISOString(),
+  });
 
   // 🔹 Fetch tickets from the backend
   useEffect(() => {
@@ -69,18 +81,29 @@ export default function Page() {
     setModalOpen(null);
   };
 
+  const handleTagChange = (e) => {
+    setNewTicket({ ...newTicket, tags: e.target.value.split(",") });
+  };
+
   // 🔹 Create a new ticket
   const handleCreateTicket = async () => {
-    if (newTicket.title.trim() === "" || newTicket.email.trim() === "") return;
-    
+    if (newTicket.subject.trim() === "" || newTicket.email.trim() === "") return;
+
     try {
       const res = await fetch("/api/ticketService/ticket", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: newTicket.email,
-          subject: newTicket.title,
-          message: newTicket.description,
+          subject: newTicket.subject,
+          source: newTicket.source,
+          priority: newTicket.priority,
+          group: newTicket.group,
+          agent: newTicket.agent,
+          product: newTicket.product,
+          message: newTicket.message,
+          reference: newTicket.reference,
+          tags: newTicket.tags,
         }),
       });
 
@@ -90,7 +113,18 @@ export default function Page() {
           ...prev,
           Open: [...prev.Open, data.ticket],
         }));
-        setNewTicket({ title: "", description: "", email: "" });
+        setNewTicket({
+          email: "", subject: "",
+          source: "",
+          priority: "",
+          group: "",
+          agent: "",
+          product: "",
+          message: "",
+          reference: "",
+          tags: [],
+          lastInteraction: new Date().toISOString()
+        });
         toast.success("Ticket Created!");
         setCreateModalOpen(false);
       }
@@ -110,7 +144,7 @@ export default function Page() {
 
   return (
     <div className="p-6 bg-gradient-to-r from-blue-500 to-purple-500 min-h-screen text-white">
-      <Toaster richColors={true} position="bottom-right" visibleToasts={1}/>
+      <Toaster richColors={true} position="bottom-right" visibleToasts={1} />
       <h1 className="text-2xl font-bold mb-4">Dashboard & Ticket Overview</h1>
 
       {/* Tabs */}
@@ -130,15 +164,17 @@ export default function Page() {
             {tab} ({tickets[tab].length})
           </button>
         ))}
-         <button className="px-4 py-2 bg-gray-300 rounded-md text-black" onClick={() => route.push('/crm/reminder')}>Pending</button>
-         <button className="px-4 py-2 bg-gray-300 rounded-md text-black" onClick={() => route.push('/crm/vendor')}>Vendor</button>
-         <button className="px-4 py-2 bg-gray-300 rounded-md text-black" onClick={() => route.push('/crm/contacts')}>Contacts</button>
+
       </div>
 
       {/* Create Ticket Button */}
-      <button className="bg-green-500 text-white px-4 py-2 rounded-md mb-4" onClick={() => setCreateModalOpen(true)}>
-        Create Ticket
-      </button>
+      <div className="flex gap-3">
+        <button className="bg-green-500 text-white px-4 py-2 rounded-md mb-4" onClick={() => setCreateModalOpen(true)}>Create Ticket</button>
+        <button className="px-4 py-2 bg-gray-300 rounded-md text-black mb-4" onClick={() => route.push('/crm/reminder')}>Pending</button>
+        <button className="px-4 py-2 bg-gray-300 rounded-md text-black mb-4" onClick={() => route.push('/crm/vendor')}>Vendor</button>
+        <button className="px-4 py-2 bg-gray-300 rounded-md text-black mb-4" onClick={() => route.push('/crm/contacts')}>Contacts</button>
+        <button className="px-4 py-2 bg-gray-300 rounded-md text-black mb-4" onClick={() => route.push('/crm/thread')}>Threads</button>
+      </div>
 
       {/* Tickets List */}
       <ul className="border p-4 rounded-md bg-gray-100 text-black">
@@ -174,6 +210,9 @@ export default function Page() {
             <h3 className="text-xl font-bold mb-2">Subject: {isModalOpen.subject}</h3>
             <p className="text-gray-700">Desc: {isModalOpen.message || "No description available."}</p>
             <p className="text-gray-700">Status: {isModalOpen.status}</p>
+            <p className="text-gray-700">Agent: {isModalOpen.agent}</p>
+            <p className="text-gray-700">Priority: {isModalOpen.priority}</p>
+            <p className="text-gray-700">Product: {isModalOpen.product}</p>
 
             {activeTab !== "All" && activeTab !== "Resolved" && activeTab !== "Closed" && (
               <>
@@ -205,36 +244,148 @@ export default function Page() {
 
       {/* Create Ticket Modal */}
       {isCreateModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-md text-black w-96">
-            <h3 className="text-xl font-bold mb-2">Create New Ticket</h3>
-            <input
-              type="email"
-              className="border p-2 w-full mb-2"
-              placeholder="Enter your email"
-              value={newTicket.email}
-              onChange={(e) => setNewTicket({ ...newTicket, email: e.target.value })}
-            />
-            <input
-              type="text"
-              className="border p-2 w-full mb-2"
-              placeholder="Enter ticket subject"
-              value={newTicket.title}
-              onChange={(e) => setNewTicket({ ...newTicket, title: e.target.value })}
-            />
-            <textarea
-              className="border p-2 w-full mb-2"
-              placeholder="Enter ticket description"
-              rows="3"
-              value={newTicket.description}
-              onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
-            />
-            <button className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2" onClick={handleCreateTicket}>
-              Create
-            </button>
-            <button className="bg-gray-300 px-4 py-2 rounded-md" onClick={() => setCreateModalOpen(false)}>
-              Cancel
-            </button>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 ">
+          <div className="bg-white p-6 rounded-lg text-black w-2/4 shadow-lg h-[85vh] overflow-y-scroll">
+            <h3 className="text-2xl font-bold mb-4 text-center">Create New Ticket</h3>
+
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Email</label>
+                <input
+                  type="email"
+                  className="border rounded-md p-2 w-full"
+                  placeholder="Enter email"
+                  value={newTicket.email}
+                  onChange={(e) => setNewTicket({ ...newTicket, email: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Subject</label>
+                <input
+                  type="text"
+                  className="border rounded-md p-2 w-full"
+                  placeholder="Enter ticket subject"
+                  value={newTicket.subject}
+                  onChange={(e) => setNewTicket({ ...newTicket, subject: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Source</label>
+                <input
+                  type="text"
+                  className="border rounded-md p-2 w-full"
+                  placeholder="Enter source (Email, Chat, Phone)"
+                  value={newTicket.source}
+                  onChange={(e) => setNewTicket({ ...newTicket, source: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Priority</label>
+                <select
+                  className="border rounded-md p-2 w-full"
+                  value={newTicket.priority}
+                  onChange={(e) => setNewTicket({ ...newTicket, priority: e.target.value })}
+                >
+                  <option value="">Select Priority</option>
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
+                  <option value="Critical">Critical</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Group</label>
+                  <input
+                    type="text"
+                    className="border rounded-md p-2 w-full"
+                    placeholder="Enter group name"
+                    value={newTicket.group}
+                    onChange={(e) => setNewTicket({ ...newTicket, group: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Assign to Agent</label>
+                  <input
+                    type="text"
+                    className="border rounded-md p-2 w-full"
+                    placeholder="Assign to agent"
+                    value={newTicket.agent}
+                    onChange={(e) => setNewTicket({ ...newTicket, agent: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Product</label>
+                <input
+                  type="text"
+                  className="border rounded-md p-2 w-full"
+                  placeholder="Enter product name"
+                  value={newTicket.product}
+                  onChange={(e) => setNewTicket({ ...newTicket, product: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Description</label>
+                <textarea
+                  className="border rounded-md p-2 w-full"
+                  placeholder="Enter ticket description"
+                  rows="4"
+                  value={newTicket.message}
+                  onChange={(e) => setNewTicket({ ...newTicket, message: e.target.value })}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Reference</label>
+                  <input
+                    type="text"
+                    className="border rounded-md p-2 w-full"
+                    placeholder="Enter reference (if any)"
+                    value={newTicket.reference}
+                    onChange={(e) => setNewTicket({ ...newTicket, reference: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Tags</label>
+                  <input
+                    type="text"
+                    className="border rounded-md p-2 w-full"
+                    placeholder="Enter tags (comma-separated)"
+                    value={newTicket.tags.join(", ")}
+                    onChange={handleTagChange}
+                  />
+                </div>
+              </div>
+
+              <p className="text-sm text-gray-500 text-center">
+                Last Interaction: {new Date(newTicket.lastInteraction).toLocaleString()}
+              </p>
+
+              <div className="flex justify-between mt-4">
+                <button
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition w-full mr-2"
+                  onClick={handleCreateTicket}
+                >
+                  Create Ticket
+                </button>
+                <button
+                  className="bg-gray-400 text-white px-4 py-2 rounded-md hover:bg-gray-500 transition w-full"
+                  onClick={() => setCreateModalOpen(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

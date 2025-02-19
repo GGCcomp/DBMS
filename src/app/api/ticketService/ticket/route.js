@@ -20,14 +20,23 @@ export async function GET(req) {
 
 export async function POST(req) {
   await connectMongo();
-  const { email, subject, message } = await req.json();
+  const { email, subject, source,
+    priority,
+    group,
+    agent,product,message,reference, tags } = await req.json();
 
   const newTicket = await Ticket.create({
     email,
     subject,
+    source,
+    priority,
+    group,
+    agent,
+    product,
     message,
+    reference,
+    tags,
     status: "Open",
-    createdAt: new Date(),
   });
 
   // Auto-response

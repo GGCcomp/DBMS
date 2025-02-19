@@ -2,12 +2,20 @@ import mongoose from "mongoose";
 
 const ticketSchema = new mongoose.Schema(
   {
-    email: { type: String, required: true }, // Removed unique constraint
+    email: { type: String, required: true },
     subject: { type: String, required: true },
+    source: { type: String }, // e.g., Email, Chat, Phone
+    priority: { type: String, enum: ["Low", "Medium", "High", "Critical"], default: "Medium" }, // Priority levels
+    group: { type: String }, // Group assignment
+    agent: { type: String }, // Assigned agent
+    product: { type: String }, // Related product
     message: { type: String, required: true },
-    status: { type: String, enum: ["Open", "In Progress", "Unresolved" ,"Resolved", "Closed"], default: "Open" }, // Added enum for consistency
+    reference: { type: String }, // Reference ID
+    tags: { type: [String], default: [] }, // Custom tags
+    status: { type: String, enum: ["Open", "In Progress", "Unresolved", "Resolved", "Closed"], default: "Open" }, // Ticket status
+    lastInteraction: { type: Date, default: Date.now }, // Last interaction timestamp
   },
-  { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } }
+  { timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" } }
 );
 
 export const Ticket = mongoose.models.Ticket || mongoose.model("Ticket", ticketSchema);
