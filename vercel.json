@@ -4,7 +4,7 @@
         "runtime": "nodejs18.x"
       }
     },
-    "cron": [
+    "crons": [
       {
         "path": "/api/ticketService/reminder",
         "schedule": "0 9 * * *"

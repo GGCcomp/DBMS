@@ -11,7 +11,7 @@ export default function Page() {
   const [threadModal, setThreadModal] = useState(false);
   const [threadModalData, setThreadModalData] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [newThread, setNewThread] = useState({ userId: "user123", title: "", content: "", author: "", category: "Forum" });
+  const [newThread, setNewThread] = useState({ userId: "user123", title: "", content: "", author: "", category: "FAQs" });
   const [activeThread, setActiveThread] = useState(null); // For viewing comments
   const [newComment, setNewComment] = useState("");
 
@@ -184,8 +184,9 @@ export default function Page() {
               value={newThread.category}
               onChange={(e) => setNewThread({ ...newThread, category: e.target.value })}
             >
-              <option value="Forum">Forum</option>
-              <option value="KnowledgeBase">KnowledgeBase</option>
+              <option value="FAQs">FAQs</option>
+              <option value="Guides">Guides</option>
+              <option value="Policies">Policies</option>
             </select>
             <div className="flex justify-end">
               <button className="bg-gray-300 px-4 py-2 rounded-md mr-2" onClick={() => setShowModal(false)}>
@@ -223,11 +224,10 @@ export default function Page() {
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
               />
-              <button className="bg-blue-600 text-white px-4 py-2 mt-2 rounded-md" onClick={() => handleAddComment(activeThread._id)}>
+              <button className="bg-blue-600 text-white px-4 py-2 mt-2 rounded-md" onClick={() => {handleAddComment(activeThread._id)
+                setActiveThread(null)
+              }}>
                 Comment
-              </button>
-              <button className="bg-blue-600 ml-3 text-white px-4 py-2 mt-2 rounded-md" onClick={() => setActiveThread(null)}>
-                Close
               </button>
             </div>
           </motion.div>

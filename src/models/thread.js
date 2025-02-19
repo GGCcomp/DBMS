@@ -5,7 +5,7 @@ const threadSchema = new mongoose.Schema({
   title: { type: String, required: true },
   content: { type: String, required: true },
   author: String,
-  category: { type: String, enum: ["Forum", "KnowledgeBase"], required: true }, 
+  category: { type: String, enum: ["FAQs", "Guides", "Policies"], required: true }, 
   views: { type: Number, default: 0 },
   upvotes: { type: Number, default: 0 },
   downvotes: { type: Number, default: 0 },
