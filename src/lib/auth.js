@@ -35,6 +35,7 @@ export const authOptions = {
           return {
             email: result.email,
             name: result.name, // Ensure this is the correct field from your response
+            department: result.department,
             role: result.role,
           };
         } catch (error) {
@@ -46,11 +47,13 @@ export const authOptions = {
   ],
   callbacks: {
     async session({ session, token }) {
+      session.department = token.department;
       session.user.role = token.role; // Add the role to the session
       return session;
     },
     async jwt({ token, user }) {
       if (user) {
+        token.department = user.department
         token.role = user.role; // Store the role in the token
       }
       return token;

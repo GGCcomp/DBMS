@@ -13,6 +13,7 @@ function RegisterForm() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    department: '', 
     role: '',
     password: '',
     confirmPassword: '',
@@ -37,6 +38,7 @@ function RegisterForm() {
         setFormData((prev) => ({
           ...prev,
           email: data.email,
+          department: data.department,
           role: data.role,
         }));
       } catch (error) {
@@ -77,6 +79,7 @@ function RegisterForm() {
           name: formData.name,
           email: formData.email,
           password: formData.password,
+          department: formData.department,
           role: formData.role,
           token,
         }),
@@ -124,6 +127,17 @@ function RegisterForm() {
             placeholder="Enter your email"
             value={formData.email}
             onChange={handleChange}
+            readOnly
+          />
+        </div>
+        <div className="mb-4">
+          <label htmlFor="department" className="block mb-2">Department:</label>
+          <input
+            type="text"
+            name="department"
+            id="department"
+            className="w-full p-2 border rounded bg-gray-100"
+            value={formData.department}
             readOnly
           />
         </div>

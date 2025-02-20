@@ -6,8 +6,8 @@ import { NextResponse } from "next/server";
 
 export async function POST(request) {
   try {
-    const { email, role } = await request.json();
-    if (!email || !role) {
+    const { email, department, role } = await request.json();
+    if (!email || !role || !department) {
       return NextResponse.json({ error: "Email and role are required" }, { status: 400 });
     }
 
@@ -16,13 +16,13 @@ export async function POST(request) {
 
     // Generate a token (JWT)
     const token = jwt.sign(
-      { email, role },
+      { email, department, role },
       process.env.JWT_SECRET, // Use a secret key from your environment variables
       { expiresIn: "24h" } // Token valid for 24 hours
     );
 
     // Save the token in the database for added security (optional)
-    await Invitation.create({ email, role, token, expiryDate: new Date(Date.now() + 24 * 60 * 60 * 1000) });
+    await Invitation.create({ email, department, role, token, expiryDate: new Date(Date.now() + 24 * 60 * 60 * 1000) });
 
     // Configure Nodemailer transporter
     const transporter = nodemailer.createTransport({
@@ -42,7 +42,7 @@ export async function POST(request) {
       subject: "Invitation to Join",
       html: `
         <p>Hello, ${email}</p>
-        <p>You have been invited to join our platform as a <strong>${role}</strong> role.</p>
+        <p>You have been invited to join our platform as a <strong>${role}</strong> in <strong>${department}</strong> department.</p>
         <p>Please click the link below to complete your registration:</p>
         <a href="${process.env.NEXT_PUBLIC_HOST_URL}/register?token=${token}">Complete Registration</a>
         <p>This link will expire in 24 hours.</p>

@@ -30,58 +30,67 @@ export async function POST(req) {
 export async function PUT(req) {
     try {
         await connectMongo();
-        const { id, action, userId } = await req.json();
+        const { threadId, commentId, action, userId } = await req.json();
+        console.log(threadId, commentId, action, userId);
+        
 
-        if (!id || !userId) {
+        if (!threadId || !commentId || !userId) {
             return NextResponse.json({ error: "Invalid request" }, { status: 400 });
         }
 
-        const thread = await Thread.findById(id);
+        const thread = await Thread.findById(threadId);
         if (!thread) {
             return NextResponse.json({ error: "Thread not found" }, { status: 404 });
         }
 
-        let updateField = {};
+        const comment = thread.comments.find(c => c._id.toString() === commentId);
+        if (!comment) {
+            return NextResponse.json({ error: "Comment not found" }, { status: 404 });
+        }
+
+        let updateQuery = {};
 
         if (action === "upvote") {
-            if (thread.upvotedBy.includes(userId)) {
-                return NextResponse.json({ error: "You already upvoted this thread" }, { status: 400 });
+            if (comment.upvotedBy.includes(userId)) {
+                return NextResponse.json({ error: "You already upvoted this comment" }, { status: 400 });
             }
 
-            updateField = {
-                $inc: { upvotes: 1 },
-                $push: { upvotedBy: userId },
+            updateQuery = {
+                $inc: { "comments.$.upvotes": 1 },
+                $push: { "comments.$.upvotedBy": userId }
             };
 
-            if (thread.downvotedBy.includes(userId)) {
-                updateField.$inc.downvotes = -1; // Remove previous downvote
-                updateField.$pull = { downvotedBy: userId };
+            if (comment.downvotedBy.includes(userId)) {
+                updateQuery.$inc["comments.$.downvotes"] = -1;
+                updateQuery.$pull = { "comments.$.downvotedBy": userId };
             }
         } 
         else if (action === "downvote") {
-            if (thread.downvotedBy.includes(userId)) {
-                return NextResponse.json({ error: "You already downvoted this thread" }, { status: 400 });
+            if (comment.downvotedBy.includes(userId)) {
+                return NextResponse.json({ error: "You already downvoted this comment" }, { status: 400 });
             }
 
-            updateField = {
-                $inc: { downvotes: 1 },
-                $push: { downvotedBy: userId },
+            updateQuery = {
+                $inc: { "comments.$.downvotes": 1 },
+                $push: { "comments.$.downvotedBy": userId }
             };
 
-            if (thread.upvotedBy.includes(userId)) {
-                updateField.$inc.upvotes = -1; // Remove previous upvote
-                updateField.$pull = { upvotedBy: userId };
+            if (comment.upvotedBy.includes(userId)) {
+                updateQuery.$inc["comments.$.upvotes"] = -1;
+                updateQuery.$pull = { "comments.$.upvotedBy": userId };
             }
-        } 
-        else if (action === "view") {
-            updateField = { $inc: { views: 1 } };
         }
 
-        const updatedThread = await Thread.findByIdAndUpdate(id, updateField, { new: true, runValidators: true });
+        const updatedThread = await Thread.findOneAndUpdate(
+            { _id: threadId, "comments._id": commentId },
+            updateQuery,
+            { new: true, runValidators: true }
+        );
 
         return NextResponse.json({ message: "Updated successfully", thread: updatedThread, ok: true });
     } catch (error) {
-        console.error("Error updating thread:", error);
-        return NextResponse.json({ error: "Failed to update thread" }, { status: 500 });
+        console.error("Error updating comment:", error);
+        return NextResponse.json({ error: "Failed to update comment" }, { status: 500 });
     }
 }
+

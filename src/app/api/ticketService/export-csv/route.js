@@ -3,7 +3,7 @@ import puppeteer from "puppeteer";
 import connectMongo from "@/lib/db";
 import { Ticket } from "@/models/ticket";
 
-export const runtime = "nodejs"; // Ensure it runs in Node.js environment
+export const runtime = "nodejs"; 
 
 export async function GET() {
   try {

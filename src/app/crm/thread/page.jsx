@@ -35,27 +35,37 @@ export default function Page() {
   }, [threadModal, threadModalData]);
 
 
-  const handleVote = async (id, action) => {
-    const userId = "user123"; // Replace with actual user ID from authentication
+  const handleVote = async (threadId, commentId, action) => {
+    const userId = "user123";
 
     const res = await fetch("/api/thread", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, action, userId })
+      body: JSON.stringify({ threadId, commentId, action, userId })
     });
 
     const data = await res.json();
 
     if (res.ok) {
       setThreads((prev) =>
-        prev.map((t) => (t._id === id ? data.thread : t))
+        prev.map((thread) =>
+          thread._id === threadId
+            ? {
+              ...thread,
+              comments: thread.comments.map((comment) =>
+                comment._id === commentId ? data.updatedComment : comment
+              ),
+            }
+            : thread
+        )
       );
-      toast.success("Voted!")
+      toast.success("Voted!");
     } else {
       console.error("Error:", data.error);
-      toast.error(data.error); // Show error if the user has already voted
+      toast.error(data.error);
     }
   };
+
 
   const handleAddThread = async () => {
     if (!newThread.title || !newThread.content || !newThread.author) return;
@@ -119,18 +129,6 @@ export default function Page() {
               <p className="text-xs text-gray-400">By {thread.author || "Anonymous"} - {new Date(thread.createdAt).toLocaleDateString()}</p>
               <p className="text-sm text-gray-600 mt-2">{thread.content.substring(0, 100)}...</p>
               <div className="flex justify-between items-center mt-4 text-gray-700">
-                <button className="flex items-center" onClick={(e) => {
-                  e.stopPropagation();
-                  handleVote(thread._id, "upvote")
-                }}>
-                  <ThumbsUp className="w-5 h-5 mr-1" /> {thread.upvotes}
-                </button>
-                <button className="flex items-center" onClick={(e) => {
-                  e.stopPropagation();
-                  handleVote(thread._id, "downvote")
-                }}>
-                  <ThumbsDown className="w-5 h-5 mr-1" /> {thread.downvotes}
-                </button>
                 <span className="flex items-center text-gray-500">
                   <Eye className="w-5 h-5 mr-1" /> {thread.views}
                 </span>
@@ -192,6 +190,7 @@ export default function Page() {
               <option value="FAQs">FAQs</option>
               <option value="Guides">Guides</option>
               <option value="Policies">Policies</option>
+              <option value="Survey">Survey</option>
             </select>
             <div className="flex justify-end">
               <button className="bg-gray-300 px-4 py-2 rounded-md mr-2" onClick={() => setShowModal(false)}>
@@ -217,9 +216,34 @@ export default function Page() {
             <p className="text-sm text-gray-600 mb-4">{activeThread.content}</p>
             <div className="border-t pt-2">
               {activeThread.comments.map((c, i) => (
-                <div key={i} className="flex justify-between px-1 border-b-2 last-of-type:border-0">
-                  <p className="text-sm text-gray-700 mb-2">{c.content}</p>
-                  <span className="text-sm text-gray-700 mb-2">By: {c.author}</span>
+                <div
+                  key={i}
+                  className="flex flex-col gap-2 p-3 border-b last:border-b-0 bg-white shadow-sm rounded-lg"
+                >
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-gray-800">{c.content}</p>
+                    <span className="text-xs text-gray-500">By: {c.author}</span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <button
+                      className="flex items-center gap-1 text-gray-600 hover:text-blue-500 transition"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleVote(activeThread._id, c._id, "upvote");
+                      }}
+                    >
+                      <ThumbsUp className="w-5 h-5" /> {c.upvotes}
+                    </button>
+                    <button
+                      className="flex items-center gap-1 text-gray-600 hover:text-red-500 transition"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleVote(activeThread._id, c._id, "downvote");
+                      }}
+                    >
+                      <ThumbsDown className="w-5 h-5" /> {c.downvotes}
+                    </button>
+                  </div>
                 </div>
               ))}
               <input
