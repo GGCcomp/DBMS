@@ -23,6 +23,7 @@
     "next-auth": "^4.24.7",
     "node-imap": "^0.9.6",
     "nodemailer": "^6.9.16",
+    "puppeteer": "^24.2.1",
     "react": "^18",
     "react-data-grid": "^7.0.0-beta.47",
     "react-dom": "^18",

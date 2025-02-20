@@ -23,37 +23,39 @@ export default function Page() {
 
   useEffect(() => {
     if (threadModal && threadModalData?._id) {
-        const updateView = async () => {
-            await fetch(`/api/thread/${threadModalData._id}`, {
-                method: "PUT",
-            });
-        };
-        updateView();
+      const updateView = async () => {
+        await fetch(`/api/thread/${threadModalData._id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: 'user123' })
+        });
+      };
+      updateView();
     }
-}, [threadModal, threadModalData]);
+  }, [threadModal, threadModalData]);
 
 
   const handleVote = async (id, action) => {
     const userId = "user123"; // Replace with actual user ID from authentication
 
     const res = await fetch("/api/thread", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, action, userId })
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, action, userId })
     });
 
     const data = await res.json();
 
     if (res.ok) {
-        setThreads((prev) =>
-            prev.map((t) => (t._id === id ? data.thread : t))
-        );
-        toast.success("Voted!")
+      setThreads((prev) =>
+        prev.map((t) => (t._id === id ? data.thread : t))
+      );
+      toast.success("Voted!")
     } else {
-        console.error("Error:", data.error);
-        toast.error(data.error); // Show error if the user has already voted
+      console.error("Error:", data.error);
+      toast.error(data.error); // Show error if the user has already voted
     }
-};
+  };
 
   const handleAddThread = async () => {
     if (!newThread.title || !newThread.content || !newThread.author) return;
@@ -67,7 +69,7 @@ export default function Page() {
       if (success) {
         setThreads([{ ...newThread, _id: Date.now(), upvotes: 0, downvotes: 0, views: 0, comments: [] }, ...threads]);
         setShowModal(false);
-        setNewThread({ title: "", content: "", author: "", category: "Forum"  });
+        setNewThread({ title: "", content: "", author: "", category: "Forum" });
       }
     }
   };
@@ -94,8 +96,8 @@ export default function Page() {
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Forum & Knowledge Base</h1>
-        <Toaster richColors={true} position="bottom-right" visibleToasts={1} />
-        {threadModal && <ThreadModal thread={threadModalData} onClose={()=> setThreadModal(false)}/>}
+      <Toaster richColors={true} position="bottom-right" visibleToasts={1} />
+      {threadModal && <ThreadModal thread={threadModalData} onClose={() => setThreadModal(false)} />}
       {threads.length === 0 ? (
         <div className="text-center text-gray-500">
           <p>No Threads Available</p>
@@ -118,21 +120,24 @@ export default function Page() {
               <p className="text-sm text-gray-600 mt-2">{thread.content.substring(0, 100)}...</p>
               <div className="flex justify-between items-center mt-4 text-gray-700">
                 <button className="flex items-center" onClick={(e) => {
-                    e.stopPropagation();
-                    handleVote(thread._id, "upvote")}}>
+                  e.stopPropagation();
+                  handleVote(thread._id, "upvote")
+                }}>
                   <ThumbsUp className="w-5 h-5 mr-1" /> {thread.upvotes}
                 </button>
                 <button className="flex items-center" onClick={(e) => {
-                    e.stopPropagation();
-                    handleVote(thread._id, "downvote")}}>
+                  e.stopPropagation();
+                  handleVote(thread._id, "downvote")
+                }}>
                   <ThumbsDown className="w-5 h-5 mr-1" /> {thread.downvotes}
                 </button>
                 <span className="flex items-center text-gray-500">
                   <Eye className="w-5 h-5 mr-1" /> {thread.views}
                 </span>
                 <button className="flex items-center" onClick={(e) => {
-                    e.stopPropagation();
-                    setActiveThread(thread)}}>
+                  e.stopPropagation();
+                  setActiveThread(thread)
+                }}>
                   <MessageSquare className="w-5 h-5 mr-1" /> {thread.comments.length}
                 </button>
               </div>
@@ -213,8 +218,8 @@ export default function Page() {
             <div className="border-t pt-2">
               {activeThread.comments.map((c, i) => (
                 <div key={i} className="flex justify-between px-1 border-b-2 last-of-type:border-0">
-                    <p  className="text-sm text-gray-700 mb-2">{c.content}</p>
-                    <span className="text-sm text-gray-700 mb-2">By: {c.author}</span>
+                  <p className="text-sm text-gray-700 mb-2">{c.content}</p>
+                  <span className="text-sm text-gray-700 mb-2">By: {c.author}</span>
                 </div>
               ))}
               <input
@@ -224,7 +229,8 @@ export default function Page() {
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
               />
-              <button className="bg-blue-600 text-white px-4 py-2 mt-2 rounded-md" onClick={() => {handleAddComment(activeThread._id)
+              <button className="bg-blue-600 text-white px-4 py-2 mt-2 rounded-md" onClick={() => {
+                handleAddComment(activeThread._id)
                 setActiveThread(null)
               }}>
                 Comment

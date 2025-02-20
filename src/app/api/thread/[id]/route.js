@@ -26,12 +26,25 @@ export async function POST(req, { params }) {
         return NextResponse.json({ error: "Failed to add comment" }, { status: 500 });
     }
 }
+
 export async function PUT(req, { params }) {
     try {
         await connectMongo();
         const { id } = params;
+        const { userId } = await req.json();
         
-        await Thread.findByIdAndUpdate(id, { $inc: { views: 1 } });
+        const thread = await Thread.findById(id);
+        if (!thread) {
+            return NextResponse.json({ message: "Thread not found!" }, { status: 404 });
+        }
+
+        if(thread.viewedBy.includes(userId)){
+            return NextResponse.json({message: 'User already viewed this!'})
+        }
+
+        thread.views += 1;
+        thread.viewedBy.push(userId);
+        await thread.save();
 
         return NextResponse.json({ success: true });
     } catch (err) {

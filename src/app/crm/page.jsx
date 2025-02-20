@@ -13,6 +13,7 @@ export default function Page() {
     "In Progress": [],
     Closed: []
   });
+  const [agents, setAgents] = useState(null);
   const [activeTab, setActiveTab] = useState("All");
   const [isModalOpen, setModalOpen] = useState(null);
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
@@ -29,6 +30,17 @@ export default function Page() {
     tags: [],
     lastInteraction: new Date().toISOString(),
   });
+
+  useEffect(() => {
+    const getAgents = async () => {
+      let res = await fetch('/api/ticketService/agents')
+      res = await res.json();
+      if (res.ok) {
+        setAgents(res.agents)
+      }
+    }
+    getAgents();
+  }, [])
 
   // 🔹 Fetch tickets from the backend
   useEffect(() => {
@@ -70,6 +82,7 @@ export default function Page() {
         setTickets((prev) => {
           const updatedFrom = prev[fromTab].filter((t) => t._id !== ticket._id);
           const updatedTo = [...prev[toTab], data.ticket];
+
           toast.success("Ticket Status Updated!");
           return { ...prev, [fromTab]: updatedFrom, [toTab]: updatedTo };
         });
@@ -99,7 +112,7 @@ export default function Page() {
           source: newTicket.source,
           priority: newTicket.priority,
           group: newTicket.group,
-          agent: newTicket.agent,
+          agentId: newTicket.agent,
           product: newTicket.product,
           message: newTicket.message,
           reference: newTicket.reference,
@@ -174,6 +187,7 @@ export default function Page() {
         <button className="px-4 py-2 bg-gray-300 rounded-md text-black mb-4" onClick={() => route.push('/crm/vendor')}>Vendor</button>
         <button className="px-4 py-2 bg-gray-300 rounded-md text-black mb-4" onClick={() => route.push('/crm/contacts')}>Contacts</button>
         <button className="px-4 py-2 bg-gray-300 rounded-md text-black mb-4" onClick={() => route.push('/crm/thread')}>Threads</button>
+        <button className="px-4 py-2 bg-gray-300 rounded-md text-black mb-4" onClick={() => route.push('/crm/ticket/insights')}>Insights</button>
       </div>
 
       {/* Tickets List */}
@@ -210,17 +224,19 @@ export default function Page() {
             <h3 className="text-xl font-bold mb-2">Subject: {isModalOpen.subject}</h3>
             <p className="text-gray-700">Desc: {isModalOpen.message || "No description available."}</p>
             <p className="text-gray-700">Status: {isModalOpen.status}</p>
-            <p className="text-gray-700">Agent: {isModalOpen.agent}</p>
+            <p className="text-gray-700">Agent: {isModalOpen.agentId.name}</p>
             <p className="text-gray-700">Priority: {isModalOpen.priority}</p>
             <p className="text-gray-700">Product: {isModalOpen.product}</p>
 
-            {activeTab !== "All" && activeTab !== "Resolved" && activeTab !== "Closed" && (
+            {activeTab !== "All" && activeTab !== "Closed" && (
               <>
                 <p className="mt-4">Move Ticket:</p>
                 <div className="flex gap-2 mt-2">
-                  {Object.keys(tickets).map(
-                    (tab) =>
-                      tab !== activeTab && (
+                  {Object.keys(tickets).map((tab) => {
+                    if (tab !== activeTab) {
+                      if (tab === "Closed" && isModalOpen.status !== "Resolved") return null;
+
+                      return (
                         <button
                           key={tab}
                           className="bg-gray-300 px-2 py-1 rounded-md"
@@ -228,9 +244,10 @@ export default function Page() {
                         >
                           Move to {tab}
                         </button>
-                      )
-                  )}
-
+                      );
+                    }
+                    return null;
+                  })}
                 </div>
               </>
             )}
@@ -311,13 +328,11 @@ export default function Page() {
 
                 <div>
                   <label className="block text-sm font-medium mb-1">Assign to Agent</label>
-                  <input
-                    type="text"
-                    className="border rounded-md p-2 w-full"
-                    placeholder="Assign to agent"
-                    value={newTicket.agent}
-                    onChange={(e) => setNewTicket({ ...newTicket, agent: e.target.value })}
-                  />
+                  <select value={newTicket.agent} onChange={(e) => setNewTicket({ ...newTicket, agent: e.target.value })}
+                    className="border rounded-md p-2 w-full">
+                    <option value="">Select an agent</option>
+                    {agents && agents.map((agent, i) => <option key={i} value={agent._id}>{agent.name}</option>)}
+                  </select>
                 </div>
               </div>
 

@@ -19,6 +19,7 @@ const threadSchema = new mongoose.Schema({
   ],
   upvotedBy: [{ type: String }],
   downvotedBy: [{ type: String }],
+  viewedBy: [{ type: String }]
 });
 
 export const Thread =  mongoose.models.Thread || mongoose.model("Thread", threadSchema);

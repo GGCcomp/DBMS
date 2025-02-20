@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import sendEmail from "@/lib/email";
 import connectMongo from "@/lib/db";
-import {Ticket} from "@/models/ticket";
+import {Ticket, Agent} from "@/models/ticket";
 
 export async function GET(req) {
     await connectMongo();
@@ -12,7 +12,7 @@ export async function GET(req) {
     if (email) {
       tickets = await Ticket.find({ email });
     } else {
-      tickets = await Ticket.find({});
+      tickets = await Ticket.find({}).populate('agentId');
     }
   
     return NextResponse.json({ success: true, tickets });
@@ -23,7 +23,7 @@ export async function POST(req) {
   const { email, subject, source,
     priority,
     group,
-    agent,product,message,reference, tags } = await req.json();
+    agentId,product,message,reference, tags } = await req.json();
 
   const newTicket = await Ticket.create({
     email,
@@ -31,7 +31,7 @@ export async function POST(req) {
     source,
     priority,
     group,
-    agent,
+    agentId,
     product,
     message,
     reference,
@@ -39,6 +39,7 @@ export async function POST(req) {
     status: "Open",
   });
 
+  await Agent.findByIdAndUpdate(agentId, { $inc: { ticketsAssigned: 1 } }, { new: true });
   // Auto-response
   await sendEmail(email, "Ticket Received", `We received your request: "${subject}". Our team will respond soon.`);
 
@@ -47,17 +48,29 @@ export async function POST(req) {
 
 
 export async function PUT(req) {
-    await connectMongo();;
-    const { ticketId, newStatus } = await req.json();
-  
-    const ticket = await Ticket.findById(ticketId);
-    if (!ticket) return NextResponse.json({ success: false, error: "Ticket not found" });
-  
-    ticket.status = newStatus;
-    await ticket.save();
-  
-    // Send status update email
-    await sendEmail(ticket.email, "Ticket Status Update", `Your ticket status is now: ${newStatus}`);
-  
-    return NextResponse.json({ success: true, ticket });
+  await connectMongo();
+  const { ticketId, newStatus } = await req.json();
+
+  const ticket = await Ticket.findById(ticketId);
+  if (!ticket) {
+    return NextResponse.json({ success: false, error: "Ticket not found" });
   }
+
+  ticket.status = newStatus;
+
+  if (newStatus === "Closed") {
+    ticket.closedAt = new Date();
+  }
+
+  if (newStatus === "Resolved" && ticket.agentId) {
+    await Agent.findByIdAndUpdate(ticket.agentId, { $inc: { ticketsResolved: 1 } }, { new: true });
+  }
+
+  await ticket.save();
+
+  if (ticket.email) {
+    await sendEmail(ticket.email, "Ticket Status Update", `Your ticket status is now: ${newStatus}`);
+  }
+
+  return NextResponse.json({ success: true, ticket });
+}
