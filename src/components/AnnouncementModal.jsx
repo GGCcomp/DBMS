@@ -5,9 +5,12 @@ function AnnouncementModal({ onClose, data }) {
     <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center z-50">
       <div className="bg-white rounded-lg w-full max-w-md p-8 shadow-lg transition-all transform scale-100">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-xl font-semibold text-center text-gray-800">
-            Announcement from <strong>{data.name}</strong>
+          <h1>
+            Department <strong>{data.department.toUpperCase()}</strong>
           </h1>
+          <h2 className="text-xl font-semibold text-center text-gray-800">
+            Announcement from <strong>{data.name}</strong>
+          </h2>
         </div>
 
         <div className="space-y-4">

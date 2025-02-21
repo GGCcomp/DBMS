@@ -38,8 +38,8 @@ export default function Page() {
     }),
   };
 
-  const handleAnnData = (date, text, name, role) => {
-    setAnnData({date, text, name, role});
+  const handleAnnData = (date, text, name, department, role) => {
+    setAnnData({date, text, name, department, role});
     setOpenAnnModal(!openAnnModal);
   }
 
@@ -122,6 +122,7 @@ export default function Page() {
                   <tr>
                     <th className="px-4 py-2 text-left text-gray-700 border-b">Date</th>
                     <th className="px-4 py-2 text-left text-gray-700 border-b">Announcement</th>
+                    <th className="px-4 py-2 text-left text-gray-700 border-b">Department</th>
                     <th className="px-4 py-2 text-left text-gray-700 border-b">Creator</th>
                   </tr>
                 </thead>
@@ -133,8 +134,9 @@ export default function Page() {
                         announcement.text, announcement.creator, announcement.role )}>
                         <td className="px-4 py-2 w-2/12">{formattedDate.replace(/\//g, '-')}</td>
                         <td className="px-4 py-2 w-7/12">{announcement.text}</td>
+                        <td className="px-4 py-2 w-1/12">{announcement.department}</td>
                         <td className="px-4 py-2 w-3/12">
-                          {announcement.creator} ({announcement.role})
+                          {announcement.creator}
                         </td>
                       </tr>
                     );

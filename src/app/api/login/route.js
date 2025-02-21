@@ -23,7 +23,7 @@ export async function POST(request) {
         await user.save();
       }
   
-      return NextResponse.json({ email: user.email, name: user.name, role: user.role, ok: true }); // Ensure the response contains necessary fields
+      return NextResponse.json({ email: user.email, name: user.name, department: user.department, role: user.role, permission: user.permission, ok: true }); 
     } catch (e) {
       console.error("Error during authentication:", e.message);
       return NextResponse.json({ message: "Something went wrong!", error: e.message, ok: false }, { status: 500 });

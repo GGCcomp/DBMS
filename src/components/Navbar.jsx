@@ -1,7 +1,7 @@
 'use client';
 import { useState } from "react";
 import { useSession, signOut } from 'next-auth/react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import LeaveModal from "./LeaveModal";
 
@@ -9,6 +9,7 @@ function Navbar() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const { data: session } = useSession();
   const pathName = usePathname();
+  const router = useRouter();
   const [isLeaveModal, setIsLeaveModal] = useState(false);
 
   const openModal = () => setIsLeaveModal(true);
@@ -150,6 +151,12 @@ function Navbar() {
               className="bg-blue-800 w-full px-4 py-2 rounded shadow-lg mb-2"
               onClick={openModal}>
               Request Leave</button>}
+              {session.user.role === "admin" || session.user.role === 'Lead' && <button
+              className="bg-blue-800 w-full px-4 py-2 rounded shadow-lg mb-2"
+              onClick={() => router.push('/announcement')}>
+              Announcement</button>}
+
+
             <button
               className="bg-blue-800 w-full px-4 py-2 rounded shadow-lg"
               onClick={() => signOut()}

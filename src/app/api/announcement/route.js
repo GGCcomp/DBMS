@@ -26,9 +26,9 @@ export async function POST(request) {
         await announcement.save();
         return NextResponse.json({ message: "Annoucement Created!", announcement }, { status: 201 })
     } catch (err) {
-        console.error("Error creating announcement:", error);
+        console.error("Error creating announcement:", err);
         return NextResponse.json(
-            { message: "Failed to create announcement", error: error.message },
+            { message: "Failed to create announcement", error: err.message },
             { status: 500 }
         );
     }

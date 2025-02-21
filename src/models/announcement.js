@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 const AnnouncementSchema = new mongoose.Schema({
   text: { type: String, required: true },
+  department: {type: String, required: true},
   role: { type: String, required: true },
   date: { type: Date, required: true },
   creator: { type: String, default: false },

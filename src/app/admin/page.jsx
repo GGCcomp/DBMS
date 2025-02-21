@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useSession } from "next-auth/react";
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { FiSend } from 'react-icons/fi';
 import Modal from './Modal';
@@ -16,18 +15,13 @@ export default function AdminPanel() {
   const [department, setDepartment] = useState('');
   const [role, setRole] = useState('');
   const [inviteLoading, setInviteLoading] = useState(false);
-  const [announceLoading, setAnnounceLoading] = useState(false);
-  const [announcementText, setAnnouncementText] = useState('');
-  const [announcementDate, setAnnouncementDate] = useState('');
   const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalData, setModalData] = useState(null);
   const [modalType, setModalType] = useState('');
-  const { data: session } = useSession();
-
   const roles = ['Lead', 'Intern'];
-  const departments = ["Development", "Compliance", "CyberSecurity", "Marketing&Sales"]
+  const departments = ["Compliance", "CyberSecurity", "Development", "Human Resource","Marketing&Sales"]
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,7 +42,6 @@ export default function AdminPanel() {
 
     fetchData();
   }, []);
-
 
   const handleInvite = async () => {
     if (!email || !role) {
@@ -81,52 +74,13 @@ export default function AdminPanel() {
     }
   };
 
-  const handleAnnouncement = async () => {
-    if (!announcementText || !announcementDate) {
-      setError('All fields are required for announcements.');
-      return;
-    }
-
-    setError('');
-    setAnnounceLoading(true);
-    try {
-      const res = await fetch('/api/announcement', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: announcementText, role: session.user.role, date: announcementDate, creator: session.user.name }),
-      });
-
-      if (res.ok) {
-        let res = await fetch('/api/notifications/announcement', {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ title: "From Admin", body: 'A new annoucement is made!', link: 'http://localhost:3000/' })
-        });
-        res = await res.json();
-        if (res.ok) {
-          setAnnouncementText('');
-          setAnnouncementDate('');
-        }
-      } else {
-        setError('Failed to add announcement.');
-      }
-    } catch (error) {
-      console.error(error);
-      setError('Something went wrong.');
-    } finally {
-      setAnnounceLoading(false);
-    }
-  };
-
   const openModal = (title, data, type = '') => {
     setModalTitle(title);
     setModalData(data);
     setIsModalOpen(true);
     setModalType(type); // Add this state for type
-  };
-
+  };  
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-blue-500 to-purple-500 flex flex-col justify-center items-center text-white">
@@ -182,6 +136,30 @@ export default function AdminPanel() {
           >
             <Link href="/approvals">
               <h2 className="text-2xl font-bold mb-4">Approval Requests</h2>
+            </Link>
+          </motion.div>
+          <motion.div
+            className="bg-white rounded-lg p-6 shadow-lg text-gray-800 text-center hover:scale-105 transform transition-all duration-300"
+            whileHover={{ scale: 1.05 }}
+          >
+            <Link href="/crm">
+              <h2 className="text-2xl font-bold mb-4">CRM</h2>
+            </Link>
+          </motion.div>
+          <motion.div
+            className="bg-white rounded-lg p-6 shadow-lg text-gray-800 text-center hover:scale-105 transform transition-all duration-300"
+            whileHover={{ scale: 1.05 }}
+          >
+            <Link href="/crm/ticket/insights">
+              <h2 className="text-2xl font-bold mb-4">Ticket Insights</h2>
+            </Link>
+          </motion.div>
+          <motion.div
+            className="bg-white rounded-lg p-6 shadow-lg text-gray-800 text-center hover:scale-105 transform transition-all duration-300"
+            whileHover={{ scale: 1.05 }}
+          >
+            <Link href="/crm/thread">
+              <h2 className="text-2xl font-bold mb-4">Threads</h2>
             </Link>
           </motion.div>
         </motion.div>
@@ -241,42 +219,7 @@ export default function AdminPanel() {
             </button>
           </div>
         </motion.div>
-
-        {/* Announcements Section */}
-        <motion.div
-          className="bg-white rounded-lg p-6 shadow-lg text-gray-800"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1.5 }}
-        >
-          <h2 className="text-3xl font-bold mb-6">Create Announcement</h2>
-          <textarea
-            placeholder="Enter announcement text"
-            value={announcementText}
-            onChange={(e) => setAnnouncementText(e.target.value)}
-            className="w-full border px-4 py-3 rounded-lg mb-4 focus:ring focus:ring-blue-300"
-          ></textarea>
-          <div className="flex gap-4">
-            <input
-              type="date"
-              value={announcementDate}
-              onChange={(e) => setAnnouncementDate(e.target.value)}
-              className="border px-4 py-3 rounded-lg focus:ring focus:ring-blue-300"
-            />
-            <button
-              onClick={handleAnnouncement}
-              className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
-              disabled={announceLoading}
-            >
-              {announceLoading ? (
-                <AiOutlineLoading3Quarters className="animate-spin" />
-              ) : (
-                'Add Announcement'
-              )}
-            </button>
-          </div>
-        </motion.div>
-
+        
         {/* Modal */}
         <Modal
           isOpen={isModalOpen}

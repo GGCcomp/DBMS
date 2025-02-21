@@ -1,9 +1,34 @@
-import React from "react";
+import { useState } from "react";
 
 function Modal({ isOpen, onClose, title, data, type }) {
   if (!isOpen) return null;
-  console.log(data);
-  
+  const [users, setUsers] = useState(data);
+
+  //Toggle Permission
+  const togglePermission = async (userId, currentPermission) => {
+    try {
+      // Optimistic UI Update
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user._id === userId ? { ...user, permission: !currentPermission } : user
+        )
+      );
+
+      // Send update request to backend
+      const res = await fetch(`/api/users/${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ permission: !currentPermission }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update permission");
+    } catch (error) {
+      console.error("Error updating permission:", error);
+      // Revert UI if request fails
+      setUsers(data);
+    }
+  };
+
   // Function to handle approval/rejection actions
   const handleAction = async (action, item) => {
     const updatedApproval = action === "Approve" ? "approved" : "rejected";
@@ -21,16 +46,17 @@ function Modal({ isOpen, onClose, title, data, type }) {
 
       const result = await response.json();
       if (response.ok) {
-        let res = await fetch('/api/notifications/leave_approval/'+item.email,{
+        let res = await fetch('/api/notifications/leave_approval/' + item.email, {
           method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: 'Leave Approval!', body: `${item.name} your leave request is ${updatedApproval}`, link:'http://localhost:3000/'}),
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: 'Leave Approval!', body: `${item.name} your leave request is ${updatedApproval}`, link: 'http://localhost:3000/'
+          }),
         })
         res = await res.json();
-        if(res.ok){
+        if (res.ok) {
           onClose();
         }
       } else {
@@ -41,6 +67,20 @@ function Modal({ isOpen, onClose, title, data, type }) {
       alert("Something went wrong!");
     }
   };
+
+  const removeUser = async(id) => {
+    try{
+      let res = await fetch('/api/users/'+id,{
+        method: "DELETE"
+      });
+      res = await res.json();
+      if(res.ok){
+        alert("User Removed!");
+      }
+    }catch(err){
+      console.log(err); 
+    }
+  }
 
   // Function to format dates
   const formatDate = (date) => {
@@ -56,38 +96,60 @@ function Modal({ isOpen, onClose, title, data, type }) {
   if (type === "Total Employees") {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg shadow-xl p-6 max-w-4xl w-full overflow-auto">
+        <div className="bg-white rounded-lg shadow-xl p-6 max-w-6xl w-full overflow-auto">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6">{title}</h2>
           <div className="overflow-x-auto max-w-full">
             <table className="w-full table-auto border-collapse border border-gray-300">
               <thead>
                 <tr className="bg-gray-100">
-                  <th className="border border-gray-300 px-6 py-3 text-left text-sm font-medium text-gray-700">Name</th>
-                  <th className="border border-gray-300 px-6 py-3 text-left text-sm font-medium text-gray-700">Email</th>
-                  <th className="border border-gray-300 px-6 py-3 text-left text-sm font-medium text-gray-700">Role</th>
-                  <th className="border border-gray-300 px-6 py-3 text-left text-sm font-medium text-gray-700">Leaves</th>
+                  <th className="border border-gray-300 px-6 py-3 text-center text-sm font-medium text-gray-700">Name</th>
+                  <th className="border border-gray-300 px-6 py-3 text-center text-sm font-medium text-gray-700">Email</th>
+                  <th className="border border-gray-300 px-6 py-3 text-center text-sm font-medium text-gray-700">Department</th>
+                  <th className="border border-gray-300 px-6 py-3 text-center text-sm font-medium text-gray-700">Role</th>
+                  <th className="border border-gray-300 px-6 py-3 text-center text-sm font-medium text-gray-700">Permission</th>
+                  <th className="border border-gray-300 px-6 py-3 text-center text-sm font-medium text-gray-700">Leaves</th>
+                  <th className="border border-gray-300 px-6 py-3 text-center text-sm font-medium text-gray-700">Remove</th>
                 </tr>
               </thead>
               <tbody>
-                {data &&
-                  data.map((item, index) => {
-                    const leaveCount = item.leaves?.length || 0;
-                    const leaveDates =
-                      leaveCount > 0
-                        ? `${formatDate(item.leaves[0].fromDate)} to ${formatDate(item.leaves[0].toDate)}`
-                        : "No Leaves";
+                {users.map((item, index) => {
+                  console.log(item)
+                  const leaveCount = item.leaves?.length || 0;
+                  const leaveDates =
+                    leaveCount > 0
+                      ? `${formatDate(item.leaves[0].fromDate)} to ${formatDate(item.leaves[0].toDate)}`
+                      : "No Leaves";
 
-                    return (
-                      <tr key={index} className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                        <td className="border border-gray-300 px-6 py-3 text-sm font-medium text-gray-700">{item.name}</td>
-                        <td className="border border-gray-300 px-6 py-3 text-sm font-medium text-gray-700">{item.email}</td>
-                        <td className="border border-gray-300 px-6 py-3 text-sm font-medium text-gray-700">{item.role}</td>
-                        <td className="border border-gray-300 px-6 py-3 text-sm font-medium text-gray-700">
-                          {leaveCount > 0 ? `${leaveCount} ${leaveCount > 1 ? 'leaves' : 'leave'}  (${leaveDates})` : "No Leaves"}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  return (
+                    <tr key={index} className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                      <td className="border border-gray-300 px-6 py-3 text-sm font-medium text-gray-700">{item.name}</td>
+                      <td className="border border-gray-300 px-6 py-3 text-sm font-medium text-gray-700">{item.email}</td>
+                      <td className="border border-gray-300 px-6 py-3 text-sm font-medium text-gray-700">{item.department}</td>
+                      <td className="border border-gray-300 px-6 py-3 text-sm font-medium text-gray-700">{item.role}</td>
+                      <td className="border border-gray-300 px-6 py-3 text-sm font-medium text-gray-700">
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={item.permission}
+                            onChange={() => togglePermission(item._id, item.permission)}
+                            className="sr-only peer"
+                          />
+                          <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer 
+                                  peer-checked:after:translate-x-5 peer-checked:after:border-white 
+                                  after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white 
+                                  after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 
+                                  after:transition-all peer-checked:bg-green-500"></div>
+                        </label>
+                      </td>
+                      <td className="border border-gray-300 px-6 py-3 text-sm font-medium text-gray-700">
+                        {leaveCount > 0 ? `${leaveCount} ${leaveCount > 1 ? 'leaves' : 'leave'}  (${leaveDates})` : "No Leaves"}
+                      </td>
+                      {item.role !== "admin" && <td className="border border-gray-300 px-6 py-3 text-sm font-medium text-gray-700">
+                        <button onClick={() => removeUser(item._id)} className="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700">Remove User</button>
+                      </td>}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -147,11 +209,11 @@ function Modal({ isOpen, onClose, title, data, type }) {
                         (key === "expiryDate" ||
                           key === "fromDate" ||
                           key === "toDate") &&
-                        value
+                          value
                           ? formatDate(value)
                           : typeof value === "object"
-                          ? JSON.stringify(value)
-                          : value;
+                            ? JSON.stringify(value)
+                            : value;
 
                       return (
                         <td

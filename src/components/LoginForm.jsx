@@ -45,7 +45,7 @@ function LoginForm() {
       redirect: false,
       email: formData.email,
       password: formData.password,
-      fcmToken: token
+      //fcmToken: token
     });
 
     if (result.error) {

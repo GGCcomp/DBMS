@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useSession } from "next-auth/react";
 import { ThumbsUp, ThumbsDown, Eye, PlusCircle, MessageSquare } from "lucide-react";
 import ThreadModal from "@/components/ThreadModal";
 import { Toaster, toast } from 'sonner';
@@ -11,9 +12,11 @@ export default function Page() {
   const [threadModal, setThreadModal] = useState(false);
   const [threadModalData, setThreadModalData] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [newThread, setNewThread] = useState({ userId: "user123", title: "", content: "", author: "", category: "FAQs" });
-  const [activeThread, setActiveThread] = useState(null); // For viewing comments
+  const [newThread, setNewThread] = useState({ userId: "", title: "", content: "", author: "", category: "FAQs" });
+  const [activeThread, setActiveThread] = useState(null);
   const [newComment, setNewComment] = useState("");
+  const { data: session } = useSession();
+
 
   useEffect(() => {
     fetch("/api/thread")
@@ -27,16 +30,26 @@ export default function Page() {
         await fetch(`/api/thread/${threadModalData._id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: 'user123' })
+          body: JSON.stringify({ userId: session.user.email })
         });
       };
       updateView();
     }
   }, [threadModal, threadModalData]);
 
+  useEffect(() => {
+    if (session) {
+      setNewThread((prev) => ({
+        ...prev,
+        author: session.user.name, 
+        userId: session.user.email, 
+      }));
+    }
+  }, [session]);
+
 
   const handleVote = async (threadId, commentId, action) => {
-    const userId = "user123";
+    const userId = session.user.email;
 
     const res = await fetch("/api/thread", {
       method: "PUT",
@@ -68,6 +81,8 @@ export default function Page() {
 
 
   const handleAddThread = async () => {
+    console.log(newThread.title, newThread.content, newThread.author, newThread.userId);
+
     if (!newThread.title || !newThread.content || !newThread.author) return;
     const res = await fetch("/api/thread", {
       method: "POST",
@@ -89,7 +104,7 @@ export default function Page() {
     const res = await fetch(`/api/thread/${threadId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: newComment, author: "User123" }),
+      body: JSON.stringify({ content: newComment, author: session.user.name }),
     });
     if (res.ok) {
       setThreads((prev) =>
@@ -145,12 +160,14 @@ export default function Page() {
       )}
 
       {/* Floating Add Thread Button */}
-      <button
-        onClick={() => setShowModal(true)}
-        className="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition"
-      >
-        <PlusCircle className="w-6 h-6" />
-      </button>
+      {session && (session.user.role === 'admin' || session.user.role === 'Lead') && (
+        <button
+          onClick={() => setShowModal(true)}
+          className="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition"
+        >
+          <PlusCircle className="w-6 h-6" />
+        </button>
+      )}
 
       {/* Modal for Adding Thread */}
       {showModal && (
@@ -162,6 +179,10 @@ export default function Page() {
           >
             <h3 className="text-xl font-bold mb-4">Create New Thread</h3>
             <input
+              type="hidden"
+              value={session.user.email}
+            />
+            <input
               type="text"
               className="border p-2 w-full mb-2 rounded-md"
               placeholder="Enter thread title"
@@ -172,8 +193,8 @@ export default function Page() {
               type="text"
               className="border p-2 w-full mb-2 rounded-md"
               placeholder="Enter your name"
-              value={newThread.author}
-              onChange={(e) => setNewThread({ ...newThread, author: e.target.value })}
+              readOnly
+              value={session.user.name}
             />
             <textarea
               className="border p-2 w-full mb-2 rounded-md"
