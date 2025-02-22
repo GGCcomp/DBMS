@@ -101,7 +101,7 @@ function RegisterForm() {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen px-10">
+    <div className="flex justify-center items-center h-screen px-10 bg-gradient-to-r from-blue-500 to-purple-500">
       <form onSubmit={handleSubmit} className="w-full md:w-1/3 p-6 bg-white rounded shadow-md">
         <h2 className="text-2xl mb-4 text-center">Register</h2>
         <div className="mb-4">

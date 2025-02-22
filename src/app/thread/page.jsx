@@ -119,7 +119,7 @@ export default function Page() {
   };
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-6 min-h-[98vh]">
       <h1 className="text-2xl font-bold mb-4">Forum & Knowledge Base</h1>
       <Toaster richColors={true} position="bottom-right" visibleToasts={1} />
       {threadModal && <ThreadModal thread={threadModalData} onClose={() => setThreadModal(false)} />}

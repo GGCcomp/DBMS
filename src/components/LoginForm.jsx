@@ -31,35 +31,41 @@ function LoginForm() {
     e.preventDefault();
     setLoading(true);
 
-    const token = await getToken(messaging, {
-      vapidKey: process.env.NEXT_PUBLIC_FIREBASE_FCM_VAPID_KEY,
-    });
+    // const token = await getToken(messaging, {
+    //   vapidKey: process.env.NEXT_PUBLIC_FIREBASE_FCM_VAPID_KEY,
+    // });
 
-    if (!token) {
-      toast.error("Unable to generate FCM token.");
-      setLoading(false);
-      return;
-    }
+    // if (!token) {
+    //   toast.error("Unable to generate FCM token.");
+    //   setLoading(false);
+    //   return;
+    // }
 
     const result = await signIn("credentials", {
       redirect: false,
       email: formData.email,
       password: formData.password,
-      //fcmToken: token
+      // fcmToken: token
     });
 
     if (result.error) {
       toast.error(result.error);
     } else {
       toast.success("Logged in successfully");
-      router.push("/");
+      let res = await fetch("/api/auth/session");
+      res = await res.json();
+
+      // Redirect based on user department
+      router.push(`/${res.user.department.toLowerCase()}`);
+
+      //router.push(`/${result.department.toLowerCase()}`);
     }
 
     setLoading(false);
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-100 to-blue-300 px-10">
+    <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-500 px-10">
       <form
         onSubmit={handleSubmit}
         className="w-full md:w-1/3 p-8 bg-white rounded-xl shadow-lg transform transition-all hover:scale-105"

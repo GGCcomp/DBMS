@@ -18,10 +18,10 @@ export async function POST(request) {
         return NextResponse.json({ message: "Email or password is incorrect!", ok: false }, { status: 401 });
       }
 
-      if (fcmToken && fcmToken !== user.fcmToken) {
-        user.fcmToken = fcmToken;
-        await user.save();
-      }
+      // if (fcmToken && fcmToken !== user.fcmToken) {
+      //   user.fcmToken = fcmToken;
+      //   await user.save();
+      // }
   
       return NextResponse.json({ email: user.email, name: user.name, department: user.department, role: user.role, permission: user.permission, ok: true }); 
     } catch (e) {

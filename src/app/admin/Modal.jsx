@@ -1,8 +1,8 @@
 import { useState } from "react";
 
 function Modal({ isOpen, onClose, title, data, type }) {
-  const [users, setUsers] = useState(data);
   if (!isOpen) return null;
+  const [users, setUsers] = useState(data);
 
   //Toggle Permission
   const togglePermission = async (userId, currentPermission) => {
