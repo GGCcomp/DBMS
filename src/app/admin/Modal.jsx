@@ -1,18 +1,10 @@
-import { useState } from "react";
-
 function Modal({ isOpen, onClose, title, data, type }) {
   if (!isOpen) return null;
-  const [users, setUsers] = useState(data);
 
-  //Toggle Permission
-  const togglePermission = async (userId, currentPermission) => {
+  const togglePermission = async (userId, currentPermission, event) => {
     try {
       // Optimistic UI Update
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user._id === userId ? { ...user, permission: !currentPermission } : user
-        )
-      );
+      event.target.checked = !currentPermission;
 
       // Send update request to backend
       const res = await fetch(`/api/users/${userId}`, {
@@ -25,7 +17,7 @@ function Modal({ isOpen, onClose, title, data, type }) {
     } catch (error) {
       console.error("Error updating permission:", error);
       // Revert UI if request fails
-      setUsers(data);
+      event.target.checked = currentPermission;
     }
   };
 
@@ -68,17 +60,17 @@ function Modal({ isOpen, onClose, title, data, type }) {
     }
   };
 
-  const removeUser = async(id) => {
-    try{
-      let res = await fetch('/api/users/'+id,{
+  const removeUser = async (id) => {
+    try {
+      let res = await fetch('/api/users/' + id, {
         method: "DELETE"
       });
       res = await res.json();
-      if(res.ok){
+      if (res.ok) {
         alert("User Removed!");
       }
-    }catch(err){
-      console.log(err); 
+    } catch (err) {
+      console.log(err);
     }
   }
 
@@ -112,7 +104,7 @@ function Modal({ isOpen, onClose, title, data, type }) {
                 </tr>
               </thead>
               <tbody>
-                {users.map((item, index) => {
+                {data && data.map((item, index) => {
                   console.log(item)
                   const leaveCount = item.leaves?.length || 0;
                   const leaveDates =
@@ -130,8 +122,8 @@ function Modal({ isOpen, onClose, title, data, type }) {
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input
                             type="checkbox"
-                            checked={item.permission}
-                            onChange={() => togglePermission(item._id, item.permission)}
+                            defaultChecked={item.permission}
+                            onChange={(e) => togglePermission(item._id, item.permission, e)}
                             className="sr-only peer"
                           />
                           <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer 
