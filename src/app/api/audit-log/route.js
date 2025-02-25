@@ -7,8 +7,7 @@ import { getServerSession } from "next-auth";
 export async function POST(req) {
     await connectMongo();
     const session = await getServerSession(authOptions);
-    console.log(session);
-    
+   
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   
     try {

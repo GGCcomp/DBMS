@@ -142,6 +142,14 @@ export default function AdminPanel() {
             className="bg-white rounded-lg p-6 shadow-lg text-gray-800 text-center hover:scale-105 transform transition-all duration-300"
             whileHover={{ scale: 1.05 }}
           >
+            <Link href="/admin/audit-logs">
+              <h2 className="text-2xl font-bold mb-4">Audits</h2>
+            </Link>
+          </motion.div>
+          <motion.div
+            className="bg-white rounded-lg p-6 shadow-lg text-gray-800 text-center hover:scale-105 transform transition-all duration-300"
+            whileHover={{ scale: 1.05 }}
+          >
             <Link href="/crm">
               <h2 className="text-2xl font-bold mb-4">CRM</h2>
             </Link>
