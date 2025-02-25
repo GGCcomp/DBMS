@@ -15,7 +15,7 @@ const roleAccessMap = {
 };
 
 export async function middleware(req) {
-  const secret = process.env.AUTH_SECRET;
+  const secret = process.env.NEXTAUTH_SECRET;
 
   const pathname = req.nextUrl.pathname;
 

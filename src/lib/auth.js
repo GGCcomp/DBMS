@@ -4,7 +4,7 @@ import Credentials from "next-auth/providers/credentials";
 const {NEXT_PUBLIC_HOST_URL} = process.env;
 
 export const authOptions = {
-  secret: process.env.AUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     Credentials({
       credentials: {
@@ -31,10 +31,10 @@ export const authOptions = {
             throw new Error(result.message || "Invalid credentials");
           }
 
-          // Return user object with the necessary fields
           return {
+            id: result.id,
             email: result.email,
-            name: result.name, // Ensure this is the correct field from your response
+            name: result.name, 
             department: result.department,
             role: result.role,
             permission: result.permission
@@ -48,6 +48,7 @@ export const authOptions = {
   ],
   callbacks: {
     async session({ session, token }) {
+      session.user.id = token.id;
       session.user.department = token.department;
       session.user.role = token.role; 
       session.user.permission = token.permission
@@ -55,6 +56,7 @@ export const authOptions = {
     },
     async jwt({ token, user }) {
       if (user) {
+        token.id = user.id;
         token.department = user.department
         token.role = user.role; 
         token.permission = user.permission;

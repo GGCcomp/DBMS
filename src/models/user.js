@@ -15,3 +15,16 @@ const userSchema = new mongoose.Schema({
 export const User = mongoose.models.User || mongoose.model("User", userSchema);
 
 
+const auditLogSchema = new mongoose.Schema(
+  {
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    action: { type: String, enum: ["LOGIN", "LOGOUT", "DATA_UPDATE", "EXPORT", "PUNCH_IN", "PUNCH_OUT"], required: true },
+    details: { type: String }, 
+    ipAddress: { type: String },
+    timestamp: { type: Date, default: Date.now }
+  },
+  { timestamps: true }
+);
+
+export const AuditLog = mongoose.models.AuditLog || mongoose.model("AuditLog", auditLogSchema);
+

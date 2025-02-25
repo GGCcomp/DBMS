@@ -52,13 +52,25 @@ function LoginForm() {
       toast.error(result.error);
     } else {
       toast.success("Logged in successfully");
+  
+      // Fetch session data
       let res = await fetch("/api/auth/session");
       res = await res.json();
-
+      try {
+        await fetch("/api/audit-log", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "LOGIN",
+            details: `User ${res.user.email} logged in successfully.`,
+          }),
+        });
+      } catch (error) {
+        console.error("Failed to log audit:", error);
+      }
+  
       // Redirect based on user department
       router.push(`/${res.user.department.toLowerCase()}`);
-
-      //router.push(`/${result.department.toLowerCase()}`);
     }
 
     setLoading(false);
