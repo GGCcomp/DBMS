@@ -134,6 +134,9 @@ export default function AdminPanel() {
             className="bg-white rounded-lg p-6 shadow-lg text-gray-800 text-center hover:scale-105 transform transition-all duration-300"
             whileHover={{ scale: 1.05 }}
           >
+            <Link href='/admin/monitoring'>
+            <h2 className="text-2xl font-bold mb-4">Monitoring</h2>
+            </Link>
             <Link href="/approvals">
               <h2 className="text-2xl font-bold mb-4">Approval Requests</h2>
             </Link>
