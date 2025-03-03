@@ -9,6 +9,10 @@ const userSchema = new mongoose.Schema({
   permission: { type: Boolean, default: false },
   leaves: [{ type: mongoose.Schema.Types.ObjectId, ref: "Leave" }],
   approvalOTP: { type: Number },
+  aadhar: {type: Number, default: 0},
+  panCard:{type: String, default: 0},
+  mobile: Number,
+  failedLoginAttempts: {type: Number, default: 0},
   approvalOTPExpires: { type: Date },
   fcmToken: { type: String, required: false }
 }, { timestamps: true });

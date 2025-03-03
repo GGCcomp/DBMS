@@ -17,6 +17,9 @@ function RegisterForm() {
     role: '',
     password: '',
     confirmPassword: '',
+    mobile: '',
+    aadhar: '',
+    panCard: ''
   });
   const [loading, setLoading] = useState(false);
 
@@ -81,6 +84,9 @@ function RegisterForm() {
           password: formData.password,
           department: formData.department,
           role: formData.role,
+          mobile: formData.mobile,
+          aadhar: formData.aadhar,
+          panCard: formData.panCard,
           token,
         }),
       });
@@ -174,6 +180,44 @@ function RegisterForm() {
             className="w-full p-2 border rounded"
             placeholder="Confirm your password"
             value={formData.confirmPassword}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <label htmlFor="mobile" className="block mb-2">Mobile No:</label>
+          <input
+            type="tel"
+            name="mobile"
+            id="mobile"
+            className="w-full p-2 border rounded bg-gray-100"
+            value={formData.mobile}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <label htmlFor="aadhar" className="block mb-2">Aadhar Number:</label>
+          <input
+            type="number"
+            name="aadhar"
+            id="aadhar"
+            className="w-full p-2 border rounded"
+            placeholder="Enter your Aadhar No:"
+            value={formData.aadhar}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <label htmlFor="pancard" className="block mb-2">PAN:</label>
+          <input
+            type="text"
+            name="pancard"
+            id="pancard"
+            className="w-full p-2 border rounded"
+            placeholder="Enter your PAN No:"
+            value={formData.panCard}
             onChange={handleChange}
             required
           />

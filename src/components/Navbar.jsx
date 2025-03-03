@@ -85,6 +85,9 @@ function Navbar() {
                 </button>
               )}
 
+              <Link href={`/profile/${session.user.id}`} className="bg-blue-800 w-full px-4 py-2 text-center rounded shadow-lg mb-2">
+                Profile
+              </Link>
               <button
                 className="bg-blue-800 w-full px-4 py-2 rounded shadow-lg"
                 onClick={async () => {

@@ -31,11 +31,15 @@ export async function GET(request) {
 
 export async function POST(req) {
     try {
-        const { name, email, password, department, role, token } = await req.json();
+        const { name, email, password, department, role, mobile, aadhar, panCard, token } = await req.json();
 
-        if (!name || !email || !password || !department || !role) {
+        if (!name || !email || !password || !department || !role || !mobile || !aadhar || !panCard) {
             return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
         }
+
+        if (!/^\d{12}$/.test(aadhar) || !/^[A-Z]{5}\d{4}[A-Z]$/.test(panCard)) {
+            return NextResponse.json({ error: "Invalid Aadhar or PAN format" }, { status: 400 });
+          }
 
         await connectMongo();
 
@@ -59,7 +63,7 @@ export async function POST(req) {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Create user
-        const user = await User.create({ name, email, password: hashedPassword, department, role });
+        const user = await User.create({ name, email, password: hashedPassword, department, role, mobile, aadhar, panCard });
 
         return NextResponse.json({ message: 'User registered successfully', user }, { status: 201 });
     } catch (error) {

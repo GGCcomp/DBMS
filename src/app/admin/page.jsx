@@ -140,6 +140,9 @@ export default function AdminPanel() {
             <Link href="/approvals">
               <h2 className="text-2xl font-bold mb-4">Approval Requests</h2>
             </Link>
+            <Link href="/admin/fraud-log">
+              <h2 className="text-2xl font-bold mb-4">Fraud Report</h2>
+            </Link>
           </motion.div>
           <motion.div
             className="bg-white rounded-lg p-6 shadow-lg text-gray-800 text-center hover:scale-105 transform transition-all duration-300"
