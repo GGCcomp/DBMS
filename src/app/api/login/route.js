@@ -20,7 +20,7 @@ export async function POST(request) {
       await user.save();
 
       if (user.failedLoginAttempts > 3) {
-        await detectFraud(user._id, user.email, { failedLoginAttempts: user.failedLoginAttempts });
+        await detectFraud(user._id, user.email, { failedLoginAttempts: user.failedLoginAttempts }, "Failed Login");
       }
 
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });

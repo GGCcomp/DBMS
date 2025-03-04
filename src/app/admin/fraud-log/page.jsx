@@ -22,14 +22,15 @@ export default function Page() {
     <div className="h-screen">
       <motion.div className="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-md mt-10">
         <h2 className="text-2xl font-semibold mb-4">Fraud Cases & Compliance Tickets</h2>
-
+  
         {fraudCases.length === 0 ? (
           <p>No open fraud cases.</p>
         ) : (
           fraudCases.map((caseItem) => (
             <div key={caseItem._id} className="p-3 border rounded-md mb-3">
+              <p><strong>Fraud Type:</strong> {caseItem.fraudId.fraudType}</p>
               <p><strong>Email:</strong> {caseItem.fraudId.email}</p>
-              <p><strong>Issue:</strong> {typeof caseItem.fraudId.reason === "string" ? caseItem.fraudId.reason : JSON.stringify(caseItem.fraudId.reason)}</p>
+              <p><strong>Details:</strong> {typeof caseItem.fraudId.reason === "string" ? caseItem.fraudId.reason : JSON.stringify(caseItem.fraudId.reason)}</p>
               <p><strong>Assigned To:</strong> {caseItem.assignedTo}</p>
               <p className="text-sm text-gray-500">Logged: {new Date(caseItem.createdAt).toLocaleString()}</p>
             </div>
@@ -37,5 +38,5 @@ export default function Page() {
         )}
       </motion.div>
     </div>
-  );
+  );  
 }

@@ -4,6 +4,11 @@ const FraudLogSchema = new mongoose.Schema({
   userId: String,
   email: String,
   reason: { type: mongoose.Schema.Types.Mixed },
+  fraudType: {
+    type: String,
+    enum: ["Failed Login", "Phishing", "Fake Transaction", "Multiple Accounts", "Suspicious Device"],
+    required: true,
+  },
   flaggedAt: { type: Date, default: Date.now },
   status: { type: String, enum: ["Open", "Resolved"], default: "Open" },
 });

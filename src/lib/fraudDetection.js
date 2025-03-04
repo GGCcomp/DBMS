@@ -1,4 +1,4 @@
-export async function detectFraud(userId, email, reason) {
+export async function detectFraud(userId, email, reason, fraudType) {
   try {
     const response = await fetch(`http://localhost:3000/api/fraud-log`, {
       method: "POST",
@@ -9,6 +9,7 @@ export async function detectFraud(userId, email, reason) {
         userId,
         email,
         reason,
+        fraudType
       }),
     });
 

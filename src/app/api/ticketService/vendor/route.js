@@ -3,11 +3,12 @@ import sendEmail from "@/lib/email";
 import Imap from 'node-imap';
 import { inspect } from 'util';
 import connectMongo from "@/lib/db";
+import { detectFraud } from "@/lib/fraudDetection";
 import { VendorTicket } from "@/models/ticket";
 
 const imap = new Imap({
-    user: 'ashu.t.dev@gmail.com',  // Replace with your email
-    password: process.env.SMTP_PASS,    // Replace with your password
+    user: 'ashu.t.dev@gmail.com',  // Replace with Zoho
+    password: process.env.SMTP_PASS,    // Replace with Zoho's password
     host: 'imap.gmail.com',
     port: 993,
     tls: true,
@@ -70,6 +71,30 @@ async function processEmails() {
                 const parsed = Imap.parseHeader(buffer);
                 from = parsed.from[0];
                 subject = parsed.subject[0];
+
+                 // 🚨 Phishing Detection Logic 🚨
+              const phishingPatterns = [
+                "verify your account",
+                "update your payment details",
+                "login immediately",
+                "your account is suspended",
+                "click this link to secure your account",
+              ];
+
+              const isPhishing = phishingPatterns.some((pattern) =>
+                subject.toLowerCase().includes(pattern)
+              );
+
+              if (isPhishing) {
+                // 🛑 If phishing detected, log it in the fraud system and stop further processing
+                try {
+                  await detectFraud("unknown", from, { PhisingAttempt: subject }, "Phishing");
+                  console.log(`🚨 Phishing email logged: ${subject}`);
+                } catch (err) {
+                  console.log("Error logging phishing fraud:", err);
+                }
+                return; // 🚨 Stop processing this email
+              }
   
                 // Check if a ticket with the same subject and vendorEmail already exists
                 const existingTicket = await VendorTicket.findOne({
