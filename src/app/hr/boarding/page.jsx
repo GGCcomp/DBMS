@@ -1,46 +1,83 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 
 export default function Page() {
-  const [onboardingDocs, setOnboardingDocs] = useState([
-    { id: 1, name: "Offer Letter - John Doe.pdf", type: "Offer Letter" },
-    { id: 2, name: "Background Check - Jane Smith.pdf", type: "Verification" },
-  ]);
+  const [onboardingDocs, setOnboardingDocs] = useState([]);
+  const [trainingLogs, setTrainingLogs] = useState([]);
+  const [offboardingRecords, setOffboardingRecords] = useState([]);
 
-  const [trainingLogs, setTrainingLogs] = useState([
-    { id: 1, employee: "John Doe", course: "AML Compliance", status: "Completed" },
-    { id: 2, employee: "Jane Smith", course: "KYC Regulations", status: "Pending" },
-  ]);
+  const fetchData = async () => {
+    const [onboardingRes, trainingRes, offboardingRes] = await Promise.all([
+      fetch("/api/hr/boarding/on-boarding").then((res) => res.json()),
+      fetch("/api/hr/boarding/training").then((res) => res.json()),
+      fetch("/api/hr/boarding/off-boarding").then((res) => res.json()),
+    ]);
 
-  const [offboardingRecords, setOffboardingRecords] = useState([
-    { id: 1, employee: "John Doe", status: "Final Clearance Pending" },
-    { id: 2, employee: "Jane Smith", status: "Access Revoked" },
-  ]);
+    setOnboardingDocs(onboardingRes);
+    setTrainingLogs(trainingRes);
+    setOffboardingRecords(offboardingRes);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const [newDoc, setNewDoc] = useState("");
+  const [newFile, setNewFile] = useState(null);
+  const [selectedDoc, setSelectedDoc] = useState(null);
   const [newTraining, setNewTraining] = useState("");
   const [newOffboarding, setNewOffboarding] = useState("");
 
-  const addOnboardingDoc = () => {
-    if (newDoc.trim()) {
-      setOnboardingDocs([...onboardingDocs, { id: Date.now(), name: newDoc, type: "Custom" }]);
-      setNewDoc("");
+  const addOnboardingDoc = async (e) => {
+    e.preventDefault();
+    if (newDoc.trim() && newFile) {
+      const formData = new FormData();
+      formData.append("name", newDoc);
+      formData.append("file", newFile);
+
+      const res = await fetch("/api/hr/boarding/on-boarding", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (res.ok) {
+        fetchData();
+        setNewDoc("");
+        setNewFile(null);
+      }
     }
   };
 
-  const addTrainingLog = () => {
+  const addTrainingLog = async () => {
     if (newTraining.trim()) {
-      setTrainingLogs([...trainingLogs, { id: Date.now(), employee: "Admin", course: newTraining, status: "Ongoing" }]);
-      setNewTraining("");
+      const res = await fetch("/api/hr/boarding/training", {
+        method: "POST",
+        body: JSON.stringify({ employee: "Admin", course: newTraining, status: "Ongoing" }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (res.ok) {
+        fetchData();
+        setNewTraining("");
+      }
     }
   };
 
-  const addOffboardingRecord = () => {
+  const addOffboardingRecord = async () => {
     if (newOffboarding.trim()) {
-      setOffboardingRecords([...offboardingRecords, { id: Date.now(), employee: newOffboarding, status: "Pending Approval" }]);
-      setNewOffboarding("");
+      const res = await fetch("/api/hr/boarding/off-boarding", {
+        method: "POST",
+        body: JSON.stringify({ employee: newOffboarding, status: "Pending Approval" }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (res.ok) {
+        fetchData();
+        setNewOffboarding("");
+      }
     }
   };
 
@@ -59,23 +96,70 @@ export default function Page() {
           {/* Onboarding Section */}
           <div className="bg-gray-100 p-6 rounded-lg shadow-md">
             <h2 className="text-2xl font-semibold text-gray-700 mb-4">Onboarding Documentation</h2>
-            <input
-              type="text"
-              placeholder="Enter document name"
-              value={newDoc}
-              onChange={(e) => setNewDoc(e.target.value)}
-              className="w-full p-2 border rounded mb-4"
-            />
-            <button onClick={addOnboardingDoc} className="bg-pink-500 text-white px-4 py-2 rounded-lg w-full mb-4">
-              Add Document
-            </button>
-            <ul className="text-gray-600 text-left space-y-2">
-              {onboardingDocs.map((doc) => (
-                <li key={doc.id} className="bg-white p-3 rounded shadow flex justify-between">
-                  📄 {doc.name} ({doc.type})
-                </li>
-              ))}
-            </ul>
+            <form onSubmit={addOnboardingDoc}>
+              <input
+                type="text"
+                placeholder="Enter document name"
+                value={newDoc}
+                onChange={(e) => setNewDoc(e.target.value)}
+                className="w-full p-2 border rounded mb-4"
+                required
+              />
+              <input
+                type="file"
+                accept=".pdf"
+                onChange={(e) => setNewFile(e.target.files[0])}
+                className="w-full p-2 border rounded mb-4"
+                required
+              />
+
+              <button className="bg-pink-500 text-white px-4 py-2 rounded-lg w-full mb-4">
+                Add Document
+              </button>
+            </form>
+            <div>
+              <ul className="text-gray-600 text-left space-y-2">
+                {onboardingDocs.map((doc) => (
+                  <li
+                    key={doc.id}
+                    className="bg-white p-3 rounded shadow flex justify-between items-center"
+                  >
+                    <span>📄 {doc.fileName}</span>
+                    <button
+                      onClick={() => setSelectedDoc(doc.previewUrl)}
+                      className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                    >
+                      View
+                    </button>
+                    <Link href={doc.downloadUrl}
+                      className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 ml-2"
+                    >
+                      Download
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+
+              {selectedDoc && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+                  <div className="bg-white rounded-lg p-4 w-full max-w-3xl">
+                    <div className="flex justify-between items-center mb-3">
+                      <h2 className="text-lg font-semibold">PDF Preview</h2>
+                      <button
+                        onClick={() => setSelectedDoc(null)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        ✖ Close
+                      </button>
+                    </div>
+                    <iframe
+                      src={selectedDoc}
+                      className="w-full h-[500px] border rounded"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Training Compliance Section */}
