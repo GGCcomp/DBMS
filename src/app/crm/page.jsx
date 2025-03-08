@@ -186,7 +186,7 @@ export default function Page() {
         <button className="px-4 py-2 bg-gray-300 rounded-md text-black mb-4" onClick={() => route.push('/crm/reminder')}>Pending</button>
         <button className="px-4 py-2 bg-gray-300 rounded-md text-black mb-4" onClick={() => route.push('/crm/vendor')}>Vendor</button>
         <button className="px-4 py-2 bg-gray-300 rounded-md text-black mb-4" onClick={() => route.push('/crm/contacts')}>Contacts</button>
-        <button className="px-4 py-2 bg-gray-300 rounded-md text-black mb-4" onClick={() => route.push('/crm/thread')}>Threads</button>
+        <button className="px-4 py-2 bg-gray-300 rounded-md text-black mb-4" onClick={() => route.push('/thread')}>Threads</button>
         <button className="px-4 py-2 bg-gray-300 rounded-md text-black mb-4" onClick={() => route.push('/crm/ticket/insights')}>Insights</button>
       </div>
 

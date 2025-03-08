@@ -28,3 +28,11 @@ const OffboardingSchema = new mongoose.Schema({
 });
 
 export const Offboarding = mongoose.models.Offboarding || mongoose.model("Offboarding", OffboardingSchema);
+
+const insightSchema = new mongoose.Schema({
+    employee: String,
+    event: String,
+},{ timestamps: { createdAt: "createdAt"} });
+
+export const Insight = mongoose.models.Insight || mongoose.model("Insight", insightSchema);
+

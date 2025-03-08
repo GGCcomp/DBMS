@@ -1,26 +1,52 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Bar, BarChart, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
 
 export default function Page() {
-  const [lifecycleLogs, setLifecycleLogs] = useState([
-    { id: 1, name: "John Doe", event: "Promoted to Senior Developer", date: "2025-01-15" },
-    { id: 2, name: "Jane Smith", event: "Transferred to Finance", date: "2024-12-10" },
-  ]);
+  const [lifecycleLogs, setLifecycleLogs] = useState([]);
 
   const [newLog, setNewLog] = useState("");
   const [employeeName, setEmployeeName] = useState("");
 
-  const addLifecycleLog = () => {
-    if (newLog.trim() && employeeName.trim()) {
-      setLifecycleLogs([
-        ...lifecycleLogs,
-        { id: Date.now(), name: employeeName, event: newLog, date: new Date().toISOString().split("T")[0] },
-      ]);
-      setNewLog("");
-      setEmployeeName("");
+  useEffect(() => {
+    const getInsights = async () => {
+      try {
+        let res = await fetch('/api/hr/insights');
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! Status: ${res.status}`);
+        }
+
+        const data = await res.json();
+        console.log("Fetched Insights:", data);
+
+        setLifecycleLogs(data.insight || []); // Ensure it's an array
+      } catch (e) {
+        console.error("Error fetching insights:", e);
+      }
+    };
+
+    getInsights();
+  }, []);
+
+
+  const addLifecycleLog = async () => {
+    try {
+      let res = await fetch('/api/hr/insights', {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json"
+        },
+        body: JSON.stringify({ employee: employeeName, event: newLog })
+      });
+      res = await res.json();
+      if (res.ok) {
+        alert(res.message)
+      }
+    } catch (e) {
+      console.log(e)
     }
   };
 
@@ -73,16 +99,16 @@ export default function Page() {
             <button onClick={addLifecycleLog} className="bg-indigo-500 text-white px-4 py-2 rounded-lg w-full mb-4">
               Add Log
             </button>
-            <ul className="text-gray-600 text-left space-y-2">
+            {lifecycleLogs && lifecycleLogs.length > 0 ? <ul className="text-gray-600 text-left space-y-2">
               {lifecycleLogs.map((log) => (
                 <li key={log.id} className="bg-white p-3 rounded shadow flex justify-between">
                   <span>
-                    👤 <strong>{log.name}:</strong> {log.event}{" "}
-                    (<span className="text-blue-600">{log.date}</span>)
+                    👤 <strong>{log.employee}:</strong> {log.event}{" "}
+                    (<span className="text-blue-600">{new Date(log.createdAt).toLocaleDateString()}</span>)
                   </span>
                 </li>
               ))}
-            </ul>
+            </ul> : <p className="text-center">No Insights</p>}
           </div>
 
           {/* Workforce Diversity Metrics */}
@@ -109,13 +135,12 @@ export default function Page() {
                     📜 <strong>{record.policy}</strong>
                   </span>
                   <span
-                    className={`font-bold ${
-                      record.status === "Pending"
+                    className={`font-bold ${record.status === "Pending"
                         ? "text-yellow-500"
                         : record.status === "Completed"
-                        ? "text-green-500"
-                        : "text-blue-500"
-                    }`}
+                          ? "text-green-500"
+                          : "text-blue-500"
+                      }`}
                   >
                     {record.status}
                   </span>
