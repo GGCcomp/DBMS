@@ -14,3 +14,10 @@ export async function POST(req) {
   const newTraining = await Training.create({ employee, course, status: status || "Ongoing" });
   return NextResponse.json(newTraining);
 }
+
+export async function PATCH(req) {
+  await connectToDB();
+  const { id, status } = await req.json();
+  await Training.findByIdAndUpdate(id, { status });
+  return NextResponse.json({ message: "Updated Successfully" });
+}

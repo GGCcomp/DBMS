@@ -12,8 +12,8 @@ export const Onboarding = mongoose.models.Onboarding || mongoose.model("Onboardi
 const TrainingSchema = new mongoose.Schema({
     employee: String,
     course: String,
-    status: String,
-});
+    status: { type: String, default: "Pending" },
+}, { timestamps: true });
 
 export const Training = mongoose.models.Training || mongoose.model("Training", TrainingSchema);
 
@@ -32,7 +32,21 @@ export const Offboarding = mongoose.models.Offboarding || mongoose.model("Offboa
 const insightSchema = new mongoose.Schema({
     employee: String,
     event: String,
-},{ timestamps: { createdAt: "createdAt"} });
+}, { timestamps: { createdAt: "createdAt" } });
 
 export const Insight = mongoose.models.Insight || mongoose.model("Insight", insightSchema);
 
+const PolicySchema = new mongoose.Schema({
+    title: String,
+    link: String,
+}, { timestamps: true });
+
+export const Policy = mongoose.models.Policy || mongoose.model("Policy", PolicySchema);
+
+const GrievanceSchema = new mongoose.Schema({
+    employee: String,
+    issue: String,
+    status: { type: String, default: "Pending" },
+}, { timestamps: true });
+
+export const Grievance = mongoose.models.Grievance || mongoose.model("Grievance", GrievanceSchema);

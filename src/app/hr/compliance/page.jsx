@@ -1,45 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
 export default function Page() {
-  const [trainingRecords, setTrainingRecords] = useState([
-    { id: 1, employee: "John Doe", course: "AML Training", status: "Completed" },
-    { id: 2, employee: "Jane Smith", course: "GDPR Compliance", status: "In Progress" },
-  ]);
-
-  const [policies, setPolicies] = useState([
-    { id: 1, title: "Code of Conduct", link: "#" },
-    { id: 2, title: "Workplace Ethics", link: "#" },
-  ]);
-
-  const [grievanceReports, setGrievanceReports] = useState([
-    { id: 1, employee: "Michael Scott", issue: "Harassment Report", status: "Under Review" },
-  ]);
-
-  const [newTraining, setNewTraining] = useState("");
-  const [newPolicy, setNewPolicy] = useState("");
+  const [policies, setPolicies] = useState([]);
+  const [grievanceReports, setGrievanceReports] = useState([]);
+  const [newPolicy, setNewPolicy] = useState({ title: "", link: "" });
   const [newGrievance, setNewGrievance] = useState("");
 
-  const addTrainingRecord = () => {
-    if (newTraining.trim()) {
-      setTrainingRecords([...trainingRecords, { id: Date.now(), employee: "Admin", course: newTraining, status: "Pending" }]);
-      setNewTraining("");
+  useEffect(() => {
+    fetch("/api/hr/compliance/policies").then(res => res.json()).then(setPolicies);
+    fetch("/api/hr/compliance/grievance").then(res => res.json()).then(setGrievanceReports);
+  }, []);
+
+  const addPolicy = async () => {
+    if (!newPolicy.title || !newPolicy.link) return;
+    const res = await fetch("/api/hr/compliance/policies", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newPolicy),
+    });
+    if (res.ok) {
+      setPolicies([...policies, newPolicy]);
+      setNewPolicy({ title: "", link: "" });
     }
   };
 
-  const addPolicy = () => {
-    if (newPolicy.trim()) {
-      setPolicies([...policies, { id: Date.now(), title: newPolicy, link: "#" }]);
-      setNewPolicy("");
-    }
-  };
-
-  const addGrievanceReport = () => {
-    if (newGrievance.trim()) {
-      setGrievanceReports([...grievanceReports, { id: Date.now(), employee: "Anonymous", issue: newGrievance, status: "Pending" }]);
+  const addGrievanceReport = async () => {
+    if (!newGrievance) return;
+    const res = await fetch("/api/hr/compliance/grievance", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ issue: newGrievance, status: "Pending" }),
+    });
+    if (res.ok) {
+      setGrievanceReports([...grievanceReports, { issue: newGrievance, status: "Pending" }]);
       setNewGrievance("");
+    }
+  };
+
+  const updateGrievanceStatus = async (id, status) => {
+    const res = await fetch("/api/hr/compliance/grievance", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status }),
+    });
+    if (res.ok) {
+      setGrievanceReports(grievanceReports.map(g => g.id === id ? { ...g, status } : g));
     }
   };
 
@@ -56,61 +64,58 @@ export default function Page() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-gray-100 p-6 rounded-lg shadow-md">
-            <h2 className="text-2xl font-semibold text-gray-700 mb-4">Regulatory Training Records</h2>
+            <h2 className="text-2xl font-semibold text-gray-700 mb-4">HR Policy Repository</h2>
             <input
               type="text"
-              placeholder="Enter new training record"
-              value={newTraining}
-              onChange={(e) => setNewTraining(e.target.value)}
+              placeholder="Policy Title"
+              value={newPolicy.title}
+              onChange={(e) => setNewPolicy({ ...newPolicy, title: e.target.value })}
+              className="w-full p-2 border rounded mb-2"
+            />
+            <input
+              type="text"
+              placeholder="Policy Link"
+              value={newPolicy.link}
+              onChange={(e) => setNewPolicy({ ...newPolicy, link: e.target.value })}
               className="w-full p-2 border rounded mb-4"
             />
-            <button onClick={addTrainingRecord} className="bg-pink-500 text-white px-4 py-2 rounded-lg w-full mb-4">Add Record</button>
+            <button onClick={addPolicy} className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full mb-4">Add Policy</button>
             <ul className="text-gray-600 text-left space-y-2">
-              {trainingRecords.map(record => (
-                <li key={record.id} className="bg-white p-3 rounded shadow flex justify-between">
-                  <span>📚 <strong>{record.employee}:</strong> {record.course} (<span className="text-blue-600">{record.status}</span>)</span>
+              {policies.map((policy, index) => (
+                <li key={index} className="bg-white p-3 rounded shadow">
+                  📜 <a href={policy.link} className="text-blue-600 font-medium" target="_blank" rel="noopener noreferrer">{policy.title}</a>
                 </li>
               ))}
             </ul>
           </div>
 
           <div className="bg-gray-100 p-6 rounded-lg shadow-md">
-            <h2 className="text-2xl font-semibold text-gray-700 mb-4">HR Policy Repository</h2>
+            <h2 className="text-2xl font-semibold text-gray-700 mb-4">Incident & Grievance Reports</h2>
             <input
               type="text"
-              placeholder="Enter new policy"
-              value={newPolicy}
-              onChange={(e) => setNewPolicy(e.target.value)}
+              placeholder="Enter grievance report"
+              value={newGrievance}
+              onChange={(e) => setNewGrievance(e.target.value)}
               className="w-full p-2 border rounded mb-4"
             />
-            <button onClick={addPolicy} className="bg-pink-500 text-white px-4 py-2 rounded-lg w-full mb-4">Add Policy</button>
+            <button onClick={addGrievanceReport} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg w-full mb-4">Submit Report</button>
             <ul className="text-gray-600 text-left space-y-2">
-              {policies.map(policy => (
-                <li key={policy.id} className="bg-white p-3 rounded shadow">
-                  📜 <a href={policy.link} className="text-blue-600 font-medium">{policy.title}</a>
+              {grievanceReports.map((report) => (
+                <li key={report._id} className="bg-white p-3 rounded shadow flex justify-between items-center">
+                  <span>⚠️ <strong>{report.employee}:</strong> {report.issue} (<span className="text-red-600">{report.status}</span>)</span>
+                  <select
+                    className="border rounded p-1 ml-2"
+                    value={report.status}
+                    onChange={(e) => updateGrievanceStatus(report._id, e.target.value)}
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="Resolved">Resolved</option>
+                    <option value="Escalated">Escalated</option>
+                  </select>
                 </li>
               ))}
             </ul>
           </div>
-        </div>
-
-        <div className="bg-gray-100 p-6 rounded-lg shadow-md mt-6">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-4">Incident & Grievance Reports</h2>
-          <input
-            type="text"
-            placeholder="Enter new grievance report"
-            value={newGrievance}
-            onChange={(e) => setNewGrievance(e.target.value)}
-            className="w-full p-2 border rounded mb-4"
-          />
-          <button onClick={addGrievanceReport} className="bg-pink-500 text-white px-4 py-2 rounded-lg w-full mb-4">Submit Report</button>
-          <ul className="text-gray-600 text-left space-y-2">
-            {grievanceReports.map(report => (
-              <li key={report.id} className="bg-white p-3 rounded shadow flex justify-between">
-                <span>⚠️ <strong>{report.employee}:</strong> {report.issue} (<span className="text-red-600">{report.status}</span>)</span>
-              </li>
-            ))}
-          </ul>
         </div>
       </motion.div>
     </div>
