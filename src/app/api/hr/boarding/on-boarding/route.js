@@ -4,26 +4,22 @@ import { google } from "googleapis";
 import { NextResponse } from "next/server";
 import { Readable } from "stream";
 
+export async function GET() {
+  await connectMongo();
+  const docs = await Onboarding.find();
+  return NextResponse.json(docs);
+}
 
 export async function POST(req) {
   try {
     await connectMongo();
 
     const formData = await req.formData();
-    const file = formData.get("file");
+    const files = formData.getAll("file"); // Get multiple files
 
-    if (!file) {
-      return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
+    if (!files || files.length === 0) {
+      return NextResponse.json({ error: "No files uploaded" }, { status: 400 });
     }
-
-    // Convert file into a buffer
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    // Convert Buffer into a readable stream
-    const bufferStream = new Readable();
-    bufferStream.push(buffer);
-    bufferStream.push(null); // Indicate end of stream
 
     // Authenticate Google Drive API
     const keyFile = JSON.parse(
@@ -37,35 +33,48 @@ export async function POST(req) {
 
     const drive = google.drive({ version: "v3", auth });
 
-    // Upload file to Google Drive
-    const driveResponse = await drive.files.create({
-      requestBody: {
-        name: file.name,
-        mimeType: file.type,
-        parents: [process.env.GOOGLE_DRIVE_FOLDER_ID], // Set your Drive folder ID in .env
-      },
-      media: {
-        mimeType: file.type,
-        body: bufferStream, 
-      },
-      fields: "id",
-    });
+    let previewUrls = [];
+    let downloadUrls = [];
 
-    const fileId = driveResponse.data.id;
-    const previewUrl = `https://drive.google.com/file/d/${fileId}/preview`;
-    const downloadUrl = `https://drive.google.com/uc?id=${fileId}`;
+    // Process each file
+    for (const file of files) {
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
 
-    // Save file details in MongoDB
-    const newFile = await Onboarding.create({
-      fileName: formData.get("name"), // Fix: Access formData correctly
-      previewUrl: previewUrl,
-      downloadUrl: downloadUrl,
+      const bufferStream = new Readable();
+      bufferStream.push(buffer);
+      bufferStream.push(null);
+
+      // Upload to Google Drive
+      const driveResponse = await drive.files.create({
+        requestBody: {
+          name: file.name,
+          mimeType: file.type,
+          parents: [process.env.GOOGLE_DRIVE_FOLDER_ID],
+        },
+        media: {
+          mimeType: file.type,
+          body: bufferStream,
+        },
+        fields: "id",
+      });
+
+      const fileId = driveResponse.data.id;
+      previewUrls.push(`https://drive.google.com/file/d/${fileId}/preview`);
+      downloadUrls.push(`https://drive.google.com/uc?id=${fileId}`);
+    }
+
+    // Save all files in a **single MongoDB document**
+    const newFileEntry = await Onboarding.create({
+      fileName: formData.get("name"), // Single name (if applicable)
+      previewUrls: previewUrls,
+      downloadUrls: downloadUrls,
       uploadedAt: new Date(),
     });
 
     return NextResponse.json({
-      message: "File uploaded successfully",
-      file: newFile,
+      message: "Files uploaded successfully",
+      file: newFileEntry,
     });
   } catch (error) {
     console.error("Upload error:", error);
@@ -73,9 +82,3 @@ export async function POST(req) {
   }
 }
 
-
-  export async function GET() {
-    await connectMongo();
-    const docs = await Onboarding.find();
-    return NextResponse.json(docs);
-  }
