@@ -51,3 +51,14 @@ const LogSchema = new mongoose.Schema(
 
 export const Log = mongoose.models.Log || mongoose.model("Log", LogSchema);
 
+const NetworkLogSchema = new mongoose.Schema({
+  type: String,
+  user: String,
+  details: String,
+  status: String,
+  category: { type: String, enum: ["vpn", "firewall"], required: true }
+});
+
+export const NetworkLog = mongoose.models.NetworkLog || mongoose.model("NetworkLog", NetworkLogSchema);
+
+

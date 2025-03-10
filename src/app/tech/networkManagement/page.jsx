@@ -1,22 +1,28 @@
 "use client"
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Page() {
-  const [vpnLogs, setVpnLogs] = useState([
-    { id: 1, type: "VPN Access", user: "John Doe", status: "Connected" },
-    { id: 2, type: "Remote Desktop", user: "Alice Smith", status: "Failed" },
-  ]);
+  const [vpnLogs, setVpnLogs] = useState([]);
 
-  const [firewallLogs, setFirewallLogs] = useState([
-    { id: 1, type: "Firewall Rule Change", details: "Blocked port 8080", status: "Updated" },
-    { id: 2, type: "Intrusion Attempt", details: "Unauthorized access detected", status: "Critical" },
-  ]);
+  const [firewallLogs, setFirewallLogs] = useState([]);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [newLog, setNewLog] = useState({ type: "", user: "", status: "" });
   const [editingLog, setEditingLog] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [logType, setLogType] = useState("vpn"); // 'vpn' or 'firewall'
+  const [logType, setLogType] = useState("vpn");
+
+  const fetchLogs = async () => {
+    const response = await fetch("/api/tech/network-log");
+    return response.json();
+  };
+
+  useEffect(() => {
+    fetchLogs().then((logs) => {
+      setVpnLogs(logs.filter(log => log.category === "vpn"));
+      setFirewallLogs(logs.filter(log => log.category === "firewall"));
+    });
+  }, []);
 
   const openModal = (log = null, type) => {
     setEditingLog(log);
@@ -25,30 +31,35 @@ export default function Page() {
     setModalOpen(true);
   };
 
-  const handleSave = () => {
-    if (editingLog) {
-      if (logType === "vpn") {
-        setVpnLogs(vpnLogs.map(log => (log.id === editingLog.id ? newLog : log)));
-      } else {
-        setFirewallLogs(firewallLogs.map(log => (log.id === editingLog.id ? newLog : log)));
-      }
-    } else {
-      const newEntry = { ...newLog, id: Date.now() };
-      if (logType === "vpn") {
-        setVpnLogs([...vpnLogs, newEntry]);
-      } else {
-        setFirewallLogs([...firewallLogs, newEntry]);
-      }
-    }
+  const handleSave = async () => {
+    const method = editingLog ? "PUT" : "POST";
+    const logData = { ...newLog, category: logType };
+
+    let response = await fetch("/api/tech/network-log", {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(editingLog ? { id: editingLog._id, ...logData } : logData),
+    });
+
+    response = await response.json();
     setModalOpen(false);
+    fetchLogs().then((logs) => {
+      setVpnLogs(logs.filter(log => log.category === "vpn"));
+      setFirewallLogs(logs.filter(log => log.category === "firewall"));
+    });
   };
 
-  const handleDelete = (id, type) => {
-    if (type === "vpn") {
-      setVpnLogs(vpnLogs.filter(log => log.id !== id));
-    } else {
-      setFirewallLogs(firewallLogs.filter(log => log.id !== id));
-    }
+  const handleDelete = async (id) => {
+    await fetch("/api/tech/network-log", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+
+    fetchLogs().then((logs) => {
+      setVpnLogs(logs.filter(log => log.category === "vpn"));
+      setFirewallLogs(logs.filter(log => log.category === "firewall"));
+    });
   };
 
   return (
@@ -69,7 +80,7 @@ export default function Page() {
           <h2 className="text-xl font-semibold">VPN & Remote Access Logs</h2>
           <button onClick={() => openModal(null, "vpn")} className="bg-blue-500 text-white px-4 py-2 rounded-lg">Add Log</button>
         </div>
-        <table className="w-full mt-2 border-collapse">
+        {vpnLogs && vpnLogs.length > 0 ? <table className="w-full text-center mt-2 border-collapse">
           <thead>
             <tr className="bg-gray-200">
               <th className="p-2">Type</th>
@@ -82,18 +93,18 @@ export default function Page() {
             {vpnLogs
               .filter(log => log.type.toLowerCase().includes(searchTerm.toLowerCase()))
               .map(log => (
-                <tr key={log.id} className="border-t">
+                <tr key={log._id} className="border-t">
                   <td className="p-2">{log.type}</td>
                   <td className="p-2">{log.user}</td>
                   <td className="p-2">{log.status}</td>
                   <td className="p-2">
                     <button onClick={() => openModal(log, "vpn")} className="bg-yellow-500 text-white px-3 py-1 rounded-lg mr-2">Edit</button>
-                    <button onClick={() => handleDelete(log.id, "vpn")} className="bg-red-500 text-white px-3 py-1 rounded-lg">Delete</button>
+                    <button onClick={() => handleDelete(log._id, "vpn")} className="bg-red-500 text-white px-3 py-1 rounded-lg">Delete</button>
                   </td>
                 </tr>
               ))}
           </tbody>
-        </table>
+        </table> : <p>No data to show</p>}
       </div>
 
       {/* Firewall & Intrusion Logs */}
@@ -102,7 +113,7 @@ export default function Page() {
           <h2 className="text-xl font-semibold">Firewall & Intrusion Logs</h2>
           <button onClick={() => openModal(null, "firewall")} className="bg-blue-500 text-white px-4 py-2 rounded-lg">Add Log</button>
         </div>
-        <table className="w-full mt-2 border-collapse">
+       {firewallLogs && firewallLogs.length > 0 ? <table className="w-full text-center mt-2 border-collapse">
           <thead>
             <tr className="bg-gray-200">
               <th className="p-2">Type</th>
@@ -115,18 +126,18 @@ export default function Page() {
             {firewallLogs
               .filter(log => log.type.toLowerCase().includes(searchTerm.toLowerCase()))
               .map(log => (
-                <tr key={log.id} className="border-t">
+                <tr key={log._id} className="border-t">
                   <td className="p-2">{log.type}</td>
                   <td className="p-2">{log.details}</td>
                   <td className="p-2">{log.status}</td>
                   <td className="p-2">
                     <button onClick={() => openModal(log, "firewall")} className="bg-yellow-500 text-white px-3 py-1 rounded-lg mr-2">Edit</button>
-                    <button onClick={() => handleDelete(log.id, "firewall")} className="bg-red-500 text-white px-3 py-1 rounded-lg">Delete</button>
+                    <button onClick={() => handleDelete(log._id, "firewall")} className="bg-red-500 text-white px-3 py-1 rounded-lg">Delete</button>
                   </td>
                 </tr>
               ))}
           </tbody>
-        </table>
+        </table> : <p>No data to show</p>}
       </div>
 
       {/* Modal for Adding/Editing Logs */}
@@ -147,6 +158,13 @@ export default function Page() {
               placeholder="Details/User"
               value={newLog.user || newLog.details}
               onChange={(e) => setNewLog({ ...newLog, user: e.target.value })}
+            />
+            <input
+              className="p-2 w-full rounded-md mb-2 border"
+              type="text"
+              placeholder="Status"
+              value={newLog.status}
+              onChange={(e) => setNewLog({ ...newLog, status: e.target.value })}
             />
             <button onClick={handleSave} className="bg-blue-500 text-white px-6 py-3 rounded-lg">Save</button>
           </div>
