@@ -1,22 +1,28 @@
 "use client"
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Page() {
-  const [changeLogs, setChangeLogs] = useState([
-    { id: 1, type: "Software Update", details: "Updated OS to version 11.2", status: "Completed" },
-    { id: 2, type: "Configuration Change", details: "Modified firewall rules", status: "Pending" },
-  ]);
+  const [changeLogs, setChangeLogs] = useState([]);
 
-  const [policyDocs, setPolicyDocs] = useState([
-    { id: 1, title: "IT Usage Policy", description: "Defines employee IT usage rules", status: "Active" },
-    { id: 2, title: "Backup Schedule", description: "Weekly data backup schedule", status: "Updated" },
-  ]);
+  const [policyDocs, setPolicyDocs] = useState([]);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [newEntry, setNewEntry] = useState({ title: "", details: "", status: "" });
   const [editingItem, setEditingItem] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [entryType, setEntryType] = useState("changeLog");
+
+  useEffect(() => {
+    fetch("/api/tech/it-governance/change-log")
+      .then((res) => res.json())
+      .then((data) => setChangeLogs(data))
+      .catch((err) => console.error("Error fetching change logs:", err));
+
+    fetch("/api/tech/it-governance/policy")
+      .then((res) => res.json())
+      .then((data) => setPolicyDocs(data))
+      .catch((err) => console.error("Error fetching policies:", err));
+  }, []);
 
   const openModal = (item = null, type) => {
     setEditingItem(item);
@@ -25,24 +31,43 @@ export default function Page() {
     setModalOpen(true);
   };
 
-  const handleSave = () => {
-    if (editingItem) {
+  const handleSave = async() => {
+    const url = entryType === "changeLog" ? "/api/tech/it-governance/change-log" : "/api/tech/it-governance/policy";
+    const method = editingItem ? "PUT" : "POST";
+
+    const response = await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...newEntry, id: editingItem ? editingItem._id : undefined }),
+    });
+
+    if (response.ok) {
+      const updatedData = await response.json();
       if (entryType === "changeLog") {
-        setChangeLogs(changeLogs.map(log => (log.id === editingItem.id ? newEntry : log)));
+        setChangeLogs((prev) =>
+          editingItem ? prev.map((log) => (log._id === editingItem._id ? updatedData : log)) : [...prev, updatedData]
+        );
       } else {
-        setPolicyDocs(policyDocs.map(doc => (doc.id === editingItem.id ? newEntry : doc)));
+        setPolicyDocs((prev) =>
+          editingItem ? prev.map((doc) => (doc._id === editingItem._id ? updatedData : doc)) : [...prev, updatedData]
+        );
       }
-    } else {
-      const newItem = { ...newEntry, id: Date.now() };
-      entryType === "changeLog" ? setChangeLogs([...changeLogs, newItem]) : setPolicyDocs([...policyDocs, newItem]);
     }
     setModalOpen(false);
   };
 
-  const handleDelete = (id, type) => {
-    type === "changeLog"
-      ? setChangeLogs(changeLogs.filter(log => log.id !== id))
-      : setPolicyDocs(policyDocs.filter(doc => doc.id !== id));
+  const handleDelete = async (id, type) => {
+    const url = type === "changeLog" ? `/api/tech/it-governance/change-log` : `/api/tech/it-governance/policy`;
+    const response = await fetch(url, { method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id })
+     });
+
+    if (response.ok) {
+      type === "changeLog"
+        ? setChangeLogs((prev) => prev.filter((log) => log._id !== id))
+        : setPolicyDocs((prev) => prev.filter((doc) => doc._id !== id));
+    }
   };
 
   return (
@@ -68,7 +93,7 @@ export default function Page() {
             Add Log
           </button>
         </div>
-        <table className="w-full mt-4 border-collapse text-gray-800">
+       {changeLogs && changeLogs.length > 0 ? <table className="w-full text-center mt-4 border-collapse text-gray-800">
           <thead>
             <tr className="bg-gray-300">
               <th className="p-3">Type</th>
@@ -79,24 +104,24 @@ export default function Page() {
           </thead>
           <tbody>
             {changeLogs
-              .filter(log => log.type.toLowerCase().includes(searchTerm.toLowerCase()))
+              .filter(doc => doc.title.toLowerCase().includes(searchTerm.toLowerCase()))
               .map(log => (
-                <tr key={log.id} className="border-t">
-                  <td className="p-3">{log.type}</td>
+                <tr key={log._id} className="border-t">
+                  <td className="p-3">{log.title}</td>
                   <td className="p-3">{log.details}</td>
                   <td className="p-3">{log.status}</td>
                   <td className="p-3">
                     <button onClick={() => openModal(log, "changeLog")} className="bg-pink-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-pink-600 transition mr-2">
                       Edit
                     </button>
-                    <button onClick={() => handleDelete(log.id, "changeLog")} className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-600 transition">
+                    <button onClick={() => handleDelete(log._id, "changeLog")} className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-600 transition">
                       Delete
                     </button>
                   </td>
                 </tr>
               ))}
           </tbody>
-        </table>
+        </table> : <p className="text-center text-gray-600">No data to show</p>}
       </div>
 
       {/* Policy & Compliance Documentation */}
@@ -110,7 +135,7 @@ export default function Page() {
             Add Policy
           </button>
         </div>
-        <table className="w-full mt-4 border-collapse text-gray-800">
+       {policyDocs && policyDocs.length > 0 ? <table className="w-full text-center mt-4 border-collapse text-gray-800">
           <thead>
             <tr className="bg-gray-300">
               <th className="p-3">Title</th>
@@ -123,22 +148,22 @@ export default function Page() {
             {policyDocs
               .filter(doc => doc.title.toLowerCase().includes(searchTerm.toLowerCase()))
               .map(doc => (
-                <tr key={doc.id} className="border-t">
+                <tr key={doc._id} className="border-t">
                   <td className="p-3">{doc.title}</td>
-                  <td className="p-3">{doc.description}</td>
+                  <td className="p-3">{doc.details}</td>
                   <td className="p-3">{doc.status}</td>
                   <td className="p-3">
                     <button onClick={() => openModal(doc, "policyDoc")} className="bg-pink-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-pink-600 transition mr-2">
                       Edit
                     </button>
-                    <button onClick={() => handleDelete(doc.id, "policyDoc")} className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-600 transition">
+                    <button onClick={() => handleDelete(doc._id, "policyDoc")} className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-600 transition">
                       Delete
                     </button>
                   </td>
                 </tr>
               ))}
           </tbody>
-        </table>
+        </table> : <p className="text-center text-gray-600">No data to show</p>}
       </div>
 
       {/* Modal for Adding/Editing Logs & Policies */}
@@ -159,6 +184,13 @@ export default function Page() {
               placeholder="Details/Description"
               value={newEntry.details}
               onChange={(e) => setNewEntry({ ...newEntry, details: e.target.value })}
+            />
+            <input
+              className="p-3 w-full rounded-md mb-3 border"
+              type="text"
+              placeholder="status"
+              value={newEntry.status}
+              onChange={(e) => setNewEntry({ ...newEntry, status: e.target.value })}
             />
             <button onClick={handleSave} className="bg-pink-500 text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-pink-600 transition w-full">
               Save
