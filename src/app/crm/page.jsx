@@ -24,6 +24,7 @@ export default function Page() {
     priority: "",
     group: "",
     agent: "",
+    department: "",
     product: "",
     message: "",
     reference: "",
@@ -31,16 +32,19 @@ export default function Page() {
     lastInteraction: new Date().toISOString(),
   });
 
-  useEffect(() => {
-    const getAgents = async () => {
-      let res = await fetch('/api/ticketService/agents')
-      res = await res.json();
+  const getAgents = async (dep) => {
+    try {
+      const res = await fetch(`/api/ticketService/agents?department=${dep}`);
+      const data = await res.json();
       if (res.ok) {
-        setAgents(res.agents)
+        setAgents(data.agents);
+      } else {
+        console.error("Error fetching agents:", data.message);
       }
+    } catch (error) {
+      console.error("Failed to fetch agents:", error);
     }
-    getAgents();
-  }, [])
+  };
 
   // 🔹 Fetch tickets from the backend
   useEffect(() => {
@@ -113,6 +117,7 @@ export default function Page() {
           priority: newTicket.priority,
           group: newTicket.group,
           agentId: newTicket.agent,
+          department: newTicket.department,
           product: newTicket.product,
           message: newTicket.message,
           reference: newTicket.reference,
@@ -324,6 +329,26 @@ export default function Page() {
                     value={newTicket.group}
                     onChange={(e) => setNewTicket({ ...newTicket, group: e.target.value })}
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Department</label>
+                  <select
+                    value={newTicket.department}
+                    onChange={async (e) => {
+                      const selectedDepartment = e.target.value;
+                      setNewTicket({ ...newTicket, department: selectedDepartment });
+                      await getAgents(selectedDepartment);
+                    }}
+                    className="border rounded-md p-2 w-full"
+                  >
+                    <option value="">Select Department</option>
+                    <option value="Development">Development</option>
+                    <option value="IT">IT</option>
+                    <option value="Compliance">Compliance</option>
+                    <option value="CyberSecurity">CyberSecurity</option>
+                    <option value="Sales">Sales</option>
+                    <option value="Research">Research</option>
+                  </select>
                 </div>
 
                 <div>

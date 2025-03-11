@@ -5,7 +5,7 @@ import {Agent} from "@/models/ticket";
 export async function GET() {
     try {
       await connectMongo();
-      const agents = await Agent.find().select("name ticketsResolved ticketsAssigned");
+      const agents = await Agent.find().select("name department ticketsResolved ticketsAssigned");
   
       return NextResponse.json({  agents });
     } catch (err) {

@@ -124,7 +124,7 @@ const Page = () => {
             </Link>
           </motion.div>
 
-          <motion.div
+          {/* <motion.div
             className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
             whileHover={{ scale: 1.05 }}
           >
@@ -136,7 +136,7 @@ const Page = () => {
             >
               Learn More &rarr;
             </Link>
-          </motion.div>
+          </motion.div> */}
 
           <motion.div
             className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"

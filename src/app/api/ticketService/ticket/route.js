@@ -4,26 +4,34 @@ import connectMongo from "@/lib/db";
 import {Ticket, Agent} from "@/models/ticket";
 
 export async function GET(req) {
-    await connectMongo();
-    const { searchParams } = new URL(req.url);
-    const email = searchParams.get("email"); // Optional email filter
+  await connectMongo();
+
+  const { searchParams } = new URL(req.url);
+  const email = searchParams.get("email"); 
+  const department = searchParams.get("department");
+  const statusParam = searchParams.get("status"); 
+
+  const query = {};
+  if (email) query.email = email;
+  if (department) query.department = department;
   
-    let tickets;
-    if (email) {
-      tickets = await Ticket.find({ email });
-    } else {
-      tickets = await Ticket.find({}).populate('agentId');
-    }
-  
-    return NextResponse.json({ success: true, tickets });
+  if (statusParam) {
+    const statuses = statusParam.split(','); 
+    query.status = { $in: statuses };
   }
+
+  const tickets = await Ticket.find(query).populate('agentId');
+
+  return NextResponse.json({ success: true, tickets });
+}
+
 
 export async function POST(req) {
   await connectMongo();
   const { email, subject, source,
     priority,
     group,
-    agentId,product,message,reference, tags } = await req.json();
+    agentId,department,product,message,reference, tags } = await req.json();
 
   const newTicket = await Ticket.create({
     email,
@@ -32,6 +40,7 @@ export async function POST(req) {
     priority,
     group,
     agentId,
+    department,
     product,
     message,
     reference,

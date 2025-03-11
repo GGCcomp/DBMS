@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const agentSchema = new mongoose.Schema({
   name: String,
   email: String,
+  department: { type: String, enum: ["Development", "IT",  "Compliance", "CyberSecurity", "Sales", "Research"], required: true },
   ticketsResolved: { type: Number, default: 0 },
   ticketsAssigned: { type: Number, default: 0 },
 });
@@ -17,6 +18,7 @@ const ticketSchema = new mongoose.Schema(
     priority: { type: String, enum: ["Low", "Medium", "High", "Critical"], default: "Medium" }, // Priority levels
     group: { type: String }, // Group assignment
     agentId: { type: mongoose.Schema.Types.ObjectId, ref: "Agent" }, // Assigned agent (reference)
+    department: { type: String, enum: ["Development", "IT",  "Compliance", "CyberSecurity", "Sales", "Research"], required: true },
     product: { type: String }, // Related product
     message: { type: String, required: true },
     reference: { type: String }, // Reference ID

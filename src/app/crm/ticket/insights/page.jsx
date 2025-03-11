@@ -31,7 +31,7 @@ export default function Page() {
         <h2 className="text-xl font-semibold">Agent Performance</h2>
         {agents.map(agent => (
           <motion.div key={agent._id} className="bg-gray-100 p-2 rounded-md mt-2">
-            <p>{agent.name} - {agent.ticketsAssigned} Ticket Assigned - {agent.ticketsResolved} Tickets Resolved</p>
+            <p>{agent.name}, Department:- {agent.department} - {agent.ticketsAssigned} Ticket Assigned - {agent.ticketsResolved} Tickets Resolved</p>
           </motion.div>
         ))}
       </div>

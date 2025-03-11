@@ -61,4 +61,15 @@ const NetworkLogSchema = new mongoose.Schema({
 
 export const NetworkLog = mongoose.models.NetworkLog || mongoose.model("NetworkLog", NetworkLogSchema);
 
+const ITAnnouncementSchema = new mongoose.Schema({
+  title: String,
+  details: String,
+  type: { type: String, enum: ["Alert", "Security"], required: true }
+},
+{ timestamps: true });
+
+export const ITAnnouncement = mongoose.models.ITAnnouncement || mongoose.model("ITAnnouncement", ITAnnouncementSchema);
+
+
+
 
