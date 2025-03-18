@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 const Modal = ({ title, defaultTitle = "", defaultFiles = [], defaultCategory = "", onClose, onSave }) => {
   const [inputTitle, setInputTitle] = useState(defaultTitle);
   const [selectedFiles, setSelectedFiles] = useState(defaultFiles);
+  const [text, setText] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(defaultCategory);
 
   const handleFileChange = (e) => {
@@ -28,12 +29,14 @@ const Modal = ({ title, defaultTitle = "", defaultFiles = [], defaultCategory = 
           onChange={(e) => setInputTitle(e.target.value)}
           className="w-full p-2 border rounded-md mb-3"
           placeholder="Enter document title"
+          required
         />
 
         <select
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
           className="w-full p-2 border rounded-md mb-3"
+          required
         >
           <option value="">Select a category</option>
           <option value="releases">Releases</option>
@@ -42,13 +45,16 @@ const Modal = ({ title, defaultTitle = "", defaultFiles = [], defaultCategory = 
           <option value="changes">Changes</option>
         </select>
 
-        <input
+        {selectedCategory === "changes" && <textarea onChange={(e) => setText(e.target.value)} className="p-2 w-full border rounded-md" placeholder="Enter Content..."></textarea>}
+
+        {selectedCategory !== "changes" && <input
           type="file"
           multiple
           accept="application/pdf"
           onChange={handleFileChange}
           className="w-full p-2 border rounded-md"
-        />
+          required
+        />}
 
         <div className="flex justify-end space-x-3 mt-4">
           <button
@@ -59,7 +65,7 @@ const Modal = ({ title, defaultTitle = "", defaultFiles = [], defaultCategory = 
           </button>
           <button
             className="bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition"
-            onClick={() => onSave(inputTitle, selectedCategory, selectedFiles)}
+            onClick={() => onSave(inputTitle, selectedCategory, selectedFiles, text)}
           >
             Save
           </button>
@@ -104,10 +110,11 @@ const Page = () => {
     fetchDocuments();
   }, []);
 
-  const handleSaveDocument = async (title, category, files) => {
+  const handleSaveDocument = async (title, category, files, text) => {
     const formData = new FormData();
     formData.append("name", title);
     formData.append("category", category);
+    formData.append("text", text)
     Array.from(files).forEach(file => formData.append("file", file));
 
     const res = await fetch("/api/development/release-overview", {
@@ -141,16 +148,17 @@ const Page = () => {
             <h3 className="text-xl font-semibold capitalize">{category}</h3>
             {documents[category].length > 0 ? (
               documents[category].map((doc, index) => (
-                <div key={index} className="flex justify-between items-center border-b py-2">
-                  <span>{doc.fileName}</span>
-                  <div className="flex space-x-3">
+                <div key={index} className="border-b py-2">
+                  <span className="font-semibold text-xl uppercase">{index+1}. {doc.fileName}</span>
+                  {doc.text && <p className="p-2">{doc.text}</p>}
+                  <div className="flex space-x-3 py-1">
                     {doc.previewUrls.map((url, idx) => (
                       <a
                         key={idx}
                         href={url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-500 hover:underline"
+                        className="text-blue-500 hover:bg-blue-500 hover:text-white px-3 py-1 border border-blue-500 rounded-md"
                       >
                         View
                       </a>
@@ -160,7 +168,7 @@ const Page = () => {
                         key={idx}
                         href={url}
                         download
-                        className="text-green-500 hover:underline"
+                        className="text-green-500 hover:bg-green-500 hover:text-white px-3 py-1 border border-green-500 rounded-md"
                       >
                         Download
                       </a>

@@ -17,6 +17,7 @@ const releaseOverviewSchema = new mongoose.Schema({
     enum: ["releases", "deployments", "alerts", "changes"], 
     required: true 
   },
+  text: String,
   previewUrls: [{ type: String, required: true }], 
   downloadUrls: [{ type: String, required: true }], 
   uploadedAt: { type: Date, default: Date.now }, 
