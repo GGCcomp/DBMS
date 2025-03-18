@@ -1,10 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
-const Modal = ({ title, defaultValue, onClose, onSave }) => {
-  const [inputValue, setInputValue] = useState(defaultValue || "");
+const Modal = ({ title, defaultTitle = "", defaultFiles = [], defaultCategory = "", onClose, onSave }) => {
+  const [inputTitle, setInputTitle] = useState(defaultTitle);
+  const [selectedFiles, setSelectedFiles] = useState(defaultFiles);
+  const [selectedCategory, setSelectedCategory] = useState(defaultCategory);
+
+  const handleFileChange = (e) => {
+    setSelectedFiles([...e.target.files]);
+  };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
@@ -15,13 +21,35 @@ const Modal = ({ title, defaultValue, onClose, onSave }) => {
         className="bg-white p-6 rounded-lg shadow-xl w-96"
       >
         <h2 className="text-2xl font-semibold mb-4">{title}</h2>
+
         <input
           type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Enter details"
+          value={inputTitle}
+          onChange={(e) => setInputTitle(e.target.value)}
+          className="w-full p-2 border rounded-md mb-3"
+          placeholder="Enter document title"
         />
+
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          className="w-full p-2 border rounded-md mb-3"
+        >
+          <option value="">Select a category</option>
+          <option value="releases">Releases</option>
+          <option value="deployments">Deployments</option>
+          <option value="alerts">Alerts</option>
+          <option value="changes">Changes</option>
+        </select>
+
+        <input
+          type="file"
+          multiple
+          accept="application/pdf"
+          onChange={handleFileChange}
+          className="w-full p-2 border rounded-md"
+        />
+
         <div className="flex justify-end space-x-3 mt-4">
           <button
             className="bg-gray-400 text-white px-4 py-2 rounded-md hover:bg-gray-500 transition"
@@ -31,7 +59,7 @@ const Modal = ({ title, defaultValue, onClose, onSave }) => {
           </button>
           <button
             className="bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition"
-            onClick={() => onSave(inputValue)}
+            onClick={() => onSave(inputTitle, selectedCategory, selectedFiles)}
           >
             Save
           </button>
@@ -42,24 +70,55 @@ const Modal = ({ title, defaultValue, onClose, onSave }) => {
 };
 
 const Page = () => {
-  const [logs, setLogs] = useState({
+  const [documents, setDocuments] = useState({
     releases: [],
     deployments: [],
     alerts: [],
     changes: [],
   });
-  const [modalData, setModalData] = useState({ open: false, type: "", data: "" });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [modalData, setModalData] = useState({ open: false, title: "", files: [], category: "" });
 
-  const handleOpenModal = (type, data = "") => {
-    setModalData({ open: true, type, data });
+  const handleOpenModal = () => setModalData({ open: true, title: "", files: [], category: "" });
+
+  const fetchDocuments = async () => {
+    try {
+      const res = await fetch("/api/development/release-overview"); 
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to fetch documents");
+      }
+
+      setDocuments(data.documents); 
+    } catch (err) {
+      console.error("Error fetching documents:", err.message);
+      setError("Failed to load documents. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSaveLog = (type, data) => {
-    setLogs((prev) => ({
-      ...prev,
-      [type]: [...prev[type], data],
-    }));
-    setModalData({ open: false, type: "", data: "" });
+  useEffect(() => {
+    fetchDocuments();
+  }, []);
+
+  const handleSaveDocument = async (title, category, files) => {
+    const formData = new FormData();
+    formData.append("name", title);
+    formData.append("category", category);
+    Array.from(files).forEach(file => formData.append("file", file));
+
+    const res = await fetch("/api/development/release-overview", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (res.ok) {
+      fetchDocuments();
+      setModalData({ open: false, title: "", files: [], category: "" });
+    }
   };
 
   return (
@@ -70,50 +129,67 @@ const Page = () => {
         transition={{ duration: 0.5 }}
         className="text-4xl font-bold text-white mb-6"
       >
-        Development & Release Overview
+        Document Management
       </motion.h1>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
-        {Object.keys(logs).map((key) => (
-          <motion.div
-            key={key}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4 }}
-            className="p-6 bg-white bg-opacity-20 rounded-lg backdrop-blur-md shadow-lg hover:scale-105 transition"
-          >
-            <h2 className="text-2xl font-semibold text-white capitalize">{key.replace(/([A-Z])/g, " $1").trim()}</h2>
-            <ul className="mt-3 space-y-2">
-              {logs[key].length > 0 ? (
-                logs[key].map((log, index) => (
-                  <li
-                    key={index}
-                    className="p-3 bg-gray-900 bg-opacity-30 text-white rounded-lg cursor-pointer hover:bg-opacity-50 transition"
-                    onClick={() => handleOpenModal(key, log)}
-                  >
-                    {log}
-                  </li>
-                ))
-              ) : (
-                <p className="text-gray-300 text-sm">No logs available.</p>
-              )}
-            </ul>
-            <button
-              className="mt-4 bg-pink-500 text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-pink-600 transition"
-              onClick={() => handleOpenModal(key)}
-            >
-              + Add {key.replace(/([A-Z])/g, " $1").trim()}
-            </button>
-          </motion.div>
+      {loading && <p className="text-white text-lg">Loading documents...</p>}
+      {error && <p className="text-red-500 text-lg">{error}</p>}
+
+      <div className="w-full max-w-4xl space-y-4">
+        {Object.keys(documents).map((category) => (
+          <div key={category} className="bg-white p-4 rounded-lg shadow-md">
+            <h3 className="text-xl font-semibold capitalize">{category}</h3>
+            {documents[category].length > 0 ? (
+              documents[category].map((doc, index) => (
+                <div key={index} className="flex justify-between items-center border-b py-2">
+                  <span>{doc.fileName}</span>
+                  <div className="flex space-x-3">
+                    {doc.previewUrls.map((url, idx) => (
+                      <a
+                        key={idx}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:underline"
+                      >
+                        View
+                      </a>
+                    ))}
+                    {doc.downloadUrls.map((url, idx) => (
+                      <a
+                        key={idx}
+                        href={url}
+                        download
+                        className="text-green-500 hover:underline"
+                      >
+                        Download
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-400 text-sm">No documents available.</p>
+            )}
+          </div>
         ))}
+
+        <button
+          className="mt-4 bg-pink-500 text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-pink-600 transition"
+          onClick={handleOpenModal}
+        >
+          + Add Document
+        </button>
       </div>
 
       {modalData.open && (
         <Modal
-          title={`Manage ${modalData.type.replace(/([A-Z])/g, " $1").trim()}`}
-          defaultValue={modalData.data}
-          onClose={() => setModalData({ open: false, type: "", data: "" })}
-          onSave={(data) => handleSaveLog(modalData.type, data)}
+          title="Add Document"
+          defaultTitle={modalData.title}
+          defaultFiles={modalData.files}
+          defaultCategory={modalData.category}
+          onClose={() => setModalData({ open: false, title: "", files: [], category: "" })}
+          onSave={handleSaveDocument}
         />
       )}
     </div>
