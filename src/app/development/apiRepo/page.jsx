@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
 const Page = () => {
+  
   const [logs, setLogs] = useState({
     documentation: [],
     versionControl: [],
@@ -13,33 +14,66 @@ const Page = () => {
   const [modalData, setModalData] = useState({ open: false, type: "", data: "", index: null });
   const [inputValue, setInputValue] = useState("");
 
+  const fetchLogs = async () => {
+    try {
+      const res = await fetch('/api/development/api-repo');
+      const data = await res.json();
+
+      if (data) {
+        setLogs({
+          documentation: data.documentation || [],
+          versionControl: data.versionControl || [],
+          testingLogs: data.testingLogs || [],
+          integrations: data.integrations || []
+        });
+      } else {
+        setLogs({
+          documentation: [],
+          versionControl: [],
+          testingLogs: [],
+          integrations: []
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching logs:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchLogs();
+  }, []);
+
   const handleOpenModal = (type, data = "", index = null) => {
     setModalData({ open: true, type, data, index });
     setInputValue(data);
   };
 
-  const handleSaveLog = () => {
+  const handleSaveLog = async () => {
     if (!inputValue.trim()) return;
-    setLogs((prev) => {
-      const updatedLogs = { ...prev };
-      if (modalData.index !== null) {
-        updatedLogs[modalData.type][modalData.index] = inputValue;
-      } else {
-        updatedLogs[modalData.type] = [...prev[modalData.type], inputValue];
-      }
-      return updatedLogs;
+
+    await fetch('/api/development/api-repo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: modalData.type,
+        data: inputValue
+      })
     });
-    setModalData({ open: false, type: "", data: "", index: null });
-    setInputValue("");
+
+    fetchLogs();
   };
 
-  const handleDeleteLog = (type, index) => {
-    setLogs((prev) => {
-      const updatedLogs = { ...prev };
-      updatedLogs[type].splice(index, 1);
-      return { ...updatedLogs };
+
+  const handleDeleteLog = async (type, index) => {
+    await fetch('/api/development/api-repo', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, index })
     });
+
+    fetchLogs();
   };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-blue-500 to-purple-500 p-6 flex flex-col items-center">
@@ -51,7 +85,7 @@ const Page = () => {
       >
         API & Integration Repository
       </motion.h1>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
         {Object.keys(logs).map((key) => (
           <motion.div
@@ -65,13 +99,15 @@ const Page = () => {
               {key.replace(/([A-Z])/g, " $1").trim()}
             </h2>
             <ul className="mt-3 space-y-2">
-              {logs[key].length > 0 ? (
+              {Array.isArray(logs[key]) && logs[key].length > 0 ? (
                 logs[key].map((log, index) => (
                   <li
                     key={index}
                     className="p-3 bg-gray-900 bg-opacity-30 text-white rounded-lg flex justify-between items-center"
                   >
-                    <span className="cursor-pointer hover:underline" onClick={() => handleOpenModal(key, log, index)}>
+                    <span className="cursor-pointer hover:underline"
+                      onClick={() => handleOpenModal(key, log, index)}
+                    >
                       {log}
                     </span>
                     <button
