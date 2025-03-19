@@ -1,32 +1,34 @@
 import { google } from "googleapis";
 import { NextResponse } from "next/server";
-import { Log } from "@/models/tech";
+import { SecurityCompliance } from "@/models/development";
 import connectMongo from "@/lib/db";
 import { Readable } from "stream";
 
 export async function GET() {
-    try {
-      await connectMongo();
+  try {
+    await connectMongo();
 
-      const documents = await Log.find();
-  
-      const categorizedDocuments = {
-        compliance: [],
-        security: [],
-        incidents: []
-      };
-  
-      documents.forEach((doc) => {
-        categorizedDocuments[doc.category].push(doc);
-      });
-  
-      return NextResponse.json({ documents: categorizedDocuments }, { status: 200 });
-  
-    } catch (error) {
-      console.error("Error fetching documents:", error);
-      return NextResponse.json({ error: "Failed to retrieve documents" }, { status: 500 });
-    }
+    const documents = await SecurityCompliance.find();
+
+    const categorizedDocuments = {
+      compliance: [],
+      audits: [],
+      incidents: [],
+      encryption: [],
+      accessControl: []
+    };
+
+    documents.forEach((doc) => {
+      categorizedDocuments[doc.category].push(doc);
+    });
+
+    return NextResponse.json({ documents: categorizedDocuments }, { status: 200 });
+
+  } catch (error) {
+    console.error("Error fetching documents:", error);
+    return NextResponse.json({ error: "Failed to retrieve documents" }, { status: 500 });
   }
+}
 
 export async function POST(req) {
   try {
@@ -35,6 +37,7 @@ export async function POST(req) {
     const formData = await req.formData();
     const files = formData.getAll("file");
     const category = formData.get("category");
+    const text = formData.get("text");
 
     // if (!files || files.length === 0) {
     //   return NextResponse.json({ error: "No files uploaded" }, { status: 400 });
@@ -80,9 +83,10 @@ export async function POST(req) {
       downloadUrls.push(`https://drive.google.com/uc?id=${fileId}`);
     }
 
-    const newFileEntry = await Log.create({
+    const newFileEntry = await SecurityCompliance.create({
       fileName: formData.get("name"),
       category: category,
+      text: text,
       previewUrls: previewUrls,
       downloadUrls: downloadUrls,
       uploadedAt: new Date(),

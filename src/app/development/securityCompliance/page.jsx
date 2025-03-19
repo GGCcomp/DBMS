@@ -1,51 +1,133 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
+const Modal = ({ title, defaultTitle = "", defaultFiles = [], defaultCategory = "", onClose, onSave }) => {
+  const [inputTitle, setInputTitle] = useState(defaultTitle);
+  const [selectedFiles, setSelectedFiles] = useState(defaultFiles);
+  const [text, setText] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState(defaultCategory);
+
+  const handleFileChange = (e) => {
+    setSelectedFiles([...e.target.files]);
+  };
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3 }}
+        className="bg-white p-6 rounded-lg shadow-xl w-96"
+      >
+        <h2 className="text-2xl font-semibold mb-4">{title}</h2>
+
+        <input
+          type="text"
+          value={inputTitle}
+          onChange={(e) => setInputTitle(e.target.value)}
+          className="w-full p-2 border rounded-md mb-3"
+          placeholder="Enter document title"
+          required
+        />
+
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          className="w-full p-2 border rounded-md mb-3"
+          required
+        >
+          <option value="">Select a category</option>
+          <option value="compliance">Compliance</option>
+          <option value="audits">Audits</option>
+          <option value="incidents">Incidents</option>
+          <option value="encryption">Encryption</option>
+          <option value="accessControl">Access Control</option>
+        </select>
+
+        {selectedCategory === "incidents" && <textarea onChange={(e) => setText(e.target.value)} className="p-2 w-full border rounded-md" placeholder="Enter Content..."></textarea>}
+
+        {selectedCategory !== "incidents" && <input
+          type="file"
+          multiple
+          accept="application/pdf"
+          onChange={handleFileChange}
+          className="w-full p-2 border rounded-md"
+          required
+        />}
+
+        <div className="flex justify-end space-x-3 mt-4">
+          <button
+            className="bg-gray-400 text-white px-4 py-2 rounded-md hover:bg-gray-500 transition"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            className="bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition"
+            onClick={() => onSave(inputTitle, selectedCategory, selectedFiles, text)}
+          >
+            Save
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
 const Page = () => {
-  const [logs, setLogs] = useState({
+  const [documents, setDocuments] = useState({
     compliance: [],
     audits: [],
     incidents: [],
     encryption: [],
+    accessControl: []
   });
-  const [editIndex, setEditIndex] = useState(null);
-  const [inputValue, setInputValue] = useState("");
-  const [currentType, setCurrentType] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [modalData, setModalData] = useState({ open: false, title: "", files: [], category: "" });
 
-  const handleAddOrEditLog = () => {
-    if (!inputValue.trim()) return;
-    setLogs((prev) => {
-      const updatedLogs = { ...prev };
-      if (editIndex !== null) {
-        updatedLogs[currentType][editIndex] = inputValue;
-      } else {
-        updatedLogs[currentType] = [...updatedLogs[currentType], inputValue];
+  const handleOpenModal = () => setModalData({ open: true, title: "", files: [], category: "" });
+
+  const fetchDocuments = async () => {
+    try {
+      const res = await fetch("/api/development/security-compliance"); 
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to fetch documents");
       }
-      return updatedLogs;
+
+      setDocuments(data.documents); 
+    } catch (err) {
+      console.error("Error fetching documents:", err.message);
+      setError("Failed to load documents. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDocuments();
+  }, []);
+
+  const handleSaveDocument = async (title, category, files, text) => {
+    const formData = new FormData();
+    formData.append("name", title);
+    formData.append("category", category);
+    formData.append("text", text)
+    Array.from(files).forEach(file => formData.append("file", file));
+
+    const res = await fetch("/api/development/security-compliance", {
+      method: "POST",
+      body: formData,
     });
-    resetForm();
-  };
 
-  const handleEdit = (type, index) => {
-    setCurrentType(type);
-    setEditIndex(index);
-    setInputValue(logs[type][index]);
-  };
-
-  const handleDelete = (type, index) => {
-    setLogs((prev) => {
-      const updatedLogs = { ...prev };
-      updatedLogs[type] = updatedLogs[type].filter((_, i) => i !== index);
-      return updatedLogs;
-    });
-  };
-
-  const resetForm = () => {
-    setEditIndex(null);
-    setInputValue("");
-    setCurrentType("");
+    if (res.ok) {
+      fetchDocuments();
+      setModalData({ open: false, title: "", files: [], category: "" });
+    }
   };
 
   return (
@@ -56,83 +138,69 @@ const Page = () => {
         transition={{ duration: 0.5 }}
         className="text-4xl font-bold text-white mb-6"
       >
-        Security & Compliance Documentation
+        Security & Compliances
       </motion.h1>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
-        {Object.keys(logs).map((key) => (
-          <motion.div
-            key={key}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4 }}
-            className="p-6 bg-white bg-opacity-20 rounded-lg backdrop-blur-md shadow-lg hover:scale-105 transition"
-          >
-            <h2 className="text-2xl font-semibold text-white capitalize">
-              {key.replace(/([A-Z])/g, " $1").trim()}
-            </h2>
-            <ul className="mt-3 space-y-2">
-              {logs[key].length > 0 ? (
-                logs[key].map((log, index) => (
-                  <li
-                    key={index}
-                    className="p-3 bg-gray-900 bg-opacity-30 text-white rounded-lg flex justify-between items-center"
-                  >
-                    <span>{log}</span>
-                    <div className="space-x-2">
-                      <button
-                        className="bg-yellow-400 text-black px-2 py-1 rounded"
-                        onClick={() => handleEdit(key, index)}
+      {loading && <p className="text-white text-lg">Loading documents...</p>}
+      {error && <p className="text-red-500 text-lg">{error}</p>}
+
+      <div className="w-full max-w-4xl space-y-4">
+        {Object.keys(documents).map((category) => (
+          <div key={category} className="bg-white p-4 rounded-lg shadow-md">
+            <h3 className="text-xl font-semibold capitalize">{category}</h3>
+            {documents[category].length > 0 ? (
+              documents[category].map((doc, index) => (
+                <div key={index} className="border-b py-2">
+                  <span className="font-semibold text-xl uppercase">{index+1}. {doc.fileName}</span>
+                  {doc.text && <p className="p-2">{doc.text}</p>}
+                  <div className="flex space-x-3 py-1">
+                    {doc.previewUrls.map((url, idx) => (
+                      <a
+                        key={idx}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:bg-blue-500 hover:text-white px-3 py-1 border border-blue-500 rounded-md"
                       >
-                        Edit
-                      </button>
-                      <button
-                        className="bg-red-500 text-white px-2 py-1 rounded"
-                        onClick={() => handleDelete(key, index)}
+                        View
+                      </a>
+                    ))}
+                    {doc.downloadUrls.map((url, idx) => (
+                      <a
+                        key={idx}
+                        href={url}
+                        download
+                        className="text-green-500 hover:bg-green-500 hover:text-white px-3 py-1 border border-green-500 rounded-md"
                       >
-                        Delete
-                      </button>
-                    </div>
-                  </li>
-                ))
-              ) : (
-                <p className="text-gray-300 text-sm">No logs available.</p>
-              )}
-            </ul>
-            <button
-              className="mt-4 bg-pink-500 text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-pink-600 transition"
-              onClick={() => setCurrentType(key)}
-            >
-              + Add {key.replace(/([A-Z])/g, " $1").trim()}
-            </button>
-          </motion.div>
+                        Download
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-400 text-sm">No documents available.</p>
+            )}
+          </div>
         ))}
+
+        <button
+          className="mt-4 bg-pink-500 text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-pink-600 transition"
+          onClick={handleOpenModal}
+        >
+          + Add Document
+        </button>
       </div>
 
-      {currentType && (
-        <div className="fixed bottom-6 w-full max-w-lg bg-white p-4 rounded-lg shadow-lg">
-          <h2 className="text-lg font-semibold">{editIndex !== null ? "Edit" : "Add"} {currentType.replace(/([A-Z])/g, " $1").trim()}</h2>
-          <input
-            type="text"
-            className="w-full p-2 border rounded mt-2"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-          />
-          <div className="flex justify-end space-x-2 mt-2">
-            <button
-              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition"
-              onClick={resetForm}
-            >
-              Cancel
-            </button>
-            <button
-              className="bg-pink-500 text-white px-4 py-2 rounded hover:bg-pink-600 transition"
-              onClick={handleAddOrEditLog}
-            >
-              {editIndex !== null ? "Update" : "Save"}
-            </button>
-          </div>
-        </div>
+      {modalData.open && (
+        <Modal
+          title="Add Document"
+          defaultTitle={modalData.title}
+          defaultFiles={modalData.files}
+          defaultCategory={modalData.category}
+          onClose={() => setModalData({ open: false, title: "", files: [], category: "" })}
+          onSave={handleSaveDocument}
+        />
       )}
     </div>
   );

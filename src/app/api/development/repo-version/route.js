@@ -1,6 +1,6 @@
 import { google } from "googleapis";
 import { NextResponse } from "next/server";
-import { Log } from "@/models/tech";
+import { RepoVersion } from "@/models/development";
 import connectMongo from "@/lib/db";
 import { Readable } from "stream";
 
@@ -8,12 +8,14 @@ export async function GET() {
     try {
       await connectMongo();
 
-      const documents = await Log.find();
+      const documents = await RepoVersion.find();
   
       const categorizedDocuments = {
-        compliance: [],
-        security: [],
-        incidents: []
+        versions: [],
+        branches: [], 
+        repositories: [], 
+        reviews: [],
+        documentation: [], testingLogs: [], integrations: []
       };
   
       documents.forEach((doc) => {
@@ -35,6 +37,7 @@ export async function POST(req) {
     const formData = await req.formData();
     const files = formData.getAll("file");
     const category = formData.get("category");
+    const text = formData.get("text");
 
     // if (!files || files.length === 0) {
     //   return NextResponse.json({ error: "No files uploaded" }, { status: 400 });
@@ -80,9 +83,10 @@ export async function POST(req) {
       downloadUrls.push(`https://drive.google.com/uc?id=${fileId}`);
     }
 
-    const newFileEntry = await Log.create({
+    const newFileEntry = await RepoVersion.create({
       fileName: formData.get("name"),
       category: category,
+      text: text,
       previewUrls: previewUrls,
       downloadUrls: downloadUrls,
       uploadedAt: new Date(),

@@ -1,13 +1,17 @@
 "use client";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import AllLeaves from "./AllLeaves";
 import Link from "next/link";
 
 function Footer() {
   const [showLeaves, setShowLeaves] = useState(false);
+  const {data: session} = useSession();
 
   return (
-    <div className="bg-gradient-to-r from-blue-600 to-purple-700 text-white">
+    <>
+    {
+      session && <div className="bg-gradient-to-r from-blue-600 to-purple-700 text-white">
       {/* Navigation Links */}
       <nav className="flex justify-center space-x-6 py-4">
         {["/crm", "/thread", "/announcement"].map((link, i) => (
@@ -38,7 +42,8 @@ function Footer() {
           &copy; 2025 Innate Gamma Private Limited. All rights reserved.
         </p>
       </footer>
-    </div>
+    </div>}
+    </>
   );
 }
 

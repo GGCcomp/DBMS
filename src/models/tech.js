@@ -42,11 +42,17 @@ const PolicyDocSchema = new mongoose.Schema({
 export const PolicyDoc = mongoose.models.PolicyDoc || mongoose.model("PolicyDoc", PolicyDocSchema);
 
 const LogSchema = new mongoose.Schema(
-  {
-    type: { type: String, required: true, enum: ["compliance", "security", "incident"] },
-    message: { type: String, required: true },
+ {
+  fileName: { type: String, required: true }, 
+  category: { 
+    type: String, 
+    enum: ["compliance", "security", "incidents"], 
+    required: true 
   },
-  { timestamps: true }
+  previewUrls: [{ type: String, required: true }], 
+  downloadUrls: [{ type: String, required: true }], 
+  uploadedAt: { type: Date, default: Date.now }, 
+}
 );
 
 export const Log = mongoose.models.Log || mongoose.model("Log", LogSchema);

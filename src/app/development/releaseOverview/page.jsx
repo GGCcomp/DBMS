@@ -90,7 +90,7 @@ const Page = () => {
 
   const fetchDocuments = async () => {
     try {
-      const res = await fetch("/api/development/release-overview"); 
+      const res = await fetch("/api/development/overview"); 
       const data = await res.json();
 
       if (!res.ok) {
@@ -117,7 +117,7 @@ const Page = () => {
     formData.append("text", text)
     Array.from(files).forEach(file => formData.append("file", file));
 
-    const res = await fetch("/api/development/release-overview", {
+    const res = await fetch("/api/development/overview", {
       method: "POST",
       body: formData,
     });
@@ -136,7 +136,7 @@ const Page = () => {
         transition={{ duration: 0.5 }}
         className="text-4xl font-bold text-white mb-6"
       >
-        Document Management
+        Release Overview
       </motion.h1>
       
       {loading && <p className="text-white text-lg">Loading documents...</p>}

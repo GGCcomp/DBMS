@@ -1,32 +1,33 @@
 import { google } from "googleapis";
 import { NextResponse } from "next/server";
-import { Log } from "@/models/tech";
+import { DevKnowledgeBase } from "@/models/development";
 import connectMongo from "@/lib/db";
 import { Readable } from "stream";
 
 export async function GET() {
-    try {
-      await connectMongo();
+  try {
+    await connectMongo();
 
-      const documents = await Log.find();
-  
-      const categorizedDocuments = {
-        compliance: [],
-        security: [],
-        incidents: []
-      };
-  
-      documents.forEach((doc) => {
-        categorizedDocuments[doc.category].push(doc);
-      });
-  
-      return NextResponse.json({ documents: categorizedDocuments }, { status: 200 });
-  
-    } catch (error) {
-      console.error("Error fetching documents:", error);
-      return NextResponse.json({ error: "Failed to retrieve documents" }, { status: 500 });
-    }
+    const documents = await DevKnowledgeBase.find();
+
+    const categorizedDocuments = {
+      developmentGuidelines: [],
+      documentationTrainingMaterials: [],
+      troubleshootingReviewLogs: [],
+      aiPerformanceOptimizationStrategies: [],
+    };
+
+    documents.forEach((doc) => {
+      categorizedDocuments[doc.category].push(doc);
+    });
+
+    return NextResponse.json({ documents: categorizedDocuments }, { status: 200 });
+
+  } catch (error) {
+    console.error("Error fetching documents:", error);
+    return NextResponse.json({ error: "Failed to retrieve documents" }, { status: 500 });
   }
+}
 
 export async function POST(req) {
   try {
@@ -80,7 +81,7 @@ export async function POST(req) {
       downloadUrls.push(`https://drive.google.com/uc?id=${fileId}`);
     }
 
-    const newFileEntry = await Log.create({
+    const newFileEntry = await DevKnowledgeBase.create({
       fileName: formData.get("name"),
       category: category,
       previewUrls: previewUrls,

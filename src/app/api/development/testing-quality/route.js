@@ -1,6 +1,6 @@
 import { google } from "googleapis";
 import { NextResponse } from "next/server";
-import { Log } from "@/models/tech";
+import { TestingQuality } from "@/models/development";
 import connectMongo from "@/lib/db";
 import { Readable } from "stream";
 
@@ -8,12 +8,14 @@ export async function GET() {
     try {
       await connectMongo();
 
-      const documents = await Log.find();
+      const documents = await TestingQuality.find();
   
       const categorizedDocuments = {
-        compliance: [],
-        security: [],
-        incidents: []
+        unitIntegrationTesting: [],
+        regressionUAT: [], 
+        securityTesting: [], 
+        loadStressTesting: [],
+        bugTracking: []
       };
   
       documents.forEach((doc) => {
@@ -80,7 +82,7 @@ export async function POST(req) {
       downloadUrls.push(`https://drive.google.com/uc?id=${fileId}`);
     }
 
-    const newFileEntry = await Log.create({
+    const newFileEntry = await TestingQuality.create({
       fileName: formData.get("name"),
       category: category,
       previewUrls: previewUrls,
