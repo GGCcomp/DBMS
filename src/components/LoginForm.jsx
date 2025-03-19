@@ -61,8 +61,8 @@ function LoginForm() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            action: "LOGIN",
-            details: `User ${res.user.email} logged in successfully.`,
+            action: "Login",
+            details: "Logged In!"
           }),
         });
       } catch (error) {

@@ -15,7 +15,7 @@ const Modal = ({ title, defaultTitle = "", defaultFiles = [], defaultCategory = 
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3 }}
@@ -90,14 +90,14 @@ const Page = () => {
 
   const fetchDocuments = async () => {
     try {
-      const res = await fetch("/api/development/overview"); 
+      const res = await fetch("/api/development/overview");
       const data = await res.json();
 
       if (!res.ok) {
         throw new Error(data.error || "Failed to fetch documents");
       }
 
-      setDocuments(data.documents); 
+      setDocuments(data.documents);
     } catch (err) {
       console.error("Error fetching documents:", err.message);
       setError("Failed to load documents. Please try again later.");
@@ -124,6 +124,18 @@ const Page = () => {
 
     if (res.ok) {
       fetchDocuments();
+      try {
+        await fetch("/api/audit-log", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "Upload",
+            details: "In Release Overview"
+          }),
+        });
+      } catch (error) {
+        console.error("Failed to log audit:", error);
+      }
       setModalData({ open: false, title: "", files: [], category: "" });
     }
   };
@@ -138,7 +150,7 @@ const Page = () => {
       >
         Release Overview
       </motion.h1>
-      
+
       {loading && <p className="text-white text-lg">Loading documents...</p>}
       {error && <p className="text-red-500 text-lg">{error}</p>}
 
@@ -149,7 +161,7 @@ const Page = () => {
             {documents[category].length > 0 ? (
               documents[category].map((doc, index) => (
                 <div key={index} className="border-b py-2">
-                  <span className="font-semibold text-xl uppercase">{index+1}. {doc.fileName}</span>
+                  <span className="font-semibold text-xl uppercase">{index + 1}. {doc.fileName}</span>
                   {doc.text && <p className="p-2">{doc.text}</p>}
                   <div className="flex space-x-3 py-1">
                     {doc.previewUrls.map((url, idx) => (
@@ -169,6 +181,22 @@ const Page = () => {
                         href={url}
                         download
                         className="text-green-500 hover:bg-green-500 hover:text-white px-3 py-1 border border-green-500 rounded-md"
+                        onClick={async (e) => {
+                          try {
+                            await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                            await fetch("/api/audit-log", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                action: "Download",
+                                details: "From Release Overview",
+                              }),
+                            });
+                          } catch (error) {
+                            console.error("Failed to log audit:", error);
+                          }
+                        }}
                       >
                         Download
                       </a>

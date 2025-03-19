@@ -126,6 +126,18 @@ const Page = () => {
 
     if (res.ok) {
       fetchDocuments();
+      try {
+        await fetch("/api/audit-log", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "Upload",
+            details: "In Security and Compliances"
+          }),
+        });
+      } catch (error) {
+        console.error("Failed to log audit:", error);
+      }
       setModalData({ open: false, title: "", files: [], category: "" });
     }
   };
@@ -171,6 +183,22 @@ const Page = () => {
                         href={url}
                         download
                         className="text-green-500 hover:bg-green-500 hover:text-white px-3 py-1 border border-green-500 rounded-md"
+                        onClick={async (e) => {
+                          try {
+                            await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                            await fetch("/api/audit-log", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                action: "Download",
+                                details: "From Security and Compliances",
+                              }),
+                            });
+                          } catch (error) {
+                            console.error("Failed to log audit:", error);
+                          }
+                        }}
                       >
                         Download
                       </a>

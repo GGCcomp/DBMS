@@ -14,9 +14,11 @@ export async function POST(req) {
       const { action, details } = await req.json();
       const forwardedFor = req.headers.get("x-forwarded-for");
       const ipAddress = forwardedFor ? forwardedFor.split(",")[0] : "Unknown";
+
+      const { name, department, role } = session.user;
   
       const logEntry = new AuditLog({
-        userId: session.user.id,
+        user: { name, department, role },
         action,
         details,
         ipAddress,
@@ -39,8 +41,8 @@ export async function POST(req) {
         const { searchParams } = new URL(req.url);
         const filters = {};
 
-        if (searchParams.has("userId")) {
-            filters.userId = searchParams.get("userId");
+        if (searchParams.has("email")) {
+            filters.userId = searchParams.get("email");
         }
         if (searchParams.has("action")) {
             filters.action = searchParams.get("action");

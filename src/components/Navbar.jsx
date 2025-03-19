@@ -99,8 +99,8 @@ function Navbar() {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
-                          action: "LOGOUT",
-                          details: `User ${res.user.email} logged out.`,
+                          action: "Logout",
+                          details: `logged out.`,
                         }),
                       });
                     }

@@ -28,11 +28,10 @@ const auditLogSchema = new mongoose.Schema(
         department: { type: String, required: true },
         role: { type: String, required: true }
     },
-    operation: { type: String, required: true },
-    endpoint: { type: String, required: true },
-    method: { type: String, required: true },
-    timestamp: { type: Date, default: Date.now }
-}
+    action: { type: String, enum: ["Download", "Upload", "Data Update", "Logout", "Login", "PunchIn", "PunchOut"], required: true },
+    details: { type: String, required: true },
+    ipAddress: { type: String, required: true }
+},{ timestamps: true }
 );
 
 export const AuditLog = mongoose.models.AuditLog || mongoose.model("AuditLog", auditLogSchema);

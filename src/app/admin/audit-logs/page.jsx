@@ -47,7 +47,8 @@ useEffect(() => {
           <option value="LOGIN">Login</option>
           <option value="LOGOUT">Logout</option>
           <option value="DATA_UPDATE">Data Update</option>
-          <option value="EXPORT">Export</option>
+          <option value="Download">Download</option>
+          <option value="Upload">Upload</option>
           <option value="PUNCH_IN">Punch In</option>
           <option value="PUNCH_OUT">Punch Out</option>
         </select>
@@ -59,8 +60,10 @@ useEffect(() => {
       {/* Logs Table */}
       <table className="min-w-full bg-white border border-gray-300">
         <thead>
-          <tr className="bg-gray-200">
+          <tr className="bg-gray-200 text-left">
             <th className="py-2 px-4 border">User</th>
+            <th className="py-2 px-4 border">Department</th>
+            <th className="py-2 px-4 border">Role</th>
             <th className="py-2 px-4 border">Action</th>
             <th className="py-2 px-4 border">Details</th>
             <th className="py-2 px-4 border">IP Address</th>
@@ -70,11 +73,13 @@ useEffect(() => {
         <tbody>
           {logs && logs.map((log) => (
             <tr key={log._id} className="border">
-              <td className="py-2 px-4 border">{log.userId}</td>
+              <td className="py-2 px-4 border">{log.user.name}</td>
+              <td className="py-2 px-4 border">{log.user.department}</td>
+              <td className="py-2 px-4 border">{log.user.role}</td>
               <td className="py-2 px-4 border">{log.action}</td>
-              <td className="py-2 px-4 border">{log.details || "N/A"}</td>
+              <td className="py-2 px-4 border">{log.details}</td>
               <td className="py-2 px-4 border">{log.ipAddress}</td>
-              <td className="py-2 px-4 border">{new Date(log.timestamp).toLocaleString()}</td>
+              <td className="py-2 px-4 border">{new Date(log.createdAt).toLocaleString()}</td>
             </tr>
           ))}
         </tbody>
