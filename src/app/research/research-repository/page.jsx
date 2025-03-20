@@ -1,154 +1,254 @@
 "use client";
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { BarChart, FileText, MessageSquare, DollarSign, X, Eye, Download, Upload } from "lucide-react";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Eye, DownloadCloud, FileText } from "lucide-react";
 
-const sectionsData = [
-  { title: "Centralized Workspace", description: "Tracks ongoing research, recently added reports, and upcoming initiatives.", details: [], icon: <BarChart className="h-8 w-8 text-blue-500" /> },
-  { title: "Essential Fintech Trends", description: "AI-powered insights on emerging technologies, regulatory updates, and market shifts.", details: [], icon: <FileText className="h-8 w-8 text-green-500" /> },
-  { title: "Collaboration Tools", description: "Discussion forums, document-sharing features, and research version control.", details: [], icon: <MessageSquare className="h-8 w-8 text-purple-500" /> },
-  { title: "Funding & Grant Tracking", description: "Repository for R&D budgets, funding requests, and grants.", details: [], icon: <DollarSign className="h-8 w-8 text-yellow-500" /> },
-];
+const Modal = ({ title, defaultTitle = "", defaultFiles = [], defaultCategory = "", onClose, onSave }) => {
+  const [inputTitle, setInputTitle] = useState(defaultTitle);
+  const [selectedFiles, setSelectedFiles] = useState(defaultFiles);
+  const [text, setText] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState(defaultCategory);
 
-const Page = () => {
-  const [sections, setSections] = useState(sectionsData);
-  const [modalIndex, setModalIndex] = useState(null);
-  const [newInfo, setNewInfo] = useState("");
-  const [newFile, setNewFile] = useState(null);
-
-  // Open modal
-  const openModal = (index) => {
-    setModalIndex(index);
-  };
-
-  // Close modal
-  const closeModal = () => {
-    setModalIndex(null);
-    setNewInfo("");
-    setNewFile(null);
-  };
-
-  // Add new info with file
-  const addInformation = () => {
-    if (!newInfo.trim() || !newFile) return;
-
-    const updatedSections = [...sections];
-    updatedSections[modalIndex].details.push({ info: newInfo, file: newFile });
-    setSections(updatedSections);
-
-    setNewInfo("");
-    setNewFile(null);
-  };
-
-  // Handle file upload
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setNewFile(file);
-    }
-  };
-
-  // View file
-  const viewFile = (file) => {
-    const url = URL.createObjectURL(file);
-    window.open(url, "_blank");
-  };
-
-  // Download file
-  const downloadFile = (file) => {
-    const url = URL.createObjectURL(file);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = file.name;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  const handleFileChange = (e) => {
+    setSelectedFiles([...e.target.files]);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-blue-600 to-purple-600 p-8 flex flex-col items-center">
-      {/* Title */}
-      <motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-4xl font-bold text-white mb-8">
-        Research Dashboard & Repository
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3 }}
+        className="bg-white p-6 rounded-lg shadow-xl w-96"
+      >
+        <h2 className="text-2xl font-semibold mb-4">{title}</h2>
+
+        <input
+          type="text"
+          value={inputTitle}
+          onChange={(e) => setInputTitle(e.target.value)}
+          className="w-full p-2 border rounded-md mb-3"
+          placeholder="Enter document title"
+          required
+        />
+
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          className="w-full p-2 border rounded-md mb-3"
+          required
+        >
+          <option value="">Select a category</option>
+          <option value="Centralized Workspace">Centralized Workspace</option>
+          <option value="Essential Fintech Trends">Essential Fintech Trends</option>
+          <option value="Collaboration Tools">Collaboration Tools</option>
+          <option value="Funding Tracking">Funding Tracking</option>
+        </select>
+
+        {selectedCategory === "CollaborationTools" && <textarea onChange={(e) => setText(e.target.value)} className="p-2 w-full border rounded-md" placeholder="Enter Content..."></textarea>}
+
+        {selectedCategory !== "CollaborationTools" && <input
+          type="file"
+          multiple
+          accept="application/pdf"
+          onChange={handleFileChange}
+          className="w-full p-2 border rounded-md"
+          required
+        />}
+
+        <div className="flex justify-end space-x-3 mt-4">
+          <button
+            className="bg-gray-400 text-white px-4 py-2 rounded-md hover:bg-gray-500 transition"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            className="bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition"
+            onClick={() => onSave(inputTitle, selectedCategory, selectedFiles, text)}
+          >
+            Save
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+const Page = () => {
+  const [documents, setDocuments] = useState({
+    "Centralized Workspace": [],
+    "Essential Fintech Trends": [],
+    "Collaboration Tools": [],
+    "Funding Tracking": []
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [modalData, setModalData] = useState({ open: false, title: "", files: [], category: "" });
+
+  const handleOpenModal = () => setModalData({ open: true, title: "", files: [], category: "" });
+
+  const fetchDocuments = async () => {
+    try {
+      const res = await fetch("/api/research/research-repo");
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to fetch documents");
+      }
+
+      setDocuments(data.documents);
+    } catch (err) {
+      console.error("Error fetching documents:", err.message);
+      setError("Failed to load documents. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDocuments();
+  }, []);
+
+  const handleSaveDocument = async (title, category, files, text) => {
+    const formData = new FormData();
+    formData.append("name", title);
+    formData.append("category", category);
+    formData.append("text", text);
+    Array.from(files).forEach(file => formData.append("file", file));
+
+    const res = await fetch("/api/research/research-repo", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (res.ok) {
+      fetchDocuments();
+      try {
+        await fetch("/api/audit-log", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "Upload",
+            details: "In Research-repo"
+          }),
+        });
+      } catch (error) {
+        console.error("Failed to log audit:", error);
+      }
+      setModalData({ open: false, title: "", files: [], category: "" });
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-r from-blue-500 to-purple-500 p-6 flex flex-col items-center">
+      <motion.h1
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-4xl font-bold text-white mb-6"
+      >
+        Research Repository
       </motion.h1>
 
-      {/* Grid Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
-        {sections.map((section, index) => (
-          <motion.div key={index} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => openModal(index)}
-            className="cursor-pointer bg-white bg-opacity-90 shadow-lg rounded-2xl p-6 flex items-start border border-gray-300 transition-all">
-            {section.icon}
-            <div className="ml-4 flex-1">
-              <h2 className="text-xl font-semibold text-gray-700">{section.title}</h2>
-              <p className="text-gray-500">{section.description}</p>
+      {loading && <p className="text-white text-lg">Loading documents...</p>}
+      {error && <p className="text-red-500 text-lg">{error}</p>}
+
+
+      <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-6">
+        {Object.keys(documents).map((category) => (
+          <div
+            key={category}
+            className="bg-white p-6 rounded-xl shadow-md border-t-4 border-blue-500"
+          >
+            {/* Category Header with Icon */}
+            <div className="flex items-center space-x-3 mb-4">
+              <FileText className="h-6 w-6 text-blue-500" />
+              <h3 className="text-2xl font-bold capitalize text-blue-600">
+                {category}
+              </h3>
             </div>
-          </motion.div>
-        ))}
-      </div>
 
-      {/* Modal */}
-      <AnimatePresence>
-        {modalIndex !== null && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
-            <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} exit={{ scale: 0.8 }} transition={{ duration: 0.3 }}
-              className="bg-white rounded-xl p-6 w-96 shadow-xl">
-              
-              {/* Modal Header */}
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-gray-700">{sections[modalIndex]?.title}</h2>
-                <button onClick={closeModal}>
-                  <X className="h-6 w-6 text-gray-600 hover:text-gray-800" />
-                </button>
-              </div>
+            {/* Document List */}
+            {documents[category].length > 0 ? (
+              documents[category].map((doc, index) => (
+                <div
+                  key={index}
+                  className="border-b py-3 flex flex-col space-y-2 last:border-none"
+                >
+                  <span className="font-medium text-lg text-gray-700">
+                    {index + 1}. {doc.fileName}
+                  </span>
 
-              {/* Existing Information */}
-              <div className="mb-4">
-                <h3 className="text-gray-700 font-medium">Existing Entries:</h3>
-                {sections[modalIndex]?.details.length > 0 ? (
-                  <ul className="space-y-2">
-                    {sections[modalIndex].details.map((item, i) => (
-                      <li key={i} className="bg-gray-100 p-2 rounded-lg flex justify-between items-center">
-                        <span className="text-gray-700">{item.info}</span>
-                        <div className="flex gap-2">
-                          <button onClick={() => viewFile(item.file)} className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600">
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          <button onClick={() => downloadFile(item.file)} className="bg-green-500 text-white p-2 rounded-lg hover:bg-green-600">
-                            <Download className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </li>
+                  {/* Action Buttons */}
+                  <div className="flex gap-3">
+                    {doc.previewUrls.map((url, idx) => (
+                      <a
+                        key={idx}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-blue-500 hover:bg-blue-500 hover:text-white px-3 py-1.5 border border-blue-500 rounded-md transition"
+                      >
+                        <Eye className="h-4 w-4" /> View
+                      </a>
                     ))}
-                  </ul>
-                ) : (
-                  <p className="text-gray-400">No entries yet.</p>
-                )}
-              </div>
 
-              {/* Add New Entry */}
-              <div className="mb-4">
-                <input type="text" className="w-full border rounded-lg p-2 text-gray-800 focus:outline-none"
-                  placeholder="Enter information..." value={newInfo} onChange={(e) => setNewInfo(e.target.value)} />
-              </div>
+                    {doc.downloadUrls.map((url, idx) => (
+                      <a
+                        key={idx}
+                        href={url}
+                        download
+                        className="flex items-center gap-1 text-green-500 hover:bg-green-500 hover:text-white px-3 py-1.5 border border-green-500 rounded-md transition"
+                        onClick={async (e) => {
+                          try {
+                            await new Promise((resolve) => setTimeout(resolve, 1000));
 
-              {/* File Upload */}
-              <div className="mb-4">
-                <label className="block text-gray-600">Upload Document:</label>
-                <input type="file" accept=".pdf,.xlsx" className="mt-2" onChange={handleFileUpload} />
-              </div>
+                            await fetch("/api/audit-log", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                action: "Download",
+                                details: "From Research-repo",
+                              }),
+                            });
+                          } catch (error) {
+                            console.error("Failed to log audit:", error);
+                          }
+                        }}
+                      >
+                        <DownloadCloud className="h-4 w-4" /> Download
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-400 text-sm italic">No documents available.</p>
+            )}
+          </div>
+        ))}
 
-              {/* Show Selected File */}
-              {newFile && <p className="text-gray-500 text-sm">Selected File: {newFile.name}</p>}
-
-              {/* Add Entry Button */}
-              <button onClick={addInformation} className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600">
-                Add Entry
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        
+      </div>
+      <div className="w-full flex justify-center">
+          <button
+            className="mt-4 w-full max-w-xs bg-gradient-to-r from-pink-500 to-purple-500 text-white px-6 py-3 rounded-lg text-lg font-semibold hover:scale-105 transform transition"
+            onClick={handleOpenModal}
+          >
+            + Add Document
+          </button>
+        </div>
+      {modalData.open && (
+        <Modal
+          title="Add Document"
+          defaultTitle={modalData.title}
+          defaultFiles={modalData.files}
+          defaultCategory={modalData.category}
+          onClose={() => setModalData({ open: false, title: "", files: [], category: "" })}
+          onSave={handleSaveDocument}
+        />
+      )}
     </div>
   );
 };
