@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Eye, DownloadCloud, FileText } from "lucide-react";
 
-const Modal = ({ title, defaultTitle = "", defaultFiles = [], defaultCategory = "", onClose, onSave }) => {
+const Modal = ({ title, defaultTitle = "", defaultFiles = [], defaultCategory = "", onClose, onSave, loading }) => {
   const [inputTitle, setInputTitle] = useState(defaultTitle);
   const [selectedFiles, setSelectedFiles] = useState(defaultFiles);
   const [text, setText] = useState("");
@@ -64,10 +64,11 @@ const Modal = ({ title, defaultTitle = "", defaultFiles = [], defaultCategory = 
             Cancel
           </button>
           <button
+            disabled={loading}
             className="bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition"
             onClick={() => onSave(inputTitle, selectedCategory, selectedFiles, text)}
           >
-            Save
+            {loading ? "Saving" : "Save"}
           </button>
         </div>
       </motion.div>
@@ -116,7 +117,7 @@ const Page = () => {
     formData.append("category", category);
     formData.append("text", text);
     Array.from(files).forEach(file => formData.append("file", file));
-
+    setLoading(true);
     const res = await fetch("/api/research/research-repo", {
       method: "POST",
       body: formData,
@@ -133,8 +134,10 @@ const Page = () => {
             details: "In Research-repo"
           }),
         });
+        setLoading(false);
       } catch (error) {
         console.error("Failed to log audit:", error);
+        setLoading(false);
       }
       setModalData({ open: false, title: "", files: [], category: "" });
     }
@@ -247,6 +250,7 @@ const Page = () => {
           defaultCategory={modalData.category}
           onClose={() => setModalData({ open: false, title: "", files: [], category: "" })}
           onSave={handleSaveDocument}
+          loading={loading}
         />
       )}
     </div>

@@ -84,3 +84,46 @@ const aiLearningSchema = new mongoose.Schema({
   });
   
   export const KnowledgeResearch = mongoose.models.KnowledgeResearch || mongoose.model("KnowledgeResearch", knowledgeResearchSchema);
+
+
+  const  regulatoryComplianceSchema = new mongoose.Schema({
+    fileName: { type: String, required: true }, 
+    category: { 
+      type: String, 
+      enum: ["Automated Compliance Tracking", "Regulatory Sandboxes", "Smart Legal Contracts"], 
+      required: true 
+    },
+    previewUrls: [{ type: String, required: true }], 
+    downloadUrls: [{ type: String, required: true }], 
+    uploadedAt: { type: Date, default: Date.now }, 
+  });
+  
+  export const RegulatoryCompliance = mongoose.models.RegulatoryCompliance || mongoose.model("RegulatoryCompliance", regulatoryComplianceSchema);
+
+  const secureCollaborationSchema = new mongoose.Schema({
+    fileName: { type: String, required: true }, 
+    category: { 
+      type: String, 
+      enum: ["Jupyter Notebooks & Data Science Tools", "Cloud Compute Resources", "Secure Multi-Party Computation"], 
+      required: true 
+    },
+    previewUrls: [{ type: String, required: true }], 
+    downloadUrls: [{ type: String, required: true }], 
+    uploadedAt: { type: Date, default: Date.now }, 
+  });
+  
+  export const SecureCollaboration = mongoose.models.SecureCollaboration || mongoose.model("SecureCollaboration", secureCollaborationSchema);
+
+  const prototypingSchema = new mongoose.Schema({
+    fileName: { type: String, required: true }, 
+    category: { 
+      type: String, 
+      enum: ["Low-Code & AI-Powered Prototyping", "Proof-of-Concept (PoC) Testing", "DeFi Experimentation & Financial Infrastructure"], 
+      required: true 
+    },
+    previewUrls: [{ type: String, required: true }], 
+    downloadUrls: [{ type: String, required: true }], 
+    uploadedAt: { type: Date, default: Date.now }, 
+  });
+  
+  export const Prototyping = mongoose.models.Prototyping || mongoose.model("Prototyping", prototypingSchema);
