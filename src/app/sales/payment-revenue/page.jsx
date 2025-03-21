@@ -1,101 +1,170 @@
-"use client";
+"use client"
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
-import { motion } from "framer-motion";
-import { useState } from "react";
+const sections = ["Transactions", "Subscriptions", "Commissions", "Taxes"];
 
 const Page = () => {
-  const [activeTab, setActiveTab] = useState("transactions");
-  const [search, setSearch] = useState("");
+  const [activeSection, setActiveSection] = useState("Transactions");
+  const [payments, setPayments] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const data = {
-    transactions: [
-      { id: 1, invoice: "INV123", amount: "₹500", date: "2025-02-10" },
-      { id: 2, invoice: "INV124", amount: "₹250", date: "2025-02-11" },
-    ],
-    subscriptions: [
-      { id: 1, plan: "Premium", nextBilling: "2025-03-10", status: "Active" },
-    ],
-    commissions: [
-      { id: 1, rep: "Amit", earnings: "₹1000", dealsClosed: 5 },
-    ],
-    taxes: [
-      { id: 1, category: "GST", amount: "₹50", regulation: "2025 Compliance" },
-    ],
+  const fetchPayments = async ({ type, createdAt, productName, email, userId, page = 1 }) => {
+    const params = new URLSearchParams();
+
+    if (createdAt) params.append("createdAt", createdAt);
+    if (productName) params.append("productName", productName);
+    if (email) params.append("email", email);
+    if (userId) params.append("userId", userId);
+    if (type) params.append("type", type); // Filter by type
+    params.append("page", page);
+
+    try {
+      const response = await fetch(`/api/payment-details?${params.toString()}`);
+      const result = await response.json();
+
+      if (!response.ok) throw new Error(result.message || "Failed to fetch payments");
+
+      return result;
+    } catch (error) {
+      console.error("Error fetching payments:", error);
+      return null;
+    }
   };
 
-  // Filter data based on search input
-  const filteredData = data[activeTab].filter((item) =>
-    Object.values(item).some((value) =>
-      value.toString().toLowerCase().includes(search.toLowerCase())
-    )
-  );
+
+  useEffect(() => {
+    loadPayments();
+  }, [activeSection, page]);
+
+  const loadPayments = async () => {
+    setLoading(true);
+    setError("");
+
+    const data = await fetchPayments({ page });
+
+    if (data) {
+      let filteredData = data.data;
+
+      if (activeSection === "Subscriptions") {
+        filteredData = filteredData.filter((payment) => payment.type === "SIP");
+      } else if (activeSection === "Commissions") {
+        filteredData = filteredData.map((payment) => ({
+          ...payment,
+          amount: (payment.amount * 20) / 100, // Calculate 20% commission
+        }));
+      } else if (activeSection === "Taxes") {
+        filteredData = filteredData.map((payment) => ({
+          ...payment,
+          taxAmount: payment.amount - payment.amount / 1.18, // Extract GST (18%) from stored amount
+        }));
+      }
+
+      setPayments(filteredData);
+      setTotalPages(data.totalPages);
+    } else {
+      setError("Failed to load payments");
+    }
+
+    setLoading(false);
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-500 p-6">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="bg-white p-6 rounded-2xl shadow-lg w-full max-w-3xl"
-      >
-        {/* Tab Navigation */}
-        <div className="flex justify-around bg-gray-200 p-2 rounded-lg">
-          {Object.keys(data).map((key) => (
+    <div className="bg-gradient-to-r from-blue-500 to-purple-500 h-screen pt-12">
+      <div className="p-6 max-w-5xl mx-auto bg-gray-50 shadow-md rounded-md">
+        <h2 className="text-2xl font-semibold mb-4 text-center">📊 Payments Dashboard</h2>
+
+        {/* Section Tabs */}
+        <div className="flex space-x-4 mb-6 justify-center">
+          {sections.map((section) => (
             <button
-              key={key}
+              key={section}
               onClick={() => {
-                setActiveTab(key);
-                setSearch(""); // Reset search when switching tabs
+                setActiveSection(section);
+                setPage(1);
               }}
-              className={`px-4 py-2 rounded-lg transition-all ${
-                activeTab === key ? "bg-blue-500 text-white" : "bg-white text-gray-700"
-              }`}
+              className={`px-4 py-2 rounded-md transition-all ${activeSection === section ? "bg-blue-500 text-white" : "bg-gray-300 text-gray-800"
+                }`}
             >
-              {key.charAt(0).toUpperCase() + key.slice(1)}
+              {section}
             </button>
           ))}
         </div>
 
-        {/* Search Bar */}
-        <div className="mt-4">
-          <input
-            type="text"
-            placeholder="Search..."
-            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+        {/* Loading & Error Handling */}
+        {/* {loading && <p className="text-center">🔄 Loading {activeSection.toLowerCase()}...</p>} */}
+        {error && <p className="text-red-500 text-center">{error}</p>}
 
-        {/* Display Data */}
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3 }}
-          className="mt-4 space-y-2"
-        >
-          {filteredData.length === 0 ? (
-            <p className="text-gray-500 text-center">No records found</p>
-          ) : (
-            filteredData.map((item) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3 }}
-                className="bg-gray-100 p-4 rounded-lg shadow"
+        {/* Animated Section Change */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeSection}
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="bg-white p-4 rounded-md shadow-lg"
+          >
+            <h3 className="text-lg font-semibold mb-3">💳 {activeSection}</h3>
+
+            {/* Handling different sections */}
+            {activeSection === "Subscriptions" && payments.length === 0 ? (
+              <p className="text-center">No SIP purchases yet.</p>
+            ) : (
+              <table className="w-full border-collapse border border-gray-300">
+                <thead>
+                  <tr className="bg-gray-200">
+                    <th className="border p-2">Product Name</th>
+                    <th className="border p-2">
+                      {activeSection === "Taxes" ? "Tax Amount (₹)" : "Amount (₹)"}
+                    </th>
+                    <th className="border p-2">Email</th>
+                    <th className="border p-2">Created At</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {payments.map((payment) => (
+                    <tr key={payment._id} className="text-center">
+                      <td className="border p-2">{payment.productName}</td>
+                      <td className="border p-2">
+                        {activeSection === "Taxes"
+                          ? `₹${((payment.amount * 18) / 118).toFixed(2)}`
+                          : `₹${payment.amount}`}
+                      </td>
+                      <td className="border p-2">{payment.email}</td>
+                      <td className="border p-2">{new Date(payment.createdAt).toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+
+            {/* Pagination Controls */}
+            <div className="mt-4 flex justify-between">
+              <button
+                disabled={page === 1}
+                onClick={() => setPage(page - 1)}
+                className="bg-gray-300 px-3 py-1 rounded disabled:opacity-50"
               >
-                {Object.entries(item).map(([key, value]) => (
-                  <p key={key}>
-                    <strong>{key.charAt(0).toUpperCase() + key.slice(1)}:</strong> {value}
-                  </p>
-                ))}
-              </motion.div>
-            ))
-          )}
-        </motion.div>
-      </motion.div>
+                Previous
+              </button>
+              <p>
+                Page {page} of {totalPages}
+              </p>
+              <button
+                disabled={page === totalPages}
+                onClick={() => setPage(page + 1)}
+                className="bg-gray-300 px-3 py-1 rounded disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </div>
   );
 };
