@@ -11,6 +11,9 @@ export async function POST(request) {
       return NextResponse.json({ error: "Email and role are required" }, { status: 400 });
     }
 
+    let privateKey = Math.floor(1000 + Math.random() * 9000); 
+    privateKey = `IG-${privateKey}`;
+
     // Connect to the database
     await connectMongo();
 
@@ -21,8 +24,7 @@ export async function POST(request) {
       { expiresIn: "24h" } // Token valid for 24 hours
     );
 
-    // Save the token in the database for added security (optional)
-    await Invitation.create({ email, department, role, token, expiryDate: new Date(Date.now() + 24 * 60 * 60 * 1000) });
+    await Invitation.create({ email, department, role, token, expiryDate: new Date(Date.now() + 24 * 60 * 60 * 1000),  privateKey });
 
     // Configure Nodemailer transporter
     const transporter = nodemailer.createTransport({
@@ -45,6 +47,7 @@ export async function POST(request) {
         <p>You have been invited to join our platform as a <strong>${role}</strong> in <strong>${department}</strong> department.</p>
         <p>Please click the link below to complete your registration:</p>
         <a href="${process.env.NEXT_PUBLIC_HOST_URL}/register?token=${token}">Complete Registration</a>
+        <p>This is your private key: ${privateKey}, Please use it to register yourself.</p>
         <p>This link will expire in 24 hours.</p>
         <p>Thank you,</p>
         <p>Nivesh Jano Team</p>

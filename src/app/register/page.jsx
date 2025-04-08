@@ -19,7 +19,8 @@ function RegisterForm() {
     confirmPassword: '',
     mobile: '',
     aadhar: '',
-    panCard: ''
+    panCard: '',
+    privateKey: ''
   });
   const [loading, setLoading] = useState(false);
 
@@ -88,6 +89,7 @@ function RegisterForm() {
           aadhar: formData.aadhar,
           panCard: formData.panCard,
           token,
+          privateKey: formData.privateKey
         }),
       });
 
@@ -107,10 +109,11 @@ function RegisterForm() {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen px-10 bg-gradient-to-r from-blue-500 to-purple-500">
-      <form onSubmit={handleSubmit} className="w-full md:w-1/3 p-6 bg-white rounded shadow-md">
+    <div className="flex justify-center items-center p-10 bg-gradient-to-r from-blue-500 to-purple-500">
+      <form onSubmit={handleSubmit} className="w-full md:w-1/2 p-6 bg-white rounded shadow-md">
         <h2 className="text-2xl mb-4 text-center">Register</h2>
-        <div className="mb-4">
+        <div className='flex gap-3'>
+        <div className="mb-4 w-full">
           <label htmlFor="name" className="block mb-2">Name:</label>
           <input
             type="text"
@@ -123,7 +126,7 @@ function RegisterForm() {
             required
           />
         </div>
-        <div className="mb-4">
+        <div className="mb-4 w-full">
           <label htmlFor="email" className="block mb-2">Email:</label>
           <input
             type="email"
@@ -136,7 +139,35 @@ function RegisterForm() {
             readOnly
           />
         </div>
-        <div className="mb-4">
+        </div>
+        <div className='flex gap-3'>
+        <div className="mb-4 w-full">
+          <label htmlFor="private-key" className="block mb-2">Private Key:</label>
+          <input
+            type="text"
+            name="privateKey"
+            id="private-key"
+            className="w-full p-2 border rounded"
+            placeholder="Enter the private key here"
+            value={formData.privateKey}
+            onChange={handleChange}
+          />
+        </div>
+        <div className="mb-4 w-full">
+          <label htmlFor="mobile" className="block mb-2">Mobile No:</label>
+          <input
+            type="tel"
+            name="mobile"
+            id="mobile"
+            className="w-full p-2 border rounded bg-gray-100"
+            value={formData.mobile}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        </div>
+        <div className='flex gap-3'>
+        <div className="mb-4 w-full">
           <label htmlFor="department" className="block mb-2">Department:</label>
           <input
             type="text"
@@ -147,7 +178,7 @@ function RegisterForm() {
             readOnly
           />
         </div>
-        <div className="mb-4">
+        <div className="mb-4 w-full">
           <label htmlFor="role" className="block mb-2">Role:</label>
           <input
             type="text"
@@ -158,7 +189,9 @@ function RegisterForm() {
             readOnly
           />
         </div>
-        <div className="mb-4">
+        </div>
+        <div className='flex gap-3'>
+        <div className="mb-4 w-full">
           <label htmlFor="password" className="block mb-2">Password:</label>
           <input
             type="password"
@@ -171,7 +204,7 @@ function RegisterForm() {
             required
           />
         </div>
-        <div className="mb-4">
+        <div className="mb-4 w-full">
           <label htmlFor="confirmPassword" className="block mb-2">Confirm Password:</label>
           <input
             type="password"
@@ -184,19 +217,9 @@ function RegisterForm() {
             required
           />
         </div>
-        <div className="mb-4">
-          <label htmlFor="mobile" className="block mb-2">Mobile No:</label>
-          <input
-            type="tel"
-            name="mobile"
-            id="mobile"
-            className="w-full p-2 border rounded bg-gray-100"
-            value={formData.mobile}
-            onChange={handleChange}
-            required
-          />
         </div>
-        <div className="mb-4">
+        <div className='flex gap-3'>
+        <div className="mb-4 w-full">
           <label htmlFor="aadhar" className="block mb-2">Aadhar Number:</label>
           <input
             type="number"
@@ -209,7 +232,7 @@ function RegisterForm() {
             required
           />
         </div>
-        <div className="mb-4">
+        <div className="mb-4 w-full">
           <label htmlFor="pancard" className="block mb-2">PAN:</label>
           <input
             type="text"
@@ -221,6 +244,7 @@ function RegisterForm() {
             onChange={handleChange}
             required
           />
+        </div>
         </div>
         <button
           type="submit"

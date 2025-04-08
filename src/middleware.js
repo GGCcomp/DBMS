@@ -55,15 +55,15 @@ export async function middleware(req) {
 // Apply middleware only to specific routes
 export const config = {
   matcher: [
-    // '/admin/:path*',
-    // '/approvals/:path*',
-    // '/hr/:path*',
+    '/admin/:path*',
+    '/approvals/:path*',
+    '/hr/:path*',
     '/dbms/:path*',
-    // '/research/:path*',
-    // '/development/:path*',
+    '/research/:path*',
+    '/development/:path*',
     '/iso/:path*',
-    // '/marketing/:path*',
-    // '/sales/:path*',
+    '/marketing/:path*',
+    '/sales/:path*',
     '/softwareNeeded/:path*',
   ],
 };

@@ -5,6 +5,7 @@ const InvitationSchema = new mongoose.Schema({
   role: { type: String, required: true },
   token: { type: String, required: true },
   isUsed: { type: Boolean, default: false },
+  privateKey: String,
   expiryDate: { type: Date, required: true },
 }, { timestamps: true });
 

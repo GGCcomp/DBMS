@@ -31,9 +31,9 @@ export async function GET(request) {
 
 export async function POST(req) {
     try {
-        const { name, email, password, department, role, mobile, aadhar, panCard, token } = await req.json();
+        const { name, email, password, department, role, mobile, aadhar, panCard, token, privateKey } = await req.json();
 
-        if (!name || !email || !password || !department || !role || !mobile || !aadhar || !panCard) {
+        if (!name || !email || !password || !department || !role || !mobile || !aadhar || !panCard || privateKey) {
             return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
         }
 
@@ -54,6 +54,8 @@ export async function POST(req) {
             const invitation = await Invitation.findOne({ token, isUsed: false });
             if (!invitation || invitation.role !== role) {
                 return NextResponse.json({ error: 'Invalid or expired invitation token' }, { status: 400 });
+            }else if(privateKey !== invitation.privateKey){
+                return NextResponse.json({ error: 'Invalid key!' }, { status: 404 });
             }
             invitation.isUsed = true;
             await invitation.save();
