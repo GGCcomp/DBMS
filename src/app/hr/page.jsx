@@ -50,6 +50,21 @@ const Page = () => {
             </Link>
           </motion.div>
 
+          {/* Interview */}
+          <motion.div
+            className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
+            whileHover={{ scale: 1.05 }}
+          >
+            <h2 className="text-2xl font-semibold mb-4">Candidate Interviews</h2>
+            <p>Data about the candidates interviews.</p>
+            <Link
+              href="/hr/interview"
+              className="mt-4 inline-block text-blue-500 hover:text-blue-700 transition"
+            >
+              Interview Data &rarr;
+            </Link>
+          </motion.div>
+
           {/* Feedback & Grievances */}
           <motion.div
             className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
@@ -61,7 +76,7 @@ const Page = () => {
               href="/hr/compliance"
               className="mt-4 inline-block text-blue-500 hover:text-blue-700 transition"
             >
-             Compliance &rarr;
+              Compliance &rarr;
             </Link>
           </motion.div>
 
