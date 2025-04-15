@@ -58,16 +58,42 @@ const InterviewSchema = new mongoose.Schema({
     interviewDate: Date,
     interviewer: [String],
     status: {
-      type: String,
-      enum: ["Scheduled", "Selected", "Rejected", "On Hold"],
-      default: "Scheduled",
+        type: String,
+        enum: ["Scheduled", "Selected", "Rejected", "On Hold"],
+        default: "Scheduled",
     },
     resumePreviewUrl: String,
     resumeDownloadUrl: String,
     createdAt: {
-      type: Date,
-      default: Date.now,
+        type: Date,
+        default: Date.now,
     },
-  });
-  
-  export const Interview = mongoose.models.Interview || mongoose.model("Interview", InterviewSchema);
+});
+
+export const Interview = mongoose.models.Interview || mongoose.model("Interview", InterviewSchema);
+
+const employeeSchema = new mongoose.Schema({
+    name: String,
+    profile: {
+        contact: String,
+        emergency: String,
+        bank: String,
+    },
+    employment: {
+        title: String,
+        department: String,
+        workModel: String,
+        promotions: [String],
+    },
+    benefits: [String],
+    documents: [
+        {
+            previewUrl: String,
+            downloadUrl: String,
+            fileId: String, // ADD THIS TO DELETE FROM DRIVE
+            name: String
+        },
+    ]
+});
+
+export const Employee = mongoose.models.Employee || mongoose.model("Employee", employeeSchema);

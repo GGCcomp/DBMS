@@ -144,7 +144,6 @@ export default function Page() {
         />
         <input
           type="file"
-          accept="application/pdf"
           onChange={(e) => setResume(e.target.files[0])}
           required
           className="w-full"
