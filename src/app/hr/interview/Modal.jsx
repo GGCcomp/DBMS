@@ -153,7 +153,7 @@ function Modal({ items, onClose, loadInterviews }) {
                             <input
                                 type="text"
                                 value={form.interviewerEmail}
-                                onChange={(e) => setForm({ ...form, interviewer: e.target.value })}
+                                onChange={(e) => setForm({ ...form, interviewerEmail: e.target.value })}
                                 className="input w-full"
                             />
                         </div>

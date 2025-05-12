@@ -27,6 +27,15 @@ export default function Page() {
   const itemsPerPage = 2;
   const [currentPage, setCurrentPage] = useState(1);
 
+  const interviewers = {
+    Alok: "alok@niveshjano.in",
+    Abhishek: "abhishek@niveshjano.in",
+    Ashutosh: "ashutosh@niveshjano.in",
+    HR: "hr@niveshjano.in",
+    Marketing: "marketing@niveshjano.in"
+  };
+
+
   const totalPages = Math.ceil(total / itemsPerPage);
 
   const handlePageClick = (pageNum) => {
@@ -51,8 +60,28 @@ export default function Page() {
     setModalData(data)
   }
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value, selectedOptions } = e.target;
+
+    if (name === "interviewer") {
+      const selectedNames = Array.from(selectedOptions, (opt) => opt.value);
+      const selectedEmails = selectedNames
+        .map((name) => interviewers[name])
+        .filter(Boolean)
+        .join(", ");
+
+      setForm({
+        ...form,
+        interviewer: selectedNames.join(", "),
+        interviewerEmail: selectedEmails,
+      });
+    } else {
+      setForm({
+        ...form,
+        [name]: value,
+      });
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -124,34 +153,68 @@ export default function Page() {
           className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white shadow p-6 rounded-xl"
         >
           <h2 className="col-span-full text-xl font-bold">Schedule Interview</h2>
-          {Object.entries({
-            candidateName: "Candidate Name",
-            email: "Email (candidate's email)",
-            phoneNo: "Phone No.",
-            position: "Position",
-            interviewDate: "Interview Date",
-            interviewer: "Interviewers (comma separated)",
-            interviewerEmail: "Interviewer Emails (comma separated)",
-            meetingLink: "Meeting Link",
-          }).map(([key, placeholder]) => (
-            <input
-              key={key}
-              name={key}
-              type={key === "interviewDate" ? "date" : "text"}
-              placeholder={placeholder}
-              value={form[key]}
+
+          {/* Text Inputs */}
+          {["candidateName", "email", "phoneNo", "position", "interviewDate", "meetingLink"].map((key) => (
+            <div key={key}>
+              <label className="block mb-1 capitalize">{key.replace(/([A-Z])/g, ' $1')}</label>
+              <input
+                type={key === "interviewDate" ? "date" : "text"}
+                name={key}
+                placeholder={key}
+                value={form[key]}
+                onChange={handleChange}
+                required
+                className="p-2 border rounded w-full"
+              />
+            </div>
+          ))}
+
+          {/* Interviewer Select */}
+          <div>
+            <label className="block mb-1">Interviewers</label>
+            <select
+              name="interviewer"
+              multiple
+              value={form.interviewer.split(", ").filter(Boolean)}
               onChange={handleChange}
               required
-              className="p-2 border rounded"
+              className="p-2 border rounded w-full h-32"
+            >
+              {Object.keys(interviewers).map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+
+          {/* Interviewer Email (read-only for submission/debug) */}
+          <div>
+            <label className="block mb-1">Interviewer Emails</label>
+            <input
+              type="text"
+              value={form.interviewerEmail}
+              readOnly
+              className="p-2 border rounded w-full bg-gray-100"
             />
-          ))}
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={(e) => setResume(e.target.files[0])}
-            required
-            className="file-input"
-          />
+          </div>
+
+
+          {/* Resume Upload */}
+          <div className="col-span-full">
+            <label className="block mb-1">Resume</label>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={(e) => setResume(e.target.files[0])}
+              required
+              className="file-input"
+            />
+          </div>
+
+          {/* Submit Button */}
           <button
             disabled={loading}
             type="submit"
@@ -159,8 +222,10 @@ export default function Page() {
           >
             {!loading ? "Submit" : "Saving..."}
           </button>
+
           {msg && <p className="text-green-700 col-span-full">{msg}</p>}
         </form>
+
 
         <div className="text-center">
           <button
