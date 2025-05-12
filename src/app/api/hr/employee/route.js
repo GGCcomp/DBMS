@@ -8,13 +8,10 @@ export async function GET(req) {
     try {
         await connectMongo();
 
-        // Get query parameters for filtering and pagination
-        const { search, page = 1, limit = 6 } = req.nextUrl.searchParams; // Default page is 1, limit is 6
+        const { search, page = 1, limit = 6 } = req.nextUrl.searchParams; 
         const filters = {};
 
-        // Apply filters if present
         if (search) {
-            // Split search by comma for department and role (example: "Finance,Manager")
             const searchTerms = search.split(",");
             if (searchTerms.length === 2) {
                 filters["employment.department"] = searchTerms[0].trim();
@@ -22,16 +19,13 @@ export async function GET(req) {
             }
         }
 
-        // Find employees based on filters and pagination
         const employees = await Employee.find(filters)
-            .skip((page - 1) * limit) // Pagination: skip previous pages
-            .limit(parseInt(limit)) // Limit to the specified number of employees per page
-            .lean(); // Returns plain JavaScript objects (faster)
-
-        // Get total count of employees matching the filter (for pagination)
+            .skip((page - 1) * limit) 
+            .limit(parseInt(limit)) 
+            .lean(); 
+      
         const totalEmployees = await Employee.countDocuments(filters);
 
-        // Calculate total pages
         const totalPages = Math.ceil(totalEmployees / limit);
 
         return NextResponse.json({

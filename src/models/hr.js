@@ -54,9 +54,12 @@ export const Grievance = mongoose.models.Grievance || mongoose.model("Grievance"
 const InterviewSchema = new mongoose.Schema({
     candidateName: String,
     email: String,
+    phoneNo: Number,
     position: String,
     interviewDate: Date,
     interviewer: [String],
+    interviewerEmail: [String],
+    meetingLink: String,
     status: {
         type: String,
         enum: ["Scheduled", "Selected", "Rejected", "On Hold"],
@@ -90,7 +93,7 @@ const employeeSchema = new mongoose.Schema({
         {
             previewUrl: String,
             downloadUrl: String,
-            fileId: String, // ADD THIS TO DELETE FROM DRIVE
+            fileId: String, 
             name: String
         },
     ]

@@ -1,22 +1,37 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Modal from "./Modal";
 
 export default function Page() {
   const [form, setForm] = useState({
     candidateName: "",
     email: "",
+    phoneNo: "",
     position: "",
     interviewDate: "",
     interviewer: "",
+    interviewerEmail: "",
+    meetingLink: "",
   });
+  const fileInputRef = useRef(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [modalData, setModalData] = useState({});
   const [resume, setResume] = useState(null);
   const [msg, setMsg] = useState("");
   const [interviews, setInterviews] = useState([]);
-  const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [viewResumeUrl, setViewResumeUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const itemsPerPage = 2;
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const limit = 6;
+  const totalPages = Math.ceil(total / itemsPerPage);
+
+  const handlePageClick = (pageNum) => {
+    loadInterviews(pageNum);
+  };
 
   useEffect(() => {
     loadInterviews(1);
@@ -25,51 +40,60 @@ export default function Page() {
   const loadInterviews = async (pageToLoad) => {
     const res = await fetch(`/api/hr/interview?page=${pageToLoad}`);
     const data = await res.json();
-    console.log(data);
-    
-    if (pageToLoad === 1) {
-      setInterviews(data.interviews);
-    } else {
-      setInterviews((prev) => [...prev, ...data.interviews]);
-    }
+    setInterviews(data.interviews);
     setTotal(data.total);
-    setPage(pageToLoad);
+    setCurrentPage(pageToLoad);
   };
+
+
+  const handleEditModal = (data) => {
+    setIsEditing(!isEditing);
+    setModalData(data)
+  }
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const fd = new FormData();
-    for (let key in form) {
+    try {
+      setLoading(true);
+      const fd = new FormData();
+      for (let key in form) {
         if (key === "interviewer") {
-            const arr = form[key].split(",").map((i) => i.trim());
-            arr.forEach((name) => fd.append("interviewer", name));
-          } else {
-            fd.append(key, form[key]);
-          }          
+          const arr = form[key].split(",").map((i) => i.trim());
+          arr.forEach((name) => fd.append("interviewer", name));
+        } else {
+          fd.append(key, form[key]);
+        }
+      }
+      if (resume) fd.append("resume", resume);
+
+      const res = await fetch("/api/hr/interview", {
+        method: "POST",
+        body: fd,
+      });
+
+      const data = await res.json();
+      setMsg(data.message);
+      setForm({
+        candidateName: "",
+        email: "",
+        phoneNo: "",
+        position: "",
+        interviewDate: "",
+        interviewer: "",
+        interviewerEmail: "",
+        meetingLink: "",
+      });
+      setResume(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      loadInterviews(1);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
     }
-
-    if (resume) fd.append("resume", resume);
-
-    const res = await fetch("/api/hr/interview", {
-      method: "POST",
-      body: fd,
-    });
-
-    const data = await res.json();
-    setMsg(data.message);
-    setForm({
-      candidateName: "",
-      email: "",
-      position: "",
-      interviewDate: "",
-      interviewer: "",
-    });
-    setResume(null);
-    loadInterviews(1);
   };
 
   const handleStatusChange = async (id, newStatus) => {
@@ -78,179 +102,199 @@ export default function Page() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, status: newStatus }),
     });
-
     const data = await res.json();
     setMsg(data.message);
     loadInterviews(1);
   };
 
-  const deleteOne = async(id) => {
+  const deleteOne = async (id) => {
     await fetch(`/api/hr/interview`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
-      });
-      loadInterviews(1);
-  }
+    });
+    loadInterviews(1);
+  };
 
   return (
-    <div className="bg-gradient-to-r from-blue-500 to-purple-500">
-        <div className="max-w-4xl mx-auto p-6 space-y-8">
-      {/* Interview Form */}
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-4 bg-white shadow p-6 rounded"
-      >
-        <h2 className="text-xl font-bold">Schedule Interview</h2>
-        <input
-          name="candidateName"
-          placeholder="Candidate Name"
-          value={form.candidateName}
-          onChange={handleChange}
-          required
-          className="w-full p-2 border"
-        />
-        <input
-          name="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-          required
-          className="w-full p-2 border"
-        />
-        <input
-          name="position"
-          placeholder="Position"
-          value={form.position}
-          onChange={handleChange}
-          required
-          className="w-full p-2 border"
-        />
-        <input
-          name="interviewDate"
-          type="date"
-          value={form.interviewDate}
-          onChange={handleChange}
-          required
-          className="w-full p-2 border"
-        />
-        <input
-          name="interviewer"
-          placeholder="Interviewer Names (comma separated)"
-          value={form.interviewer}
-          onChange={handleChange}
-          required
-          className="w-full p-2 border"
-        />
-        <input
-          type="file"
-          onChange={(e) => setResume(e.target.files[0])}
-          required
-          className="w-full"
-        />
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+    <div className="bg-gradient-to-r from-blue-500 to-purple-500 min-h-screen p-6">
+      <div className="max-w-4xl mx-auto space-y-8">
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white shadow p-6 rounded-xl"
         >
-          Submit
-        </button>
-        {msg && <p className="text-green-600">{msg}</p>}
-      </form>
-
-      {/* Interview List */}
-      <div className="bg-gray-50 p-4 rounded shadow">
-        <h2 className="text-lg font-bold mb-4">Scheduled Interviews</h2>
-        <ul className="space-y-3">
-          {interviews.map((item) => (
-            <li key={item._id} className="p-4 border rounded bg-white">
-              <p>
-                <strong>Name:</strong> {item.candidateName}
-              </p>
-              <p>
-                <strong>Email:</strong> {item.email}
-              </p>
-              <p>
-                <strong>Position:</strong> {item.position}
-              </p>
-              <p><strong>Interviewers:</strong> {item.interviewer.map((name, idx) => (
-                <span key={idx} className="inline-block mr-2 px-2 py-0.5 bg-gray-200 rounded">{name.trim()}</span>
-              ))}</p>
-              <p>
-                <strong>Date:</strong>{" "}
-                {new Date(item.interviewDate).toLocaleDateString()}
-              </p>
-              <p>
-                <strong>Status:</strong>{" "}
-                <span className="text-blue-600">{item.status}</span>
-              </p>
-              <div className="flex items-center gap-2 mt-2">
-                <select
-                  defaultValue={item.status}
-                  onChange={(e) => handleStatusChange(item._id, e.target.value)}
-                  className="border p-1"
-                >
-                  <option value="Pending">Pending</option>
-                  <option value="Scheduled">Scheduled</option>
-                  <option value="Completed">Completed</option>
-                  <option value="Rejected">Rejected</option>
-                </select>
-                <button
-                  onClick={() => deleteOne(item._id)}
-                  className="bg-red-600 text-white px-2 py-1 rounded"
-                >
-                  Delete
-                </button>
-              </div>
-              <div className="flex items-center gap-4 mt-2">
-                <a
-                  href={item.resumeDownloadUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="bg-green-600 text-white px-2 py-1 rounded"
-                >
-                  Download Resume
-                </a>
-                <button
-                  onClick={() => setViewResumeUrl(item.resumePreviewUrl)}
-                  className="bg-blue-500 text-white px-2 py-1 rounded text-sm"
-                >
-                  View
-                </button>
-              </div>
-            </li>
+          <h2 className="col-span-full text-xl font-bold">Schedule Interview</h2>
+          {Object.entries({
+            candidateName: "Candidate Name",
+            email: "Email (candidate's email)",
+            phoneNo: "Phone No.",
+            position: "Position",
+            interviewDate: "Interview Date",
+            interviewer: "Interviewers (comma separated)",
+            interviewerEmail: "Interviewer Emails (comma separated)",
+            meetingLink: "Meeting Link",
+          }).map(([key, placeholder]) => (
+            <input
+              key={key}
+              name={key}
+              type={key === "interviewDate" ? "date" : "text"}
+              placeholder={placeholder}
+              value={form[key]}
+              onChange={handleChange}
+              required
+              className="p-2 border rounded"
+            />
           ))}
-        </ul>
-        {interviews.length < total && (
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={(e) => setResume(e.target.files[0])}
+            required
+            className="file-input"
+          />
           <button
-            onClick={() => loadInterviews(page + 1)}
-            className="mt-4 px-4 py-2 bg-gray-700 text-white rounded"
+            disabled={loading}
+            type="submit"
+            className="col-span-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
-            Show More
+            {!loading ? "Submit" : "Saving..."}
           </button>
+          {msg && <p className="text-green-700 col-span-full">{msg}</p>}
+        </form>
+
+        <div className="text-center">
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-gray-900 text-white px-4 py-2 rounded hover:bg-gray-800"
+          >
+            View Scheduled Interviews
+          </button>
+        </div>
+
+        <AnimatePresence>
+          {isModalOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center"
+            >
+              {isEditing && <Modal items={modalData} onClose={() => setIsEditing(false)} loadInterviews={loadInterviews} />}
+              <motion.div
+                initial={{ scale: 0.8 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.8 }}
+                className="bg-white max-w-2xl w-full p-6 rounded-xl shadow-lg overflow-auto max-h-[80vh]"
+              >
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-bold">Interview List</h2>
+                  <button
+                    onClick={() => setIsModalOpen(false)}
+                    className="text-red-600 hover:text-red-800"
+                  >
+                    Close
+                  </button>
+                </div>
+                <ul className="space-y-4">
+                  {interviews.map((item) => (
+                    <li
+                      key={item._id}
+                      className="p-4 border rounded-md bg-gray-50 shadow"
+                    >
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <p><strong>Name:</strong> {item.candidateName}</p>
+                        <p><strong>Email:</strong> {item.email}</p>
+                        <p><strong>Phone:</strong> {item.phoneNo}</p>
+                        <p><strong>Position:</strong> {item.position}</p>
+                        <p>
+                          <strong>Interviewers:</strong>{" "}
+                          {item.interviewer.map((name, idx) => (
+                            <span key={idx} className="inline-block mr-1 px-2 py-0.5 bg-gray-200 rounded">
+                              {name.trim()}
+                            </span>
+                          ))}
+                        </p>
+                        <a href={item.meetingLink} className="text-blue-600 underline">
+                          Meeting Link
+                        </a>
+                        <p>
+                          <strong>Date:</strong>{" "}
+                          {new Date(item.interviewDate).toLocaleDateString()}
+                        </p>
+                        <p><strong>Status:</strong> {item.status}</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        <select
+                          defaultValue={item.status}
+                          onChange={(e) => handleStatusChange(item._id, e.target.value)}
+                          className="border p-1"
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="Scheduled">Scheduled</option>
+                          <option value="Completed">Completed</option>
+                          <option value="Rejected">Rejected</option>
+                        </select>
+                        <button onClick={() => handleEditModal(item)} className="bg-yellow-400 text-white px-3 py-1 rounded">
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => deleteOne(item._id)}
+                          className="bg-red-600 text-white px-2 py-1 rounded"
+                        >
+                          Delete
+                        </button>
+                        <a
+                          href={item.resumeDownloadUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="bg-green-600 text-white px-2 py-1 rounded"
+                        >
+                          Download Resume
+                        </a>
+                        <button
+                          onClick={() => setViewResumeUrl(item.resumePreviewUrl)}
+                          className="bg-blue-500 text-white px-2 py-1 rounded text-sm"
+                        >
+                          View Resume
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex justify-center gap-2 mt-4">
+                  {Array.from({ length: totalPages }, (_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handlePageClick(index + 1)}
+                      className={`px-3 py-1 rounded ${currentPage === index + 1 ? "bg-blue-600 text-white" : "bg-gray-200"}`}
+                    >
+                      {index + 1}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {viewResumeUrl && (
+          <div className="mt-6 border rounded overflow-hidden relative">
+            <iframe
+              src={viewResumeUrl}
+              title="Resume Preview"
+              width="100%"
+              height="600px"
+              className="border"
+            ></iframe>
+            <button
+              onClick={() => setViewResumeUrl("")}
+              className="absolute top-2 right-2 bg-red-600 text-white px-3 py-1 rounded"
+            >
+              Close
+            </button>
+          </div>
         )}
       </div>
-
-      {/* Resume Viewer */}
-      {viewResumeUrl && (
-        <div className="mt-6 border rounded overflow-hidden relative">
-          <iframe
-            src={viewResumeUrl}
-            title="Resume Preview"
-            width="100%"
-            height="600px"
-            className="border"
-          ></iframe>
-          <button className="bg-red-600 p-3 rounded-md absolute top-0 right-1/2 text-white" onClick={() => setViewResumeUrl("")}>close</button>
-        </div>
-      )}
-     
-    </div>
     </div>
   );
 }
-
-
-
-
-
-
