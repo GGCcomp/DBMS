@@ -89,7 +89,7 @@ function Modal({ items, onClose, loadInterviews }) {
                 </button>
 
                 <h2 className="text-xl font-semibold mb-6 text-gray-800">
-                    Edit Candidate's Detail
+                    Edit Candidate&apos;s Detail
                 </h2>
 
                 <form onSubmit={handleUpdateSubmit} className="space-y-4">

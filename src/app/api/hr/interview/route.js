@@ -1,9 +1,20 @@
 import connectMongo from "@/lib/db";
 import { Interview } from "@/models/hr";
 import { google } from "googleapis";
+import nodemailer from "nodemailer";
 import { Readable } from "stream";
 import { NextResponse } from "next/server";
 import { sendInterviewEmails } from "@/lib/sendInterviewEmails";
+
+const transporter = nodemailer.createTransport({
+  host: 'smtp.zoho.in',
+  port: 465,
+  secure: true,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
 export async function GET(req) {
   try {
@@ -105,19 +116,56 @@ export async function POST(req) {
   }
 }
 
-export async function PATCH(req, { params }) {
+export async function PATCH(req) {
   try {
     await connectMongo();
     const body = await req.json();
+    const { id, status, email, interviewerEmail, candidateName, position, interviewDate, interviewer } = body;
 
-    const { id, status } = body;
     if (!id) {
       return NextResponse.json({ error: "ID is required" }, { status: 400 });
     }
 
     const updated = await Interview.findByIdAndUpdate(id, { status }, { new: true });
 
-    return NextResponse.json({ message: "Status updated", data: updated });
+    // === CANDIDATE EMAIL CONTENT BASED ON STATUS ===
+    let candidateSubject = `Update on your interview for ${position}`;
+    let candidateText = "";
+
+    switch (status) {
+      case "Scheduled":
+        candidateText = `Dear ${candidateName},\n\nYour interview for the position of ${position} has been scheduled on ${interviewDate}.\n\nBest regards,\nHR Team`;
+        break;
+      case "Completed":
+        candidateText = `Dear ${candidateName},\n\nYour interview for the position of ${position} has been marked as completed. We will get back to you with further updates.\n\nBest regards,\nHR Team`;
+        break;
+      case "Rejected":
+        candidateText = `Dear ${candidateName},\n\nWe regret to inform you that you have not been selected for the position of ${position}. We appreciate your interest and wish you the best in your career.\n\nBest regards,\nHR Team`;
+        break;
+      default:
+        candidateText = `Dear ${candidateName},\n\nThere is an update regarding your interview for the ${position} position. Current status: ${status}.\n\nBest regards,\nHR Team`;
+    }
+
+    const candidateMailOptions = {
+      from: `"HR Team" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: candidateSubject,
+      text: candidateText,
+    };
+
+    // === INTERVIEWER EMAILS ===
+    const interviewerMailOptions = interviewerEmail.map((intEmail, index) => ({
+      from: `"HR Team" <${process.env.EMAIL_USER}>`,
+      to: intEmail,
+      subject: `Interview ${status} for ${candidateName}`,
+      text: `Dear ${interviewer[index] || "Interviewer"},\n\nThe interview with ${candidateName} for the ${position} role has been marked as ${status}.\n\nBest regards,\nHR Team`,
+    }));
+
+    // === SEND EMAILS ===
+    await transporter.sendMail(candidateMailOptions);
+    await Promise.all(interviewerMailOptions.map((opt) => transporter.sendMail(opt)));
+
+    return NextResponse.json({ message: "Status updated & emails sent", data: updated });
   } catch (err) {
     console.error("Status update failed:", err);
     return NextResponse.json({ error: "Update failed" }, { status: 500 });
@@ -213,7 +261,7 @@ export async function PUT(req) {
 export async function DELETE(req, { params }) {
   await connectMongo();
   const { id } = await req.json();
-   const interview = await Interview.findById(id);
+  const interview = await Interview.findById(id);
   if (!interview) {
     return NextResponse.json({ error: "Interview not found" }, { status: 404 });
   }

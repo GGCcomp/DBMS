@@ -10,7 +10,9 @@ export async function sendInterviewEmails({
   interviewerEmail,
 }) {
   const transporter = nodemailer.createTransport({
-    service: "Gmail", // Or use SMTP options
+    host: 'smtp.zoho.in',
+    port: 465,
+    secure: true, //ssl
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.SMTP_PASS,

@@ -125,16 +125,28 @@ export default function Page() {
     }
   };
 
-  const handleStatusChange = async (id, newStatus) => {
+  const handleStatusChange = async (id, newStatus, email, interviewerEmail, candidateName, position, interviewDate, meetingLink, interviewer) => {
     const res = await fetch(`/api/hr/interview`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, status: newStatus }),
+      body: JSON.stringify({
+        id,
+        status: newStatus,
+        email,
+        interviewerEmail,
+        candidateName,
+        position,
+        interviewDate,
+        meetingLink,
+        interviewer,
+      }),
     });
+
     const data = await res.json();
     setMsg(data.message);
     loadInterviews(1);
   };
+
 
   const deleteOne = async (id) => {
     await fetch(`/api/hr/interview`, {
@@ -291,7 +303,19 @@ export default function Page() {
                       <div className="flex flex-wrap gap-2 mt-2">
                         <select
                           defaultValue={item.status}
-                          onChange={(e) => handleStatusChange(item._id, e.target.value)}
+                          onChange={(e) =>
+                            handleStatusChange(
+                              item._id,
+                              e.target.value,
+                              item.email,
+                              item.interviewerEmail[0]?.split(',').map(e => e.trim()),
+                              item.candidateName,
+                              item.position,
+                              item.interviewDate,
+                              item.meetingLink,
+                              item.interviewer
+                            )
+                          }
                           className="border p-1"
                         >
                           <option value="Pending">Pending</option>
