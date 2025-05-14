@@ -1,7 +1,6 @@
 'use client';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { BsArrowLeftRight } from "react-icons/bs";
 
 const page = () => {
     return (
@@ -18,8 +17,6 @@ const page = () => {
                     animate={{ y: 0 }}
                     transition={{ duration: 1 }}
                 >
-                    <Link href='/tech'>Technology</Link>
-                    <span><BsArrowLeftRight/></span>
                     <Link href='/development' className='underline underline-offset-4'>Development</Link>
                 </motion.h1>
                 <motion.p
@@ -52,7 +49,7 @@ const page = () => {
                         </Link>
                     </motion.div>
 
-                    <motion.div
+                    {/* <motion.div
                         className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
                         whileHover={{ scale: 1.05 }}
                     >
@@ -64,9 +61,9 @@ const page = () => {
                         >
                             Learn More &rarr;
                         </Link>
-                    </motion.div>
+                    </motion.div> */}
 
-                    <motion.div
+                    {/* <motion.div
                         className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
                         whileHover={{ scale: 1.05 }}
                     >
@@ -78,7 +75,7 @@ const page = () => {
                         >
                             Learn More &rarr;
                         </Link>
-                    </motion.div>
+                    </motion.div> */}
 
                     {/* <motion.div
                         className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
@@ -109,7 +106,7 @@ const page = () => {
                     </motion.div> */}
 
 
-                    <motion.div
+                    {/* <motion.div
                         className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
                         whileHover={{ scale: 1.05 }}
                     >
@@ -121,7 +118,7 @@ const page = () => {
                         >
                             Learn More &rarr;
                         </Link>
-                    </motion.div>
+                    </motion.div> */}
 
                     {/* <motion.div
                         className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
@@ -137,7 +134,7 @@ const page = () => {
                         </Link>
                     </motion.div> */}
 
-                    <motion.div
+                    {/* <motion.div
                         className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
                         whileHover={{ scale: 1.05 }}
                     >
@@ -149,7 +146,7 @@ const page = () => {
                         >
                             Learn More &rarr;
                         </Link>
-                    </motion.div>
+                    </motion.div> */}
 
                 </motion.div>
 

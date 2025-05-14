@@ -3,11 +3,10 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
-const Modal = ({ title, defaultTitle = "", defaultFiles = [], defaultCategory = "", defaultLink = "", onClose, onSave }) => {
+const Modal = ({ title, defaultTitle = "", defaultFiles = [], defaultCategory = "", onClose, onSave }) => {
   const [inputTitle, setInputTitle] = useState(defaultTitle);
   const [selectedFiles, setSelectedFiles] = useState(defaultFiles);
   const [text, setText] = useState("");
-  const [link, setLink] = useState(defaultLink);
   const [selectedCategory, setSelectedCategory] = useState(defaultCategory);
 
   const handleFileChange = (e) => {
@@ -40,10 +39,8 @@ const Modal = ({ title, defaultTitle = "", defaultFiles = [], defaultCategory = 
           required
         >
           <option value="">Select a category</option>
-          <option value="releases">Releases</option>
-          <option value="deployments">Deployments</option>
-          <option value="alerts">Alerts</option>
-          <option value="changes">Changes</option>
+          <option value="social_media">Social Media</option>
+          <option value="advertisement">Advertisement</option>
         </select>
 
         {selectedCategory === "changes" && <textarea onChange={(e) => setText(e.target.value)} className="p-2 w-full border rounded-md" placeholder="Enter Content..."></textarea>}
@@ -91,16 +88,14 @@ const Modal = ({ title, defaultTitle = "", defaultFiles = [], defaultCategory = 
 
 const Page = () => {
   const [documents, setDocuments] = useState({
-    releases: [],
-    deployments: [],
-    alerts: [],
-    changes: [],
+    social_media: [],
+    advertisement: []
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [modalData, setModalData] = useState({ open: false, title: "", files: [], category: "", link: "" });
+  const [modalData, setModalData] = useState({ open: false, title: "", files: [], category: "" });
 
-  const handleOpenModal = () => setModalData({ open: true, title: "", files: [], category: "", link: "" });
+  const handleOpenModal = () => setModalData({ open: true, title: "", files: [], category: "" });
 
   const fetchDocuments = async () => {
     try {
@@ -124,15 +119,14 @@ const Page = () => {
     fetchDocuments();
   }, []);
 
-  const handleSaveDocument = async (title, category, files, text, link) => {
+  const handleSaveDocument = async (title, category, files, text) => {
     const formData = new FormData();
     formData.append("name", title);
     formData.append("category", category);
     formData.append("text", text)
-    formData.append("link", link)
     Array.from(files).forEach(file => formData.append("file", file));
 
-    const res = await fetch("/api/development/overview", {
+    const res = await fetch("/api/marketing/report-submission", {
       method: "POST",
       body: formData,
     });
@@ -145,13 +139,13 @@ const Page = () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             action: "Upload",
-            details: "In Release Overview"
+            details: "In Report Submission"
           }),
         });
       } catch (error) {
         console.error("Failed to log audit:", error);
       }
-      setModalData({ open: false, title: "", files: [], category: "", link: "" });
+      setModalData({ open: false, title: "", files: [], category: "" });
     }
   };
 
@@ -163,10 +157,10 @@ const Page = () => {
         transition={{ duration: 0.5 }}
         className="text-4xl font-bold text-white mb-6"
       >
-        Release Overview
+        Report Submission
       </motion.h1>
 
-      {loading && <p className="text-white text-lg">Loading documents...</p>}
+      {loading && <p className="text-white text-lg">Loading reports...</p>}
       {error && <p className="text-red-500 text-lg">{error}</p>}
 
       <div className="w-full max-w-4xl space-y-4">
@@ -205,7 +199,7 @@ const Page = () => {
                               headers: { "Content-Type": "application/json" },
                               body: JSON.stringify({
                                 action: "Download",
-                                details: "From Release Overview",
+                                details: "From Report",
                               }),
                             });
                           } catch (error) {
@@ -220,7 +214,7 @@ const Page = () => {
                 </div>
               ))
             ) : (
-              <p className="text-gray-400 text-sm">No documents available.</p>
+              <p className="text-gray-400 text-sm">No report available.</p>
             )}
           </div>
         ))}
@@ -229,7 +223,7 @@ const Page = () => {
           className="mt-4 bg-pink-500 text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-pink-600 transition"
           onClick={handleOpenModal}
         >
-          + Add Document
+          + Add Report
         </button>
       </div>
 
@@ -239,8 +233,7 @@ const Page = () => {
           defaultTitle={modalData.title}
           defaultFiles={modalData.files}
           defaultCategory={modalData.category}
-          defaultLink={modalData.link}
-          onClose={() => setModalData({ open: false, title: "", files: [], category: "", link: "" })}
+          onClose={() => setModalData({ open: false, title: "", files: [], category: ""})}
           onSave={handleSaveDocument}
         />
       )}

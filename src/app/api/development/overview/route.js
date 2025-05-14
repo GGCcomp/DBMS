@@ -37,10 +37,20 @@ export async function POST(req) {
     const files = formData.getAll("file");
     const category = formData.get("category");
     const text = formData.get("text");
+    const name = formData.get("name");
+    const link = formData.get("link");
 
-    // if (!files || files.length === 0) {
-    //   return NextResponse.json({ error: "No files uploaded" }, { status: 400 });
-    // }
+    const allowedMimeTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "image/webp"
+    ];
 
     const keyFile = JSON.parse(
       Buffer.from(process.env.GOOGLE_DRIVE_SERVICE_KEY, "base64").toString()
@@ -57,6 +67,13 @@ export async function POST(req) {
     let downloadUrls = [];
 
     for (const file of files) {
+      if (!allowedMimeTypes.includes(file.type)) {
+        return NextResponse.json(
+          { error: `Unsupported file type: ${file.name}` },
+          { status: 400 }
+        );
+      }
+
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
 
@@ -83,11 +100,12 @@ export async function POST(req) {
     }
 
     const newFileEntry = await ReleaseOverview.create({
-      fileName: formData.get("name"),
-      category: category,
-      text: text,
-      previewUrls: previewUrls,
-      downloadUrls: downloadUrls,
+      fileName: name,
+      category,
+      text,
+      link,
+      previewUrls,
+      downloadUrls,
       uploadedAt: new Date(),
     });
 

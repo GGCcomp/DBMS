@@ -21,7 +21,7 @@ export default function AdminPanel() {
   const [modalData, setModalData] = useState(null);
   const [modalType, setModalType] = useState('');
   const roles = ['Lead', 'Intern'];
-  const departments = ["Compliance", "CyberSecurity", "Development", "Human Resource","Marketing&Sales"]
+  const departments = ["Compliance", "CyberSecurity", "Development", "Human Resource", "Marketing", "Sales", "Tech"]
 
   useEffect(() => {
     const fetchData = async () => {

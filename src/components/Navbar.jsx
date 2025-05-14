@@ -36,29 +36,36 @@ function Navbar() {
         {/* Navigation (Only show if user is logged in) */}
         {session && (
           <nav className="hidden md:flex space-x-6">
-            {session?.user?.role === "admin" && <Link href="/admin" className="hover:text-gray-300">
-              Admin
-            </Link>}
-            <Link href="/development" className="hover:text-gray-300">
-              Development
-            </Link>
-            <Link href="/hr" className="hover:text-gray-300">
-              HR
-            </Link>
-            <Link href="/sales" className="hover:text-gray-300">
-              Sales
-            </Link>
-            <Link href="/marketing" className="hover:text-gray-300">
-              Marketing
-            </Link>
-            <Link href="/tech" className="hover:text-gray-300">
-              IT
-            </Link>
-            <Link href="/research" className="hover:text-gray-300">
-              Research
-            </Link>
+            {(session?.user?.role === "admin") && (
+              <Link href="/admin" className="hover:text-gray-300">Admin</Link>
+            )}
+
+            {(session?.user?.role === "admin" || session?.user?.department === "Development") && (
+              <Link href="/development" className="hover:text-gray-300">Development</Link>
+            )}
+
+            {(session?.user?.role === "admin" || session?.user?.department === "HR") && (
+              <Link href="/hr" className="hover:text-gray-300">HR</Link>
+            )}
+
+            {(session?.user?.role === "admin" || session?.user?.department === "Sales") && (
+              <Link href="/sales" className="hover:text-gray-300">Sales</Link>
+            )}
+
+            {(session?.user?.role === "admin" || session?.user?.department === "Marketing") && (
+              <Link href="/marketing" className="hover:text-gray-300">Marketing</Link>
+            )}
+
+            {(session?.user?.role === "admin" || session?.user?.department === "Tech") && (
+              <Link href="/tech" className="hover:text-gray-300">IT</Link>
+            )}
+
+            {(session?.user?.role === "admin" || session?.user?.department === "Research") && (
+              <Link href="/research" className="hover:text-gray-300">Research</Link>
+            )}
           </nav>
         )}
+
 
         {/* Welcome Message & Logout */}
         <div className="relative group py-2">

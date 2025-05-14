@@ -8,8 +8,9 @@ const releaseOverviewSchema = new mongoose.Schema({
     required: true 
   },
   text: String,
-  previewUrls: [{ type: String, required: true }], 
-  downloadUrls: [{ type: String, required: true }], 
+  link: String,
+  previewUrls: [{ type: String }], 
+  downloadUrls: [{ type: String }], 
   uploadedAt: { type: Date, default: Date.now }, 
 });
 

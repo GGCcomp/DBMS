@@ -1,7 +1,6 @@
 'use client';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { BsArrowLeftRight } from "react-icons/bs";
 
 const Page = () => {
   return (
@@ -18,8 +17,6 @@ const Page = () => {
           animate={{ y: 0 }}
           transition={{ duration: 1 }}
         >
-          <Link href='/sales'>Sales</Link>
-          <span className=''><BsArrowLeftRight /></span>
           <Link href='/marketing' className='underline underline-offset-4'>Marketing</Link>
         </motion.h1>
         <motion.p
@@ -38,7 +35,7 @@ const Page = () => {
           animate={{ opacity: 1 }}
           transition={{ duration: 1.5 }}
         >
-          <motion.div
+          {/* <motion.div
             className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
             whileHover={{ scale: 1.05 }}
           >
@@ -50,9 +47,9 @@ const Page = () => {
             >
               Marketing Overview &rarr;
             </Link>
-          </motion.div>
+          </motion.div> */}
 
-          <motion.div
+          {/* <motion.div
             className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
             whileHover={{ scale: 1.05 }}
           >
@@ -64,9 +61,9 @@ const Page = () => {
             >
              Segmentation &rarr;
             </Link>
-          </motion.div>
+          </motion.div> */}
 
-          <motion.div
+          {/* <motion.div
             className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
             whileHover={{ scale: 1.05 }}
           >
@@ -78,10 +75,10 @@ const Page = () => {
             >
               Digital Marketings &rarr;
             </Link>
-          </motion.div>
+          </motion.div> */}
 
           {/* Payroll & Benefits */}
-          <motion.div
+          {/* <motion.div
             className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
             whileHover={{ scale: 1.05 }}
           >
@@ -93,9 +90,9 @@ const Page = () => {
             >
               Campaign Planning &rarr;
             </Link>
-          </motion.div>
+          </motion.div> */}
 
-          <motion.div
+          {/* <motion.div
             className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
             whileHover={{ scale: 1.05 }}
           >
@@ -107,9 +104,9 @@ const Page = () => {
             >
               Marketing Performance &rarr;
             </Link>
-          </motion.div>
+          </motion.div> */}
 
-          <motion.div
+          {/* <motion.div
             className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
             whileHover={{ scale: 1.05 }}
           >
@@ -121,9 +118,9 @@ const Page = () => {
             >
               Referral &rarr;
             </Link>
-          </motion.div>
+          </motion.div> */}
 
-          <motion.div
+          {/* <motion.div
             className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
             whileHover={{ scale: 1.05 }}
           >
@@ -134,6 +131,19 @@ const Page = () => {
               className="mt-4 inline-block text-blue-500 hover:text-blue-700 transition"
             >
               Compliance &rarr;
+            </Link>
+          </motion.div> */}
+          <motion.div
+            className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
+            whileHover={{ scale: 1.05 }}
+          >
+            <h2 className="text-2xl font-semibold mb-4">Reports</h2>
+            <p>Report Submission Portal</p>
+            <Link
+              href="/marketing/compliance"
+              className="mt-4 inline-block text-blue-500 hover:text-blue-700 transition"
+            >
+              Submit Report&rarr;
             </Link>
           </motion.div>
         </motion.div>

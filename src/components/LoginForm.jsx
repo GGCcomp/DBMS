@@ -68,8 +68,7 @@ function LoginForm() {
       } catch (error) {
         console.error("Failed to log audit:", error);
       }
-  
-      // Redirect based on user department
+      
       router.push(`/${res.user.department.toLowerCase()}`);
     }
 

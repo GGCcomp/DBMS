@@ -1,7 +1,6 @@
 'use client';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { BsArrowLeftRight } from "react-icons/bs";
 
 const Page = () => {
   return (
@@ -19,8 +18,6 @@ const Page = () => {
           transition={{ duration: 1 }}
         >
           <Link href='/sales' className='underline underline-offset-4'>Sales</Link>
-          <span className=''><BsArrowLeftRight /></span>
-          <Link href='/marketing'>Marketing</Link>
         </motion.h1>
         <motion.p
           className="text-xl mb-8"
