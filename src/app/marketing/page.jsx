@@ -140,7 +140,7 @@ const Page = () => {
             <h2 className="text-2xl font-semibold mb-4">Reports</h2>
             <p>Report Submission Portal</p>
             <Link
-              href="/marketing/compliance"
+              href="/marketing/report-submission"
               className="mt-4 inline-block text-blue-500 hover:text-blue-700 transition"
             >
               Submit Report&rarr;

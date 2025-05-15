@@ -4,30 +4,40 @@ import { ReleaseOverview } from "@/models/development";
 import connectMongo from "@/lib/db";
 import { Readable } from "stream";
 
-export async function GET() {
-    try {
-      await connectMongo();
+export async function GET(req) {
+  try {
+    await connectMongo();
 
-      const documents = await ReleaseOverview.find();
-  
-      const categorizedDocuments = {
-        releases: [],
-        deployments: [],
-        alerts: [],
-        changes: []
-      };
-  
-      documents.forEach((doc) => {
-        categorizedDocuments[doc.category].push(doc);
-      });
-  
-      return NextResponse.json({ documents: categorizedDocuments }, { status: 200 });
-  
-    } catch (error) {
-      console.error("Error fetching documents:", error);
-      return NextResponse.json({ error: "Failed to retrieve documents" }, { status: 500 });
-    }
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = 8; // fixed at 8 per page
+
+    const total = await ReleaseOverview.countDocuments();
+    const documents = await ReleaseOverview.find()
+      .sort({ uploadedAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    return NextResponse.json(
+      {
+        documents,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error fetching documents:", error);
+    return NextResponse.json(
+      { error: "Failed to retrieve documents" },
+      { status: 500 }
+    );
   }
+}
 
 export async function POST(req) {
   try {
@@ -39,6 +49,7 @@ export async function POST(req) {
     const text = formData.get("text");
     const name = formData.get("name");
     const link = formData.get("link");
+    const user = formData.get("user");
 
     const allowedMimeTypes = [
       "application/pdf",
@@ -106,7 +117,7 @@ export async function POST(req) {
       link,
       previewUrls,
       downloadUrls,
-      uploadedAt: new Date(),
+      user
     });
 
     return NextResponse.json({

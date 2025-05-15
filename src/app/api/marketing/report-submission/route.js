@@ -4,28 +4,41 @@ import { ReportSubmission } from "@/models/marketing";
 import connectMongo from "@/lib/db";
 import { Readable } from "stream";
 
-export async function GET() {
-    try {
-        await connectMongo();
+export async function GET(req) {
+  try {
+    await connectMongo();
 
-        const documents = await ReportSubmission.find();
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = 8; // fixed at 8 per page
 
-        const categorizedDocuments = {
-            social_media: [],
-            advertisement: []
-        };
+    const total = await ReportSubmission.countDocuments();
+    const documents = await ReportSubmission.find()
+      .sort({ uploadedAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
 
-        documents.forEach((doc) => {
-            categorizedDocuments[doc.category].push(doc);
-        });
-
-        return NextResponse.json({ documents: categorizedDocuments }, { status: 200 });
-
-    } catch (error) {
-        console.error("Error fetching documents:", error);
-        return NextResponse.json({ error: "Failed to retrieve documents" }, { status: 500 });
-    }
+    return NextResponse.json(
+      {
+        documents,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error fetching documents:", error);
+    return NextResponse.json(
+      { error: "Failed to retrieve documents" },
+      { status: 500 }
+    );
+  }
 }
+
 
 export async function POST(req) {
     try {
@@ -36,6 +49,7 @@ export async function POST(req) {
         const category = formData.get("category");
         const text = formData.get("text");
         const name = formData.get("name");
+        const user = formData.get("user");
 
         const allowedMimeTypes = [
             "application/pdf",
@@ -102,7 +116,7 @@ export async function POST(req) {
             text,
             previewUrls,
             downloadUrls,
-            uploadedAt: new Date(),
+            user
         });
 
         return NextResponse.json({

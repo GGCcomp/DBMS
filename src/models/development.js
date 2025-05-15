@@ -2,17 +2,13 @@ import mongoose from "mongoose";
 
 const releaseOverviewSchema = new mongoose.Schema({
   fileName: { type: String, required: true }, 
-  category: { 
-    type: String, 
-    enum: ["releases", "deployments", "alerts", "changes"], 
-    required: true 
-  },
+  category: { type: String, required: true },
   text: String,
   link: String,
   previewUrls: [{ type: String }], 
-  downloadUrls: [{ type: String }], 
-  uploadedAt: { type: Date, default: Date.now }, 
-});
+  downloadUrls: [{ type: String }],
+  user: String
+}, { timestamps: true });
 
 export const ReleaseOverview = mongoose.models.ReleaseOverview || mongoose.model("ReleaseOverview", releaseOverviewSchema);
 
