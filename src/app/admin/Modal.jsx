@@ -1,4 +1,5 @@
-function Modal({ isOpen, onClose, title, data, type }) {
+function Modal({ isOpen, onClose, title, data, type, refresh, page, totalPages, setPage }) {
+ 
   if (!isOpen) return null;
 
   const togglePermission = async (userId, currentPermission, event) => {
@@ -67,7 +68,7 @@ function Modal({ isOpen, onClose, title, data, type }) {
       });
       res = await res.json();
       if (res.ok) {
-        alert("User Removed!");
+        refresh();
       }
     } catch (err) {
       console.log(err);
@@ -82,13 +83,13 @@ function Modal({ isOpen, onClose, title, data, type }) {
 
   // Check if any items have an approval status of 'requested'
   const shouldShowActionsColumn =
-    data && data.some((item) => item.approval === "requested");
+     Array.isArray(data) && data.some((item) => item.approval === "requested");
 
   // Return JSX based on the type
   if (type === "Total Employees") {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg shadow-xl p-6 max-w-6xl w-full overflow-auto">
+        <div className="bg-white rounded-lg shadow-xl p-6 mx-8 w-full overflow-auto">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6">{title}</h2>
           <div className="overflow-x-auto max-w-full">
             <table className="w-full table-auto border-collapse border border-gray-300">
@@ -136,7 +137,7 @@ function Modal({ isOpen, onClose, title, data, type }) {
                       <td className="border border-gray-300 px-6 py-3 text-sm font-medium text-gray-700">
                         {leaveCount > 0 ? `${leaveCount} ${leaveCount > 1 ? 'leaves' : 'leave'}  (${leaveDates})` : "No Leaves"}
                       </td>
-                      {item.role !== "admin" && <td className="border border-gray-300 px-6 py-3 text-sm font-medium text-gray-700">
+                      {item.role !== "Admin" && <td className="border border-gray-300 px-6 py-3 text-sm font-medium text-gray-700">
                         <button onClick={() => removeUser(item._id)} className="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700">Remove User</button>
                       </td>}
                     </tr>
@@ -144,6 +145,28 @@ function Modal({ isOpen, onClose, title, data, type }) {
                 })}
               </tbody>
             </table>
+
+            {/* Pagination */}
+            <div className="mt-6 flex justify-center space-x-4">
+              <button
+                onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                disabled={page === 1}
+                className={`px-4 py-2 rounded ${page === 1 ? "bg-gray-300" : "bg-blue-500 text-white hover:bg-blue-600"}`}
+              >
+                Previous
+              </button>
+              <span className="px-4 py-2 text-gray-700">
+                Page {page} of {totalPages}
+              </span>
+              <button
+                onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+                disabled={page === totalPages}
+                className={`px-4 py-2 rounded ${page === totalPages ? "bg-gray-300" : "bg-blue-500 text-white hover:bg-blue-600"}`}
+              >
+                Next
+              </button>
+            </div>
+
           </div>
           <div className="mt-6 flex justify-end space-x-4">
             <button
@@ -238,6 +261,28 @@ function Modal({ isOpen, onClose, title, data, type }) {
                 ))}
             </tbody>
           </table>
+
+          {/* Pagination */}
+            <div className="mt-6 flex justify-center space-x-4">
+              <button
+                onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                disabled={page === 1}
+                className={`px-4 py-2 rounded ${page === 1 ? "bg-gray-300" : "bg-blue-500 text-white hover:bg-blue-600"}`}
+              >
+                Previous
+              </button>
+              <span className="px-4 py-2 text-gray-700">
+                Page {page} of {totalPages}
+              </span>
+              <button
+                onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+                disabled={page === totalPages}
+                className={`px-4 py-2 rounded ${page === totalPages ? "bg-gray-300" : "bg-blue-500 text-white hover:bg-blue-600"}`}
+              >
+                Next
+              </button>
+            </div>
+
         </div>
         <div className="mt-6 flex justify-end space-x-4">
           <button
