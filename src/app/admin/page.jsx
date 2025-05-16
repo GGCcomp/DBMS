@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
@@ -8,80 +8,17 @@ import Modal from './Modal';
 
 
 export default function AdminPanel() {
-  const [users, setUsers] = useState([]);
-  const [invitations, setInvitations] = useState([]);
-  const [leaveRequests, setLeaveRequests] = useState([]);
-  const [userPage, setUserPage] = useState(1);
-  const [invitationPage, setInvitationPage] = useState(1);
-  const [leavePage, setLeavePage] = useState(1);
-  const [usersTotalPages, setUsersTotalPages] = useState(1);
-  const [invitationsTotalPages, setInvitationsTotalPages] = useState(1);
-  const [leaveRequestsTotalPages, setLeaveRequestsTotalPages] = useState(1);
-  const [totalUsers, setTotalUsers] = useState("");
-  const [totalinvitations, setTotalinvitations] = useState("");
-  const [totalLeaves, setTotalLeaves] = useState("");
   const [email, setEmail] = useState('');
   const [department, setDepartment] = useState('');
   const [role, setRole] = useState('');
   const [inviteLoading, setInviteLoading] = useState(false);
   const [error, setError] = useState('');
-  const [modalData, setModalData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalType, setModalType] = useState('');
-  const [limit] = useState(10);
+
   const roles = ['Lead', 'Intern'];
   const departments = ["Compliance", "CyberSecurity", "Development", "Human Resource", "Marketing", "Sales", "Tech", "IT-Head", "Marketing-Head"]
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [usersRes, invitationsRes, leaveRequestsRes] = await Promise.all([
-          fetch(`/api/users?page=${userPage}&limit=${limit}`, { cache: 'no-store' }),
-          fetch(`/api/invitations?page=${invitationPage}&limit=${limit}`, { cache: 'no-store' }),
-          fetch(`/api/leave_req?page=${leavePage}&limit=${limit}`, { cache: 'no-store' }),
-        ]);
-
-        if (usersRes.ok) {
-          const data = await usersRes.json();
-          setUsers(data.users);
-          setTotalUsers(data.pagination.total);
-          setUsersTotalPages(data.pagination.totalPages || 1);
-        }
-
-        if (invitationsRes.ok) {
-          const data = await invitationsRes.json();
-          setInvitations(data.invitations || data);
-          setTotalinvitations(data.pagination.total);
-          setInvitationsTotalPages(data.pagination?.totalPages || 1);
-        }
-
-        if (leaveRequestsRes.ok) {
-          const data = await leaveRequestsRes.json();
-          setLeaveRequests(data.leaves || data);
-          setTotalLeaves(data.pagination.total);
-          setLeaveRequestsTotalPages(data.pagination?.totalPages || 1);
-        }
-
-      } catch (error) {
-        setError('Failed to fetch data.');
-        console.error(error);
-      }
-    };
-
-    fetchData();
-  }, [userPage, invitationPage, leavePage, limit]);
-
-
-  const refreshUsers = async () => {
-    const res = await fetch(`/api/users?page=${page}&limit=${limit}`, { cache: 'no-store' });
-    if (res.ok) {
-      const data = await usersRes.json();
-      setUsers(data.users);
-      setUsersTotalPages(data.pagination.totalPages);
-    }
-  };
-
 
   const handleInvite = async () => {
     if (!email || !role) {
@@ -114,12 +51,12 @@ export default function AdminPanel() {
     }
   };
 
-  const openModal = (title, data, type = '') => {
+  const openModal = async (title, type = '') => {
     setModalTitle(title);
-    setModalData(data)
+    setModalType(type);
     setIsModalOpen(true);
-    setModalType(type); // Add this state for type
   };
+
 
 
   return (
@@ -149,26 +86,26 @@ export default function AdminPanel() {
           <motion.div
             className="bg-white rounded-lg p-6 shadow-lg text-gray-800 text-center hover:scale-105 transform transition-all duration-300 cursor-pointer"
             whileHover={{ scale: 1.05 }}
-            onClick={() => openModal('Total Employees', users, 'Total Employees')}
+            onClick={() => openModal('Total Employees', 'Total Employees')}
           >
             <h2 className="text-2xl font-bold mb-4">Total Employees</h2>
-            {<p className="text-4xl font-extrabold text-blue-500">{totalUsers}</p>}
+            <p className="text-4xl font-extrabold text-blue-500">5</p>
           </motion.div>
           <motion.div
             className="bg-white rounded-lg p-6 shadow-lg text-gray-800 text-center hover:scale-105 transform transition-all duration-300 cursor-pointer"
             whileHover={{ scale: 1.05 }}
-            onClick={() => openModal('Invitations Sent', invitations, 'Invitations Sent')}
+            onClick={() => openModal('Invitations Sent', 'Invitations')}
           >
             <h2 className="text-2xl font-bold mb-4">Invitations Sent</h2>
-            <p className="text-4xl font-extrabold text-blue-500">{totalinvitations}</p>
+            <p className="text-4xl font-extrabold text-blue-500">9</p>
           </motion.div>
           <motion.div
             className="bg-white rounded-lg p-6 shadow-lg text-gray-800 text-center hover:scale-105 transform transition-all duration-300 cursor-pointer"
             whileHover={{ scale: 1.05 }}
-            onClick={() => openModal('Leave Requests', leaveRequests, 'Leave Requests')}
+            onClick={() => openModal('Leave Requests', 'Leaves')}
           >
             <h2 className="text-2xl font-bold mb-4">Leave Requests</h2>
-            <p className="text-4xl font-extrabold text-blue-500">{totalLeaves}</p>
+            <p className="text-4xl font-extrabold text-blue-500">0</p>
           </motion.div>
           <motion.div
             className="bg-white rounded-lg p-6 shadow-lg text-gray-800 text-center hover:scale-105 transform transition-all duration-300"
@@ -275,35 +212,13 @@ export default function AdminPanel() {
         </motion.div>
 
         {/* Modal */}
-         <Modal 
+        <Modal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           title={modalTitle}
-          data={modalData}
           type={modalType}
-          refresh={refreshUsers}
-          page={
-            modalType === "Total Employees"
-              ? userPage
-              : modalType === "Invitations"
-                ? invitationPage
-                : leavePage
-          }
-          totalPages={
-            modalType === "Total Employees"
-              ? usersTotalPages
-              : modalType === "Invitations"
-                ? invitationsTotalPages
-                : leaveRequestsTotalPages
-          }
-          setPage={
-            modalType === "Total Employees"
-              ? setUserPage
-              : modalType === "Invitations"
-                ? setInvitationPage
-                : setLeavePage
-          }
         />
+
       </motion.div>
     </div>
   );
