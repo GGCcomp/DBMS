@@ -34,36 +34,43 @@ export async function POST(req) {
 
 
   export async function GET(req) {
-    await connectMongo();
+  await connectMongo();
 
-    try {
-        // ✅ Extract query params
-        const { searchParams } = new URL(req.url);
-        const filters = {};
+  try {
+    const { searchParams } = new URL(req.url);
+    const filters = {};
 
-        if (searchParams.has("email")) {
-            filters.userId = searchParams.get("email");
-        }
-        if (searchParams.has("action")) {
-            filters.action = searchParams.get("action");
-        }
-        if (searchParams.has("startDate") && searchParams.has("endDate")) {
-            filters.createdAt = {
-                $gte: new Date(searchParams.get("startDate")),
-                $lte: new Date(searchParams.get("endDate")),
-            };
-        }
-
-        console.log("Filters Applied:", filters);
-
-        // ✅ Fetch filtered or all logs
-        const logs = await AuditLog.find(filters).lean();
-
-        return NextResponse.json({ logs, ok: true }, { status: 200 });
-    } catch (error) {
-        console.error("Error fetching logs:", error);
-        return NextResponse.json({ error: "Server error" }, { status: 500 });
+    if (searchParams.has("email")) {
+      filters.userId = searchParams.get("email");
     }
+    if (searchParams.has("action")) {
+      filters.action = searchParams.get("action");
+    }
+    if (searchParams.has("startDate") && searchParams.has("endDate")) {
+      filters.createdAt = {
+        $gte: new Date(searchParams.get("startDate")),
+        $lte: new Date(searchParams.get("endDate")),
+      };
+    }
+
+    const limit = parseInt(searchParams.get("limit") || "10");
+    const skip = parseInt(searchParams.get("skip") || "0");
+
+    console.log("Filters Applied:", filters);
+    console.log("Pagination:", { limit, skip });
+
+    const logs = await AuditLog.find(filters)
+      .sort({ createdAt: -1 }) // Optional: newest first
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    return NextResponse.json({ logs, ok: true }, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching logs:", error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
 }
+
   
   

@@ -2,10 +2,12 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Modal from './Modal';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { FiSend } from 'react-icons/fi';
-import Modal from './Modal';
-
+import { FaUsers } from "react-icons/fa";
+import { FcInvite } from "react-icons/fc";
+import { FcLeave } from "react-icons/fc";
 
 export default function AdminPanel() {
   const [email, setEmail] = useState('');
@@ -37,7 +39,6 @@ export default function AdminPanel() {
 
       const result = await res.json();
       if (res.ok) {
-        setInvitations((prev) => [...prev, { email, role, expiryDate: new Date(Date.now() + 24 * 60 * 60 * 1000) }]);
         setEmail('');
         setDepartment('');
         setRole('');
@@ -45,6 +46,7 @@ export default function AdminPanel() {
         setError(result.error || 'Failed to send invitation.');
       }
     } catch (error) {
+      console.error('Frontend invite error:', error);
       setError('Something went wrong.');
     } finally {
       setInviteLoading(false);
@@ -89,7 +91,7 @@ export default function AdminPanel() {
             onClick={() => openModal('Total Employees', 'Total Employees')}
           >
             <h2 className="text-2xl font-bold mb-4">Total Employees</h2>
-            <p className="text-4xl font-extrabold text-blue-500">5</p>
+            <span className="text-blue-500 flex justify-center"><FaUsers size={60}/></span>
           </motion.div>
           <motion.div
             className="bg-white rounded-lg p-6 shadow-lg text-gray-800 text-center hover:scale-105 transform transition-all duration-300 cursor-pointer"
@@ -97,7 +99,7 @@ export default function AdminPanel() {
             onClick={() => openModal('Invitations Sent', 'Invitations')}
           >
             <h2 className="text-2xl font-bold mb-4">Invitations Sent</h2>
-            <p className="text-4xl font-extrabold text-blue-500">9</p>
+            <span className="text-purple-500 flex justify-center"><FcInvite size={60}/></span>
           </motion.div>
           <motion.div
             className="bg-white rounded-lg p-6 shadow-lg text-gray-800 text-center hover:scale-105 transform transition-all duration-300 cursor-pointer"
@@ -105,7 +107,7 @@ export default function AdminPanel() {
             onClick={() => openModal('Leave Requests', 'Leaves')}
           >
             <h2 className="text-2xl font-bold mb-4">Leave Requests</h2>
-            <p className="text-4xl font-extrabold text-blue-500">0</p>
+            <span className='flex justify-center'><FcLeave size={60}/></span>
           </motion.div>
           <motion.div
             className="bg-white rounded-lg p-6 shadow-lg text-gray-800 text-center hover:scale-105 transform transition-all duration-300"
@@ -218,7 +220,6 @@ export default function AdminPanel() {
           title={modalTitle}
           type={modalType}
         />
-
       </motion.div>
     </div>
   );

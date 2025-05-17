@@ -75,13 +75,13 @@ export default function Page() {
           onChange={(e) => setAction(e.target.value)}
         >
           <option value="">All Actions</option>
-          <option value="LOGIN">Login</option>
-          <option value="LOGOUT">Logout</option>
-          <option value="DATA_UPDATE">Data Update</option>
+          <option value="Login">Login</option>
+          <option value="Logout">Logout</option>
+          <option value="Data Update">Data Update</option>
           <option value="Download">Download</option>
           <option value="Upload">Upload</option>
-          <option value="PUNCH_IN">Punch In</option>
-          <option value="PUNCH_OUT">Punch Out</option>
+          <option value="PunchIn">Punch In</option>
+          <option value="PunchOut">Punch Out</option>
         </select>
         <input
           type="date"
