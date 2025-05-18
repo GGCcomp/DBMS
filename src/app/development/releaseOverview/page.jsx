@@ -7,7 +7,6 @@ import { useSession } from "next-auth/react";
 const Modal = ({ title, defaultTitle = "", defaultFiles = [], defaultCategory = "", defaultLink = "", onClose, onSave, loading }) => {
   const [inputTitle, setInputTitle] = useState(defaultTitle);
   const [selectedFiles, setSelectedFiles] = useState(defaultFiles);
-  const [text, setText] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(defaultCategory);
   const [selectedLink, setSelectedLink] = useState(defaultLink);
 
@@ -26,62 +25,62 @@ const Modal = ({ title, defaultTitle = "", defaultFiles = [], defaultCategory = 
       >
         <h2 className="text-2xl font-semibold mb-4">{title}</h2>
 
-        <input
-          type="text"
-          value={inputTitle}
-          onChange={(e) => setInputTitle(e.target.value)}
-          className="w-full p-2 border rounded-md mb-3"
-          placeholder="Enter document title"
-          required
-        />
+        <form onSubmit={async (e) => {
+          e.preventDefault();
+          await onSave(inputTitle, selectedCategory, selectedFiles, selectedLink);
+        }}>
+          <input
+            type="text"
+            value={inputTitle}
+            onChange={(e) => setInputTitle(e.target.value)}
+            className="w-full p-2 border rounded-md mb-3"
+            placeholder="Enter document title"
+            required
+          />
 
-        <input
-          type="text"
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="w-full p-2 border rounded-md mb-3"
-          placeholder="Enter category"
-          required
-        />
+          <input
+            type="text"
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="w-full p-2 border rounded-md mb-3"
+            placeholder="Enter category"
+            required
+          />
 
-        <input
-          type="text"
-          value={selectedLink}
-          onChange={(e) => setSelectedLink(e.target.value)}
-          className="w-full p-2 border rounded-md mb-3"
-          placeholder="Enter Link"
-          required
-        />
+          <input
+            type="text"
+            value={selectedLink}
+            onChange={(e) => setSelectedLink(e.target.value)}
+            className="w-full p-2 border rounded-md mb-3"
+            placeholder="Enter Link"
+            required
+          />
 
-        <textarea
-          onChange={(e) => setText(e.target.value)}
-          className="p-2 w-full border rounded-md mb-3"
-          placeholder="Enter content (optional if uploading file)"
-        ></textarea>
+          <input
+            type="file"
+            multiple
+            accept=".pdf, .doc, .docx, .xls, .xlsx, image/*"
+            onChange={handleFileChange}
+            className="w-full p-2 border rounded-md mb-3"
+            required
+          />
 
-        <input
-          type="file"
-          multiple
-          accept=".pdf, .doc, .docx, .xls, .xlsx, image/*"
-          onChange={handleFileChange}
-          className="w-full p-2 border rounded-md mb-3"
-        />
-
-        <div className="flex justify-end space-x-3 mt-4">
-          <button
-            className="bg-gray-400 text-white px-4 py-2 rounded-md hover:bg-gray-500 transition"
-            onClick={onClose}
-          >
-            Cancel
-          </button>
-          <button
-            disabled={loading}
-            className="bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition"
-            onClick={() => onSave(inputTitle, selectedCategory, selectedFiles, text, selectedLink)}
-          >
-            {!loading ? " Save" : "Saving.."}
-          </button>
-        </div>
+          <div className="flex justify-end space-x-3 mt-4">
+            <button
+              className="bg-gray-400 text-white px-4 py-2 rounded-md hover:bg-gray-500 transition"
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition"
+            >
+              {!loading ? " Save" : "Saving.."}
+            </button>
+          </div>
+        </form>
       </motion.div>
     </div>
   );
@@ -117,18 +116,16 @@ const Page = () => {
       setLoading(false);
     }
   };
-  console.log(documents[3]);
 
   useEffect(() => {
     fetchDocuments(page);
   }, [page]);
 
-  const handleSaveDocument = async (title, category, files, text, link) => {
+  const handleSaveDocument = async (title, category, files, link) => {
     setUploading(true);
     const formData = new FormData();
     formData.append("name", title);
     formData.append("category", category);
-    formData.append("text", text);
     formData.append("link", link);
     formData.append("user", session?.user?.name || "unknown");
     Array.from(files).forEach(file => formData.append("file", file));
@@ -139,7 +136,6 @@ const Page = () => {
     });
 
     if (res.ok) {
-      fetchDocuments();
       try {
         await fetch("/api/audit-log", {
           method: "POST",
@@ -154,6 +150,7 @@ const Page = () => {
       }
       setModalData({ open: false, title: "", files: [], category: "", link: "" });
       setUploading(false);
+      fetchDocuments(page);
     }
   };
 
@@ -177,8 +174,8 @@ const Page = () => {
             <tr className="bg-gray-100">
               <th className="p-2 border">#</th>
               <th className="p-2 border">Uploaded By</th>
+              <th className="p-2 border">Title</th>
               <th className="p-2 border">Category</th>
-              <th className="p-2 border">Document</th>
               <th className="p-2 border">Actions</th>
               <th className="p-2 border">Link</th>
               <th className="p-2 border">Date</th>
@@ -191,13 +188,7 @@ const Page = () => {
                   <td className="p-2 border">{index + 1}</td>
                   <td className="p-2 border capitalize">{doc.user || "Unknown"}</td>
                   <td className="p-2 border capitalize">{doc.category}</td>
-                  <td className="p-2 border">
-                    {doc.text ? (
-                      <span>{doc.text.slice(0, 50)}...</span>
-                    ) : (
-                      <span>{doc.fileName}</span>
-                    )}
-                  </td>
+                  <td className="p-2 border"><span>{doc.fileName}</span></td>
                   <td className="p-2 border">
                     <div className="flex gap-2">
                       {doc.previewUrls?.map((url, idx) => (

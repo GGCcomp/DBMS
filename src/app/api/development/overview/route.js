@@ -9,23 +9,30 @@ export async function GET(req) {
     await connectMongo();
 
     const { searchParams } = new URL(req.url);
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = 8; // fixed at 8 per page
+    const rawPage = parseInt(searchParams.get("page"), 10);
+    const page = isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
+    const limit = 8;
 
     const total = await ReleaseOverview.countDocuments();
-    const documents = await ReleaseOverview.find()
-      .sort({ uploadedAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit);
+    const totalPages = Math.ceil(total / limit);
+    const currentPage = Math.min(page, totalPages || 1); 
+
+    const documents =
+      total === 0
+        ? []
+        : await ReleaseOverview.find()
+            .sort({ uploadedAt: -1 })
+            .skip((currentPage - 1) * limit)
+            .limit(limit);
 
     return NextResponse.json(
       {
         documents,
         pagination: {
           total,
-          page,
+          page: currentPage,
           limit,
-          totalPages: Math.ceil(total / limit),
+          totalPages,
         },
       },
       { status: 200 }
@@ -46,7 +53,6 @@ export async function POST(req) {
     const formData = await req.formData();
     const files = formData.getAll("file");
     const category = formData.get("category");
-    const text = formData.get("text");
     const name = formData.get("name");
     const link = formData.get("link");
     const user = formData.get("user");
@@ -113,7 +119,6 @@ export async function POST(req) {
     const newFileEntry = await ReleaseOverview.create({
       fileName: name,
       category,
-      text,
       link,
       previewUrls,
       downloadUrls,
@@ -123,9 +128,15 @@ export async function POST(req) {
     return NextResponse.json({
       message: "Files uploaded successfully",
       file: newFileEntry,
-    });
+    }, {status: 201});
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json({ error: "File upload failed" }, { status: 500 });
   }
+}
+
+export async function DELETE(){
+  await connectMongo();
+  await ReleaseOverview.deleteMany({});
+  return NextResponse.json({ok: "DONE"});
 }
