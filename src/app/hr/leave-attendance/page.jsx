@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 
-const PAGE_LIMIT = 6;
+const PAGE_LIMIT = 5;
 
 export default function Page() {
   const [data, setData] = useState([]);
@@ -10,34 +10,29 @@ export default function Page() {
   const [logsLoading, setLogsLoading] = useState(false);
   const [attendanceLogs, setAttendanceLogs] = useState([]);
   const [page, setPage] = useState(1);
+  const [logPage, setLogPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [skip, setSkip] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
+  const [total, setTotal] = useState(0);
 
   const [workLogs, setWorkLogs] = useState([
     { id: 1, employee: "Charlie Green", hours: 8, date: "2025-02-09" },
     { id: 2, employee: "David White", hours: 6, date: "2025-02-09" },
   ]);
 
-  const fetchAttendanceLogs = async (reset = false) => {
+  const fetchAttendanceLogs = async (pageNumber = 1) => {
     setLogsLoading(true);
     try {
-      const url = new URL("/api/audit-log", window.location.origin);
+      const skip = (pageNumber - 1) * PAGE_LIMIT;
+      const url = new URL("/api/audit-log/leave_attendance", window.location.origin);
       url.searchParams.append("limit", PAGE_LIMIT);
-      url.searchParams.append("skip", reset ? 0 : skip);
+      url.searchParams.append("skip", skip);
 
       const res = await fetch(url);
       const data = await res.json();
 
-      if (reset) {
-        setAttendanceLogs(data.logs || []);
-        setSkip((data.logs || []).length);
-      } else {
-        setAttendanceLogs((prev) => [...prev, ...(data.logs || [])]);
-        setSkip((prev) => prev + (data.logs?.length || 0));
-      }
-
-      setHasMore((data.logs || []).length === PAGE_LIMIT);
+      setAttendanceLogs(data.logs || []);
+      setTotal(data.total || 0);
+      setLogPage(pageNumber);
     } catch (error) {
       console.error("Error fetching attendance logs:", error);
     } finally {
@@ -46,9 +41,8 @@ export default function Page() {
   };
 
   useEffect(() => {
-    fetchAttendanceLogs(true);
+    fetchAttendanceLogs(1);
   }, []);
-
 
 
   useEffect(() => {
@@ -72,53 +66,6 @@ export default function Page() {
     getAllLeaves();
   }, []);
 
-  const attendanceResults = useMemo(() => {
-    const userAttendance = {};
-
-    attendanceLogs.forEach((log) => {
-      const dateObj = new Date(log.createdAt);
-      if (isNaN(dateObj)) return;
-
-      const date = dateObj.toISOString().split("T")[0];
-      const userKey = `${log.user?._id || log.userId}-${date}`;
-
-      if (!userAttendance[userKey]) {
-        userAttendance[userKey] = {
-          logins: [],
-          logouts: [],
-          details: log.user,
-          date,
-        };
-      }
-
-      if (log.action === "LOGIN") {
-        userAttendance[userKey].logins.push(dateObj);
-      } else if (log.action === "LOGOUT") {
-        userAttendance[userKey].logouts.push(dateObj);
-      }
-    });
-
-    return Object.keys(userAttendance).map((key) => {
-      const { logins, logouts, details, date } = userAttendance[key];
-      const [userId] = key.split("-");
-
-      logins.sort((a, b) => a - b);
-      logouts.sort((a, b) => a - b);
-
-      const firstLogin = logins[0] || null;
-      const lastLogout = logouts[logouts.length - 1] || null;
-      const hoursWorked = firstLogin && lastLogout ? (lastLogout - firstLogin) / (1000 * 60 * 60) : 0;
-
-      return {
-        userId,
-        date,
-        details,
-        firstLogin,
-        lastLogout,
-        status: hoursWorked >= 6 ? "Present" : "Absent",
-      };
-    });
-  }, [attendanceLogs]);
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center p-6">
@@ -152,17 +99,17 @@ export default function Page() {
                   </tr>
                 </thead>
                 <tbody>
-                  {attendanceResults.length > 0 ? (
-                    attendanceResults.map((rec, i) => (
+                  {attendanceLogs.length > 0 ? (
+                    attendanceLogs.map((rec, i) => (
                       <tr key={i} className="border-t">
-                        <td className="px-4 py-2">{rec.details?.name || "Unknown"}</td>
-                        <td className="px-4 py-2">{rec.details?.department || "—"}</td>
+                        <td className="px-4 py-2">{rec?.name || "Unknown"}</td>
+                        <td className="px-4 py-2">{rec?.department || "—"}</td>
                         <td className="px-4 py-2">{rec.date}</td>
                         <td className="px-4 py-2">
-                          {rec.firstLogin ? new Date(rec.firstLogin).toLocaleTimeString() : "N/A"}
+                          {rec.firstLogin ? new Date(rec.firstLogin.createdAt).toLocaleTimeString() : "N/A"}
                         </td>
                         <td className="px-4 py-2">
-                          {rec.lastLogout ? new Date(rec.lastLogout).toLocaleTimeString() : "N/A"}
+                          {rec.lastLogout ? new Date(rec.lastLogout.createdAt).toLocaleTimeString() : "N/A"}
                         </td>
                         <td className="px-4 py-2">
                           <span className={rec.status === "Present" ? "text-green-600" : "text-red-600"}>
@@ -182,17 +129,21 @@ export default function Page() {
               </table>
             </div>
 
-            {hasMore && (
-              <div className="mt-4 text-center">
-                <button
-                  onClick={() => fetchAttendanceLogs(false)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                  disabled={loading}
-                >
-                  {loading ? "Loading..." : "Load More"}
-                </button>
+            {total > PAGE_LIMIT && (
+              <div className="mt-6 flex justify-center space-x-2">
+                {Array.from({ length: Math.ceil(total / PAGE_LIMIT) }).map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => fetchAttendanceLogs(i + 1)}
+                    className={`px-4 py-2 border rounded ${logPage === i + 1 ? 'bg-blue-600 text-white' : 'bg-white text-blue-600 border-blue-600'
+                      } hover:bg-blue-500 hover:text-white transition`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
               </div>
             )}
+
           </div>}
 
 
@@ -202,24 +153,40 @@ export default function Page() {
             {loading ? (
               <p className="text-center">Loading...</p>
             ) : (
-              <ul className="text-gray-600 text-left space-y-2">
+              <>
                 {data && data.length > 0 ? (
-                  data.map((leave) => (
-                    <li key={leave.id} className="bg-white p-3 rounded shadow flex justify-between">
-                      <span>
-                        🏖 <strong>Dept:</strong>{leave.department}, <strong>Name:</strong>{leave.name}, <strong>Reason</strong>:{leave.reason}, (
-                        <span className={leave.status === "approved" ? "text-green-600" : "text-yellow-600"}>
-                          Status:{leave.approval.toUpperCase()}
-                        </span>,
-                        <strong>From:</strong><span>{new Date(leave.fromDate).toLocaleDateString()}</span>,
-                        <strong>To:</strong><span>{new Date(leave.toDate).toLocaleDateString()}</span>
-                        )
-                      </span>
-                    </li>
-                  ))
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full bg-white rounded-lg shadow">
+                      <thead>
+                        <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                          <th className="py-3 px-6 text-left">Dept</th>
+                          <th className="py-3 px-6 text-left">Name</th>
+                          <th className="py-3 px-6 text-left">Reason</th>
+                          <th className="py-3 px-6 text-left">Status</th>
+                          <th className="py-3 px-6 text-left">From</th>
+                          <th className="py-3 px-6 text-left">To</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-gray-600 text-sm font-light">
+                        {data.map((leave) => (
+                          <tr key={leave.id} className="border-b border-gray-200 hover:bg-gray-100">
+                            <td className="py-3 px-6 text-left">{leave.department}</td>
+                            <td className="py-3 px-6 text-left">{leave.name}</td>
+                            <td className="py-3 px-6 text-left">{leave.reason}</td>
+                            <td className={`py-3 px-6 text-left font-semibold ${leave.status === "approved" ? "text-green-600" : "text-yellow-600"}`}>
+                              {leave.approval.toUpperCase()}
+                            </td>
+                            <td className="py-3 px-6 text-left">{new Date(leave.fromDate).toLocaleDateString()}</td>
+                            <td className="py-3 px-6 text-left">{new Date(leave.toDate).toLocaleDateString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 ) : (
-                  <li className="text-center text-gray-500">No Leave data</li>
+                  <p className="text-center text-gray-500">No Leave data</p>
                 )}
+
                 {/* Pagination Controls */}
                 <div className="flex justify-center mt-6 space-x-4">
                   <button
@@ -238,9 +205,8 @@ export default function Page() {
                     Next
                   </button>
                 </div>
-              </ul>
+              </>
             )}
-
           </div>
 
           {/* Work Log Submissions */}
