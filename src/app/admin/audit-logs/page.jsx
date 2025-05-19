@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 
 export default function Page() {
   const [logs, setLogs] = useState([]);
-  const [userId, setUserId] = useState("");
+  const [name, setName] = useState("");
+  const [department, setDepartment] = useState("");
   const [action, setAction] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -11,12 +12,13 @@ export default function Page() {
   const [hasMore, setHasMore] = useState(true);
 
   const LIMIT_INITIAL = 12;
-  const LIMIT_LOAD_MORE = 5;
+  const LIMIT_LOAD_MORE = 10;
 
   const buildURL = (limit, skipVal = 0) => {
     const url = new URL("/api/audit-log", window.location.origin);
-    if (userId) url.searchParams.append("userId", userId);
     if (action) url.searchParams.append("action", action);
+    if (name) url.searchParams.append("name", name);
+    if (department) url.searchParams.append("department", department);
     if (startDate && endDate) {
       url.searchParams.append("startDate", startDate);
       url.searchParams.append("endDate", endDate);
@@ -25,6 +27,7 @@ export default function Page() {
     url.searchParams.append("skip", skipVal);
     return url;
   };
+
 
   const fetchLogs = async (reset = true) => {
     const url = buildURL(LIMIT_INITIAL, 0);
@@ -64,10 +67,17 @@ export default function Page() {
       <div className="mb-4 flex flex-wrap gap-2">
         <input
           type="text"
-          placeholder="Search User ID"
+          placeholder="User Name"
           className="border p-2"
-          value={userId}
-          onChange={(e) => setUserId(e.target.value)}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Department"
+          className="border p-2"
+          value={department}
+          onChange={(e) => setDepartment(e.target.value)}
         />
         <select
           className="border p-2"

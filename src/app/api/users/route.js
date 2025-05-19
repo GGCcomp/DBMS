@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectMongo from "@/lib/db";
 import { User } from '@/models/user';
+import { Leave } from '@/models/announcement';
 
 export async function GET(req) {
   try {
