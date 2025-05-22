@@ -92,6 +92,7 @@ const Page = () => {
   const [error, setError] = useState("");
   const { data: session } = useSession();
   const [uploading, setUploading] = useState(false);
+  const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [modalData, setModalData] = useState({ open: false, title: "", files: [], category: "", link: "" });
@@ -99,10 +100,12 @@ const Page = () => {
 
   const handleOpenModal = () => setModalData({ open: true, title: "", files: [], category: "", link: "" });
 
-  const fetchDocuments = async (pageNumber = 1) => {
+  const fetchDocuments = async (pageNumber = 1, searchQuery = "") => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/development/overview?page=${pageNumber}`);
+      const res = await fetch(
+        `/api/development/overview?page=${pageNumber}&search=${encodeURIComponent(searchQuery)}`
+      );
       const data = await res.json();
 
       if (!res.ok) throw new Error(data.error || "Failed to fetch documents");
@@ -118,7 +121,7 @@ const Page = () => {
   };
 
   useEffect(() => {
-    fetchDocuments(page);
+    fetchDocuments(page, search);
   }, [page]);
 
   const handleSaveDocument = async (title, category, files, link) => {
@@ -154,6 +157,10 @@ const Page = () => {
     }
   };
 
+  const handleSearch = () => {
+  fetchDocuments(1, search); 
+};
+
   return (
     <div className="min-h-screen bg-gradient-to-r from-blue-500 to-purple-500 p-6 flex flex-col items-center">
       <motion.h1
@@ -169,6 +176,21 @@ const Page = () => {
       {error && <p className="text-red-500 text-lg">{error}</p>}
 
       <div className="w-full max-w-6xl bg-white p-6 rounded-lg shadow-lg overflow-x-scroll">
+        <div className="flex items-center gap-2 mb-4">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by User"
+            className="w-60 h-10 px-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+          />
+          <button
+            onClick={handleSearch}
+            className="h-10 px-5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow"
+          >
+            Search
+          </button>
+        </div>
         <table className="w-full text-left border border-gray-300">
           <thead>
             <tr className="bg-gray-100">

@@ -6,6 +6,8 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AuthProvider from "@/components/AuthProvider";
 import FirebaseSetup from "@/components/FirebaseSetup";
+import SocketProvider from "@/components/SocketProvider";
+import ChatBox from "@/components/ChatBox";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,11 +21,14 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={inter.className}>
         <AuthProvider>
+          <SocketProvider>
           <Navbar />
         {children}
+        <ChatBox/>
         <Footer />
         <FirebaseSetup />
         <ToastContainer position="bottom-right" />
+        </SocketProvider>
         </AuthProvider>
         </body>
     </html>

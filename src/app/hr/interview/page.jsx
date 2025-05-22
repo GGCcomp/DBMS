@@ -10,10 +10,12 @@ export default function Page() {
     phoneNo: "",
     position: "",
     interviewDate: "",
+    interviewTime: "",
     interviewer: "",
     interviewerEmail: "",
     meetingLink: "",
   });
+  const [timeRange, setTimeRange] = useState({ from: "", to: "" });
   const fileInputRef = useRef(null);
   const [isEditing, setIsEditing] = useState(false);
   const [modalData, setModalData] = useState({});
@@ -28,6 +30,7 @@ export default function Page() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const interviewers = {
+    ashu: "ashu.t.dev@gmail.com",
     Alok: "alok@niveshjano.in",
     Abhishek: "abhishek@niveshjano.in",
     Ashutosh: "ashutosh@niveshjano.in",
@@ -52,6 +55,30 @@ export default function Page() {
     setInterviews(data.interviews);
     setTotal(data.total);
     setCurrentPage(pageToLoad);
+  };
+
+  console.log(interviews);
+
+
+  const handleTimeChange = (e) => {
+    const { name, value } = e.target;
+    const updatedTimeRange = { ...timeRange, [name]: value };
+    setTimeRange(updatedTimeRange);
+
+    const formatTime = (time) => {
+      const [hour, minute] = time.split(":");
+      const hourInt = parseInt(hour);
+      const period = hourInt >= 12 ? "pm" : "am";
+      const formattedHour = hourInt % 12 === 0 ? 12 : hourInt % 12;
+      return `${formattedHour}:${minute}${period}`;
+    };
+
+    if (updatedTimeRange.from && updatedTimeRange.to) {
+      setForm({
+        ...form,
+        interviewTime: `${formatTime(updatedTimeRange.from)} - ${formatTime(updatedTimeRange.to)}`
+      });
+    }
   };
 
 
@@ -83,6 +110,22 @@ export default function Page() {
     }
   };
 
+  const toggleInterviewer = (name) => {
+    const selected = form.interviewer.split(", ").filter(Boolean);
+    const newSelected = selected.includes(name)
+      ? selected.filter((n) => n !== name)
+      : [...selected, name];
+
+    const newInterviewer = newSelected.join(", ");
+    const newEmails = newSelected.map((n) => interviewers[n]).join(", ");
+
+    setForm((prev) => ({
+      ...prev,
+      interviewer: newInterviewer,
+      interviewerEmail: newEmails,
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -92,6 +135,9 @@ export default function Page() {
         if (key === "interviewer") {
           const arr = form[key].split(",").map((i) => i.trim());
           arr.forEach((name) => fd.append("interviewer", name));
+        } else if (key === "interviewerEmail") {
+          const arr = form[key].split(",").map((i) => i.trim());
+          arr.forEach((email) => fd.append("interviewerEmail", email));
         } else {
           fd.append(key, form[key]);
         }
@@ -111,10 +157,12 @@ export default function Page() {
         phoneNo: "",
         position: "",
         interviewDate: "",
+        interviewTime: "",
         interviewer: "",
         interviewerEmail: "",
         meetingLink: "",
       });
+      setTimeRange({ from: "", to: "" });
       setResume(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
       loadInterviews(1);
@@ -125,7 +173,7 @@ export default function Page() {
     }
   };
 
-  const handleStatusChange = async (id, newStatus, email, interviewerEmail, candidateName, position, interviewDate, meetingLink, interviewer) => {
+  const handleStatusChange = async (id, newStatus, email, interviewerEmail, candidateName, position, interviewDate, interviewTime, meetingLink, interviewer) => {
     const res = await fetch(`/api/hr/interview`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -137,6 +185,7 @@ export default function Page() {
         candidateName,
         position,
         interviewDate,
+        interviewTime,
         meetingLink,
         interviewer,
       }),
@@ -182,27 +231,56 @@ export default function Page() {
             </div>
           ))}
 
+          <div>
+            <label className="block mb-1">Interview Time (From - To)</label>
+            <div className="flex gap-2">
+              <input
+                type="time"
+                name="from"
+                value={timeRange.from}
+                onChange={handleTimeChange}
+                required
+                className="p-2 border rounded w-full"
+              />
+              <input
+                type="time"
+                name="to"
+                value={timeRange.to}
+                onChange={handleTimeChange}
+                required
+                className="p-2 border rounded w-full"
+              />
+            </div>
+          </div>
+
           {/* Interviewer Select */}
           <div>
             <label className="block mb-1">Interviewers</label>
-            <select
-              name="interviewer"
-              multiple
-              value={form.interviewer.split(", ").filter(Boolean)}
-              onChange={handleChange}
-              required
-              className="p-2 border rounded w-full h-32"
-            >
-              {Object.keys(interviewers).map((name) => (
-                <option key={name} value={name}>
-                  {name}
-                </option>
-              ))}
-            </select>
+            <div className="flex flex-wrap gap-2">
+              {Object.keys(interviewers).map((name) => {
+                const isSelected = form.interviewer
+                  .split(", ")
+                  .filter(Boolean)
+                  .includes(name);
+
+                return (
+                  <button
+                    key={name}
+                    type="button"
+                    onClick={() => toggleInterviewer(name)}
+                    className={`px-3 py-1 rounded-full text-sm border transition ${isSelected
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200"
+                      }`}
+                  >
+                    {name}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-
-          {/* Interviewer Email (read-only for submission/debug) */}
+          {/* Interviewer Email (Read-only for submission/debug) */}
           <div>
             <label className="block mb-1">Interviewer Emails</label>
             <input
@@ -212,7 +290,6 @@ export default function Page() {
               className="p-2 border rounded w-full bg-gray-100"
             />
           </div>
-
 
           {/* Resume Upload */}
           <div className="col-span-full">
@@ -298,6 +375,10 @@ export default function Page() {
                           <strong>Date:</strong>{" "}
                           {new Date(item.interviewDate).toLocaleDateString()}
                         </p>
+                        <p>
+                          <strong>Time:</strong>
+                          {item.interviewTime}
+                        </p>
                         <p><strong>Status:</strong> {item.status}</p>
                       </div>
                       <div className="flex flex-wrap gap-2 mt-2">
@@ -312,6 +393,7 @@ export default function Page() {
                               item.candidateName,
                               item.position,
                               item.interviewDate,
+                              item.interviewTime,
                               item.meetingLink,
                               item.interviewer
                             )

@@ -5,6 +5,7 @@ export async function sendInterviewEmails({
   email,
   position,
   interviewDate,
+  interviewTime,
   meetingLink,
   interviewer,
   interviewerEmail,
@@ -24,7 +25,7 @@ export async function sendInterviewEmails({
     from: `"HR Team" <${process.env.EMAIL_USER}>`,
     to: email,
     subject: `Interview Scheduled for ${position}`,
-    text: `Dear ${candidateName},\n\nYour interview for the position of ${position} has been scheduled on ${interviewDate}.\n\nMeeting Link: ${meetingLink}\n\nBest regards,\nHR Team`,
+    text: `Dear ${candidateName},\n\nYour interview for the position of ${position} has been scheduled on ${interviewDate}, Time: ${interviewTime}.\n\nMeeting Link: ${meetingLink}\n\nBest regards,\nHR Team`,
   };
 
   // Interviewer(s) email
@@ -32,7 +33,7 @@ export async function sendInterviewEmails({
     from: `"HR Team" <${process.env.EMAIL_USER}>`,
     to: intEmail,
     subject: `Interview Scheduled with ${candidateName}`,
-    text: `Dear ${interviewer[index] || "Interviewer"},\n\nYou have been scheduled to interview ${candidateName} for the ${position} role on ${interviewDate}.\n\nMeeting Link: ${meetingLink}\n\nBest regards,\nHR Team`,
+    text: `Dear ${interviewer[index] || "Interviewer"},\n\nYou have been scheduled to interview ${candidateName} for the ${position} role on ${interviewDate}, Time: ${interviewTime}.\n\nMeeting Link: ${meetingLink}\n\nBest regards,\nHR Team`,
   }));
 
   // Send emails

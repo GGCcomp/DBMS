@@ -4,6 +4,7 @@ import { ReleaseOverview } from "@/models/development";
 import connectMongo from "@/lib/db";
 import { Readable } from "stream";
 
+
 export async function GET(req) {
   try {
     await connectMongo();
@@ -11,17 +12,22 @@ export async function GET(req) {
     const { searchParams } = new URL(req.url);
     const rawPage = parseInt(searchParams.get("page"), 10);
     const page = isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
+    const search = searchParams.get("search") || "";
     const limit = 8;
 
-    const total = await ReleaseOverview.countDocuments();
+    const query = search
+      ? { user: { $regex: new RegExp(search, "i") } }
+      : {};
+
+    const total = await ReleaseOverview.countDocuments(query);
     const totalPages = Math.ceil(total / limit);
-    const currentPage = Math.min(page, totalPages || 1); 
+    const currentPage = Math.min(page, totalPages || 1);
 
     const documents =
       total === 0
         ? []
-        : await ReleaseOverview.find()
-            .sort({ uploadedAt: -1 })
+        : await ReleaseOverview.find(query)
+            .sort({ createdAt: -1 }) // updated to match timestamps field
             .skip((currentPage - 1) * limit)
             .limit(limit);
 
@@ -44,6 +50,21 @@ export async function GET(req) {
       { status: 500 }
     );
   }
+}
+
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
+// Helper to convert buffer to stream
+function bufferToStream(buffer) {
+  const stream = new Readable();
+  stream.push(buffer);
+  stream.push(null);
+  return stream;
 }
 
 export async function POST(req) {
@@ -80,8 +101,8 @@ export async function POST(req) {
 
     const drive = google.drive({ version: "v3", auth });
 
-    let previewUrls = [];
-    let downloadUrls = [];
+    const previewUrls = [];
+    const downloadUrls = [];
 
     for (const file of files) {
       if (!allowedMimeTypes.includes(file.type)) {
@@ -93,10 +114,7 @@ export async function POST(req) {
 
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-
-      const bufferStream = new Readable();
-      bufferStream.push(buffer);
-      bufferStream.push(null);
+      const bufferStream = bufferToStream(buffer);
 
       const driveResponse = await drive.files.create({
         requestBody: {
@@ -125,18 +143,18 @@ export async function POST(req) {
       user
     });
 
-    return NextResponse.json({
-      message: "Files uploaded successfully",
-      file: newFileEntry,
-    }, {status: 201});
+    return NextResponse.json(
+      { message: "Files uploaded successfully", file: newFileEntry },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json({ error: "File upload failed" }, { status: 500 });
   }
 }
 
-export async function DELETE(){
+export async function DELETE() {
   await connectMongo();
   await ReleaseOverview.deleteMany({});
-  return NextResponse.json({ok: "DONE"});
+  return NextResponse.json({ ok: "DONE" });
 }

@@ -8,44 +8,24 @@ export async function GET(req) {
     await connectMongo();
 
     const { searchParams } = new URL(req.url);
-    const limit = parseInt(searchParams.get('limit')) || 5;
-    const skip = parseInt(searchParams.get('skip')) || 0;
+    const dateFilter = searchParams.get('date'); // Expected format: 'YYYY-MM-DD'
+    console.log(dateFilter);
+    
 
-    const totalCountAgg = await AuditLog.aggregate([
-  {
-    $match: {
+    // Construct the match stage based on the presence of a date filter
+    const matchStage = {
       action: { $in: ['Login', 'Logout'] },
-    },
-  },
-  {
-    $project: {
-      name: '$user.name',
-      date: {
-        $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
-      },
-    },
-  },
-  {
-    $group: {
-      _id: {
-        name: '$name',
-        date: '$date',
-      },
-    },
-  },
-  {
-    $count: 'total',
-  },
-]);
+    };
 
-const total = totalCountAgg[0]?.total || 0;
+    if (dateFilter) {
+      const start = new Date(`${dateFilter}T00:00:00.000Z`);
+      const end = new Date(`${dateFilter}T23:59:59.999Z`);
+      matchStage.createdAt = { $gte: start, $lte: end };
+    }
 
+    // Aggregation pipeline to compute attendance logs
     const pipeline = [
-      {
-        $match: {
-          action: { $in: ['Login', 'Logout'] },
-        },
-      },
+      { $match: matchStage },
       {
         $project: {
           name: '$user.name',
@@ -58,9 +38,7 @@ const total = totalCountAgg[0]?.total || 0;
           },
         },
       },
-      {
-        $sort: { createdAt: 1 }
-      },
+      { $sort: { createdAt: 1 } },
       {
         $group: {
           _id: {
@@ -119,7 +97,7 @@ const total = totalCountAgg[0]?.total || 0;
                           '$firstLogin.createdAt',
                         ],
                       },
-                      6 * 60 * 60 * 1000, // 6 hours in ms
+                      6 * 60 * 60 * 1000, // 6 hours in milliseconds
                     ],
                   },
                 ],
@@ -130,21 +108,12 @@ const total = totalCountAgg[0]?.total || 0;
           },
         },
       },
-      
-      {
-        $sort: { date: -1 }
-      },
-      {
-        $skip: skip,
-      },
-      {
-        $limit: limit,
-      },
+      { $sort: { date: -1 } },
     ];
 
     const logs = await AuditLog.aggregate(pipeline);
 
-    return NextResponse.json({ logs, total });
+    return NextResponse.json({ logs });
   } catch (error) {
     console.error('Error fetching logs:', error);
     return NextResponse.json({ error: 'Server Error' }, { status: 500 });

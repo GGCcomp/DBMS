@@ -2,46 +2,36 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 
-const PAGE_LIMIT = 5;
-
 export default function Page() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [logsLoading, setLogsLoading] = useState(false);
   const [attendanceLogs, setAttendanceLogs] = useState([]);
   const [page, setPage] = useState(1);
-  const [logPage, setLogPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
+  const today = new Date().toISOString().split('T')[0];
+  const [selectedDate, setSelectedDate] = useState(today);
 
-  const [workLogs, setWorkLogs] = useState([
-    { id: 1, employee: "Charlie Green", hours: 8, date: "2025-02-09" },
-    { id: 2, employee: "David White", hours: 6, date: "2025-02-09" },
-  ]);
 
-  const fetchAttendanceLogs = async (pageNumber = 1) => {
-    setLogsLoading(true);
-    try {
-      const skip = (pageNumber - 1) * PAGE_LIMIT;
-      const url = new URL("/api/audit-log/leave_attendance", window.location.origin);
-      url.searchParams.append("limit", PAGE_LIMIT);
-      url.searchParams.append("skip", skip);
+  const fetchAttendanceLogs = async (date = selectedDate) => {
+  setLogsLoading(true);
+  try {
+    const url = new URL("/api/audit-log/leave_attendance", window.location.origin);
+    url.searchParams.append("date", date);
 
-      const res = await fetch(url);
-      const data = await res.json();
+    const res = await fetch(url);
+    const data = await res.json();
 
-      setAttendanceLogs(data.logs || []);
-      setTotal(data.total || 0);
-      setLogPage(pageNumber);
-    } catch (error) {
-      console.error("Error fetching attendance logs:", error);
-    } finally {
-      setLogsLoading(false);
-    }
-  };
+    setAttendanceLogs(data.logs || []);
+  } catch (error) {
+    console.error("Error fetching attendance logs:", error);
+  } finally {
+    setLogsLoading(false);
+  }
+};
 
   useEffect(() => {
-    fetchAttendanceLogs(1);
+    fetchAttendanceLogs(today);
   }, []);
 
 
@@ -87,7 +77,17 @@ export default function Page() {
           {logsLoading ? <p className="text-center text-xl text-gray-500">Loading Logs..</p> : <div className="p-6 bg-white rounded-lg shadow">
             <h2 className="text-2xl font-bold mb-4">Attendance Logs</h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full table-auto border border-gray-300">
+              <input
+                type="date"
+                className="border px-3 py-2 rounded mb-4"
+                value={selectedDate}
+                onChange={(e) => {
+                  setSelectedDate(e.target.value);
+                  fetchAttendanceLogs(e.target.value);
+                }}
+              />
+
+              <table className="min-w-full table-auto border border-gray-300 overflow-y-scroll max-h-[70vh]">
                 <thead className="bg-gray-100">
                   <tr>
                     <th className="px-4 py-2 text-left">Name</th>
@@ -128,22 +128,6 @@ export default function Page() {
                 </tbody>
               </table>
             </div>
-
-            {total > PAGE_LIMIT && (
-              <div className="mt-6 flex justify-center space-x-2">
-                {Array.from({ length: Math.ceil(total / PAGE_LIMIT) }).map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => fetchAttendanceLogs(i + 1)}
-                    className={`px-4 py-2 border rounded ${logPage === i + 1 ? 'bg-blue-600 text-white' : 'bg-white text-blue-600 border-blue-600'
-                      } hover:bg-blue-500 hover:text-white transition`}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-              </div>
-            )}
-
           </div>}
 
 
@@ -207,20 +191,6 @@ export default function Page() {
                 </div>
               </>
             )}
-          </div>
-
-          {/* Work Log Submissions */}
-          <div className="bg-gray-100 p-6 rounded-lg shadow-md">
-            <h2 className="text-2xl font-semibold text-gray-700 mb-4">Work Log Submissions</h2>
-            <ul className="text-gray-600 text-left space-y-2">
-              {workLogs.map((log) => (
-                <li key={log.id} className="bg-white p-3 rounded shadow flex justify-between">
-                  <span>
-                    ⏳ <strong>{log.employee}</strong> - {log.hours} hrs on {log.date}
-                  </span>
-                </li>
-              ))}
-            </ul>
           </div>
         </div>
       </motion.div>

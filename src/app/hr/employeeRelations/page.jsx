@@ -41,7 +41,7 @@ function Page() {
             </button>
            
           <AnimatePresence>
-            {showModal && <EmployeesModal onClose={() => setShowModal(false)}/>}
+            {showModal && <EmployeesModal onClose={() => setShowModal(false)} reload={fetchEmployees} />}
           </AnimatePresence>
           <div className="my-6 flex justify-center items-center">
         <input
@@ -55,12 +55,12 @@ function Page() {
 
       {loading ? (
         <div className="text-center text-white">Loading...</div>
-      ) : employees.length === 0 ? (
+      ) : employees && employees.length === 0 ? (
         <div className="text-center text-white">No employees found.</div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {employees.map((employee) => (
-            <EmployeeCard key={employee._id} employee={employee} />
+          {employees && employees.map((employee) => (
+            <EmployeeCard key={employee._id} employee={employee} reload={fetchEmployees} />
           ))}
         </div>
       )}

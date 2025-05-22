@@ -1,8 +1,10 @@
 import { useState } from "react";
 
-export default function EditEmployeeForm({ employee, onClose }) {
-  const [form, setForm] = useState({ ...employee });
+export default function EditEmployeeForm({ employee, onClose, reload }) {
+  const [loading, setLoading] = useState(false);
   const [removeFiles, setRemoveFiles] = useState([]);
+  const [promotionFields, setPromotionFields] = useState([""]);
+  const [benefitFields, setBenefitFields] = useState([""]);
 
   const toggleFileRemove = (fileId) => {
     setRemoveFiles((prev) =>
@@ -11,35 +13,98 @@ export default function EditEmployeeForm({ employee, onClose }) {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    formData.append("id", employee._id);
+    try {
+      setLoading(true);
+      e.preventDefault();
+      const formData = new FormData(e.currentTarget);
+      formData.append("id", employee._id);
 
-    formData.append("filesToRemove", JSON.stringify(removeFiles));
+      formData.append("filesToRemove", JSON.stringify(removeFiles));
 
-    const res = await fetch(`/api/hr/employee`, {
-      method: "PUT",
-      body: formData,
-    });
+      promotionFields.forEach((p, i) => formData.append(`promotions[${i}]`, p));
+      benefitFields.forEach((b, i) => formData.append(`benefits[${i}]`, b));
 
-    const data = await res.json();
-    if (res.ok) {
-      onClose();
-    } else {
-      alert(data.error || "Update failed.");
+      const res = await fetch(`/api/hr/employee`, {
+        method: "PUT",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        reload();
+        onClose();
+      } else {
+        alert(data.error || "Update failed.");
+      }
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <input defaultValue={form.name} name="name" required className="w-full p-2 border" placeholder="Name" />
-      <input defaultValue={form.profile.contact} name="contact" className="w-full p-2 border" placeholder="Contact" />
-      <input defaultValue={form.profile.emergency} name="emergency" className="w-full p-2 border" placeholder="Emergency" />
-      <input defaultValue={form.profile.bank} name="bank" className="w-full p-2 border" placeholder="Bank" />
+      <input name="name" placeholder="Full Name" className="p-2 border rounded-xl" defaultValue={employee.name} />
+      <input name="contact" placeholder="Contact Number" className="p-2 border rounded-xl" defaultValue={employee.profile.contact} />
+      <input name="emergency" placeholder="Emergency Contact" className="p-2 border rounded-xl" defaultValue={employee.profile.emergency} />
 
-      <input defaultValue={form.employment.title} name="title" className="w-full p-2 border" placeholder="Title" />
-      <input defaultValue={form.employment.department} name="department" className="w-full p-2 border" placeholder="Department" />
-      <input defaultValue={form.employment.workModel} name="workModel" className="w-full p-2 border" placeholder="Work Model" />
+      {/* Bank Details */}
+      <input name="bank[name]" placeholder="Bank Name" className="p-2 border rounded-xl" defaultValue={employee.profile.bank?.name} />
+      <input name="bank[accountNo]" placeholder="Account Number" className="p-2 border rounded-xl" defaultValue={employee.profile.bank?.accountNo} />
+      <input name="bank[IFSC]" placeholder="IFSC Code" className="p-2 border rounded-xl" defaultValue={employee.profile.bank?.IFSC} />
+      <input name="bank[branch]" placeholder="Branch Name" className="p-2 border rounded-xl" defaultValue={employee.profile.bank?.branch} />
+
+      {/* Employment Details */}
+      <input name="title" placeholder="Job Title" className="p-2 border rounded-xl" defaultValue={employee.employment.title} />
+      <input name="department" placeholder="Department" className="p-2 border rounded-xl" defaultValue={employee.employment.department} />
+      <input name="workModel" placeholder="Work Model (e.g. Remote)" className="p-2 border rounded-xl" defaultValue={employee.employment.workModel} />
+
+      {/* Promotions */}
+      {promotionFields.map((value, index) => (
+        <input
+          key={index}
+          name={`promotion-${index}`}
+          defaultValue={value}
+          placeholder={`Promotion ${index + 1}`}
+          className="p-2 border rounded-xl col-span-1 md:col-span-2"
+          onChange={(e) => {
+            const updated = [...promotionFields];
+            updated[index] = e.target.value;
+            setPromotionFields(updated);
+          }}
+        />
+      ))}
+      <button
+        type="button"
+        onClick={() => setPromotionFields([...promotionFields, ""])}
+        className="text-sm text-blue-600 hover:underline col-span-1 md:col-span-2"
+      >
+        + Add Promotion
+      </button>
+
+      {/* Benefits */}
+      {benefitFields.map((value, index) => (
+        <input
+          key={index}
+          name={`benefit-${index}`}
+          defaultValue={value}
+          placeholder={`Benefit ${index + 1}`}
+          className="p-2 border rounded-xl col-span-1 md:col-span-2"
+          onChange={(e) => {
+            const updated = [...benefitFields];
+            updated[index] = e.target.value;
+            setBenefitFields(updated);
+          }}
+        />
+      ))}
+      <button
+        type="button"
+        onClick={() => setBenefitFields([...benefitFields, ""])}
+        className="text-sm text-blue-600 hover:underline col-span-1 md:col-span-2"
+      >
+        + Add Benefit
+      </button>
 
       <input type="file" name="resume" multiple className="w-full" />
 
@@ -64,8 +129,8 @@ export default function EditEmployeeForm({ employee, onClose }) {
         </div>
       )}
 
-      <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded">
-        Save Changes
+      <button disabled={loading} type="submit" className="bg-green-600 text-white px-4 py-2 rounded">
+        {!loading ? "Save Changes" : "Saving.."}
       </button>
     </form>
   );

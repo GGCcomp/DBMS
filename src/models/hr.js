@@ -57,6 +57,7 @@ const InterviewSchema = new mongoose.Schema({
     phoneNo: Number,
     position: String,
     interviewDate: Date,
+    interviewTime: String,
     interviewer: [String],
     interviewerEmail: [String],
     meetingLink: String,
@@ -80,15 +81,20 @@ const employeeSchema = new mongoose.Schema({
     profile: {
         contact: String,
         emergency: String,
-        bank: String,
+        bank: {
+            branch: String,
+            accountNo: String,
+            IFSC: String,
+            name: String
+        },
     },
     employment: {
         title: String,
         department: String,
         workModel: String,
-        promotions: [String],
+        promotions: {type: [String], default: ["N/A"]},
     },
-    benefits: [String],
+    benefits: {type: [String], default: ["N/A"]},
     documents: [
         {
             previewUrl: String,

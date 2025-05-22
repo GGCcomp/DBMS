@@ -48,6 +48,9 @@ export async function POST(req) {
     const interviewer = formData.getAll("interviewer");
     const interviewerEmail = formData.getAll("interviewerEmail");
 
+    console.log("time: ", formData.get("interviewTime"));
+    
+
     if (!file) {
       return NextResponse.json({ error: "No resume uploaded" }, { status: 400 });
     }
@@ -92,6 +95,7 @@ export async function POST(req) {
       phoneNo: formData.get("phoneNo"),
       position: formData.get("position"),
       interviewDate: formData.get("interviewDate"),
+      interviewTime: formData.get("interviewTime"),
       interviewer: interviewer,
       interviewerEmail: interviewerEmail,
       meetingLink: formData.get("meetingLink"),
@@ -104,6 +108,7 @@ export async function POST(req) {
       email: formData.get("email"),
       position: formData.get("position"),
       interviewDate: formData.get("interviewDate"),
+      interviewTime: formData.get("interviewTime"),
       meetingLink: formData.get("meetingLink"),
       interviewer,
       interviewerEmail: interviewerEmail.flatMap((str) => str.split(",").map((e) => e.trim()))
@@ -241,6 +246,7 @@ export async function PUT(req) {
         phoneNo: formData.get("phoneNo"),
         position: formData.get("position"),
         interviewDate: formData.get("interviewDate"),
+        interviewTime: formData.get("interviewTime"),
         interviewer,
         interviewerEmail,
         meetingLink: formData.get("meetingLink"),

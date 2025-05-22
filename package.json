@@ -12,6 +12,7 @@
     "bcrypt": "^5.1.1",
     "firebase": "^11.2.0",
     "firebase-admin": "^13.0.2",
+    "formidable": "^3.5.4",
     "framer-motion": "^11.18.1",
     "googleapis": "^146.0.0",
     "html2pdf.js": "^0.10.2",
@@ -35,6 +36,8 @@
     "react-toastify": "^10.0.5",
     "recharts": "^2.15.1",
     "rtf": "^0.0.4",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
     "sonner": "^1.7.4",
     "xlsx": "^0.18.5"
   },
