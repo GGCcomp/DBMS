@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Toaster, toast } from 'sonner';
 
-export default function InternLetter({ onClose }) {
+export default function InternLetter({ onClose, candidateEmail }) {
   const [form, setForm] = useState({
+    email: candidateEmail.length > 0 ? candidateEmail : '',
     candidate_name: '',
     position: '',
     department: '',
@@ -12,6 +14,7 @@ export default function InternLetter({ onClose }) {
     lead_department: '',
     application_date: '',
     commence_date: '',
+    mode: ''
   });
   const [loading, setLoading] = useState(false);
 
@@ -31,16 +34,13 @@ export default function InternLetter({ onClose }) {
           'Content-Type': 'application/json',
         },
       });
-
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Offer_Letter_${form.candidate_name}.docx`;
-      a.click();
-      window.URL.revokeObjectURL(url);
+      await res.json();
+      if(res.ok){
+        toast.success("Email sent successfully!");
+        onClose();
+      }
     } catch (err) {
+      toast.error("Failed to send email!")
       console.log(err)
     } finally {
       setLoading(false);
@@ -54,6 +54,7 @@ export default function InternLetter({ onClose }) {
       exit={{ opacity: 0 }}
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
     >
+      <Toaster position='bottom-right' visibleToasts={1} />
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -77,7 +78,7 @@ export default function InternLetter({ onClose }) {
             />
           ))}
           <button disabled={loading} type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
-            {!loading ? "Generate DOCX" : "Generating.."}
+            {!loading ? "Send" : "This could take a minute.."}
           </button>
         </form>
       </motion.div>

@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Modal from "./Modal";
+import InternLetter from "@/components/InternLetter";
 
 export default function Page() {
   const [form, setForm] = useState({
@@ -15,6 +16,7 @@ export default function Page() {
     interviewerEmail: "",
     meetingLink: "",
   });
+  const [showSelectedModal, setShowSelectedModal] = useState(false);
   const [timeRange, setTimeRange] = useState({ from: "", to: "" });
   const fileInputRef = useRef(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -174,6 +176,10 @@ export default function Page() {
   };
 
   const handleStatusChange = async (id, newStatus, email, interviewerEmail, candidateName, position, interviewDate, interviewTime, meetingLink, interviewer) => {
+    if(newStatus === "Selected"){
+      setShowSelectedModal(true)
+    }
+
     const res = await fetch(`/api/hr/interview`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -356,6 +362,7 @@ export default function Page() {
                       className="p-4 border rounded-md bg-gray-50 shadow"
                     >
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {showSelectedModal && <InternLetter onClose={() => setShowSelectedModal(false)} candidateEmail={item.email} />}
                         <p><strong>Name:</strong> {item.candidateName}</p>
                         <p><strong>Email:</strong> {item.email}</p>
                         <p><strong>Phone:</strong> {item.phoneNo}</p>
@@ -402,7 +409,7 @@ export default function Page() {
                         >
                           <option value="Pending">Pending</option>
                           <option value="Scheduled">Scheduled</option>
-                          <option value="Completed">Completed</option>
+                          <option value="Selected">Selected</option>
                           <option value="Rejected">Rejected</option>
                         </select>
                         <button onClick={() => handleEditModal(item)} className="bg-yellow-400 text-white px-3 py-1 rounded">

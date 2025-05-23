@@ -46,15 +46,8 @@ function Page() {
               onClick={() => setDocs(true)}
               className="bg-purple-500 text-white px-6 mx-3 py-3 rounded-2xl shadow hover:bg-purple-600 transition"
             >
-              Generate Letter
+              Send Letter and NDA
             </button>
-
-            <a
-              href='/api/generate_docs'
-              className="bg-purple-500 text-white px-6 py-3 rounded-2xl shadow hover:bg-purple-600 transition"
-            >
-              Download NDA
-            </a>
            
           <AnimatePresence>
             {showModal && <EmployeesModal onClose={() => setShowModal(false)} reload={fetchEmployees} />}

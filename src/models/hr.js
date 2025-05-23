@@ -106,3 +106,13 @@ const employeeSchema = new mongoose.Schema({
 });
 
 export const Employee = mongoose.models.Employee || mongoose.model("Employee", employeeSchema);
+
+const hrdatasubmissionSchema = new mongoose.Schema({
+  fileName: { type: String, required: true }, 
+  department: { type: String, required: true },
+  previewUrls: [{ type: String }], 
+  downloadUrls: [{ type: String }],
+  user: String
+}, { timestamps: true });
+
+export const HRDataSubmission = mongoose.models.HRDataSubmission || mongoose.model("HRDataSubmission", hrdatasubmissionSchema);

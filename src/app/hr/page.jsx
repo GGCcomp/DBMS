@@ -137,6 +137,21 @@ const Page = () => {
               HR Insights &rarr;
             </Link>
           </motion.div>
+
+           <motion.div
+            className="bg-white rounded-lg p-8 shadow-lg text-gray-800 hover:scale-105 transform transition-all duration-300"
+            whileHover={{ scale: 1.05 }}
+          >
+            <h2 className="text-2xl font-semibold mb-4">Data Submission</h2>
+            <p>Read the Insights.</p>
+            <Link
+              href="/hr/data-submission"
+              className="mt-4 inline-block text-blue-500 hover:text-blue-700 transition"
+            >
+              HR Data Submission &rarr;
+            </Link>
+          </motion.div>
+          
         </motion.div>
 
         {/* Button Section */}

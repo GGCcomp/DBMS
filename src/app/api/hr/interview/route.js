@@ -141,8 +141,8 @@ export async function PATCH(req) {
       case "Scheduled":
         candidateText = `Dear ${candidateName},\n\nYour interview for the position of ${position} has been scheduled on ${interviewDate}.\n\nBest regards,\nHR Team`;
         break;
-      case "Completed":
-        candidateText = `Dear ${candidateName},\n\nYour interview for the position of ${position} has been marked as completed. We will get back to you with further updates.\n\nBest regards,\nHR Team`;
+      case "Selected":
+        candidateText = `Dear ${candidateName},\n\nYou've been selected for the position of ${position} in Nivesh Jano. We will get back to you with further updates shortly.\n\nBest regards,\nHR Team`;
         break;
       case "Rejected":
         candidateText = `Dear ${candidateName},\n\nWe regret to inform you that you have not been selected for the position of ${position}. We appreciate your interest and wish you the best in your career.\n\nBest regards,\nHR Team`;
