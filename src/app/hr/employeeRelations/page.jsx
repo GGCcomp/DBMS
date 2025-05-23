@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import EmployeesModal from '@/components/EmployeeModal';
 import EmployeeCard from '@/components/EmployeeCard';
+import IntenLetter from '@/components/InternLetter';
 
 
 function Page() {
@@ -12,6 +13,7 @@ function Page() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [docs, setDocs] = useState(false);
 
   const fetchEmployees = async () => {
     setLoading(true);
@@ -39,10 +41,29 @@ function Page() {
             >
               + Add Employee
             </button>
+
+            <button
+              onClick={() => setDocs(true)}
+              className="bg-purple-500 text-white px-6 mx-3 py-3 rounded-2xl shadow hover:bg-purple-600 transition"
+            >
+              Generate Letter
+            </button>
+
+            <a
+              href='/api/generate_docs'
+              className="bg-purple-500 text-white px-6 py-3 rounded-2xl shadow hover:bg-purple-600 transition"
+            >
+              Download NDA
+            </a>
            
           <AnimatePresence>
             {showModal && <EmployeesModal onClose={() => setShowModal(false)} reload={fetchEmployees} />}
           </AnimatePresence>
+
+           <AnimatePresence>
+            {docs && <IntenLetter onClose={() => setDocs(false)} />}
+          </AnimatePresence>
+
           <div className="my-6 flex justify-center items-center">
         <input
           type="text"
