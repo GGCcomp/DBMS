@@ -4,10 +4,14 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
 export default function Page() {
+  const [loading, setLoading] = useState(false);
   const [policies, setPolicies] = useState([]);
   const [grievanceReports, setGrievanceReports] = useState([]);
   const [newPolicy, setNewPolicy] = useState({ title: "", link: "" });
   const [newGrievance, setNewGrievance] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedPolicy, setSelectedPolicy] = useState({ _id: "", title: "", link: "" });
+
 
   useEffect(() => {
     fetch("/api/hr/compliance/policies").then(res => res.json()).then(setPolicies);
@@ -26,6 +30,29 @@ export default function Page() {
       setNewPolicy({ title: "", link: "" });
     }
   };
+
+  const updatePolicy = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/hr/compliance/policies", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(selectedPolicy),
+      });
+      if (res.ok) {
+        setPolicies(policies.map(p =>
+          p._id === selectedPolicy._id ? selectedPolicy : p
+        ));
+        setIsEditing(false);
+        setSelectedPolicy({ _id: "", title: "", link: "" });
+      }
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const addGrievanceReport = async () => {
     if (!newGrievance) return;
@@ -81,9 +108,20 @@ export default function Page() {
             />
             <button onClick={addPolicy} className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full mb-4">Add Policy</button>
             <ul className="text-gray-600 text-left space-y-2">
-              {policies.map((policy, index) => (
-                <li key={index} className="bg-white p-3 rounded shadow">
-                  📜 <a href={policy.link} className="text-blue-600 font-medium" target="_blank" rel="noopener noreferrer">{policy.title}</a>
+              {policies.map((policy) => (
+                <li key={policy._id} className="bg-white p-3 rounded shadow flex justify-between items-center">
+                  <div>
+                    📜 <a href={policy.link} className="text-blue-600 font-medium" target="_blank" rel="noopener noreferrer">{policy.title}</a>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setSelectedPolicy(policy);
+                      setIsEditing(true);
+                    }}
+                    className="text-sm text-white bg-green-500 hover:bg-green-600 px-3 py-1 rounded ml-4"
+                  >
+                    Edit
+                  </button>
                 </li>
               ))}
             </ul>
@@ -117,6 +155,33 @@ export default function Page() {
             </ul>
           </div>
         </div>
+
+        {isEditing && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+              <h3 className="text-xl font-semibold mb-4">Edit Policy</h3>
+              <input
+                type="text"
+                className="w-full p-2 border rounded mb-2"
+                placeholder="Title"
+                value={selectedPolicy.title}
+                onChange={(e) => setSelectedPolicy({ ...selectedPolicy, title: e.target.value })}
+              />
+              <input
+                type="text"
+                className="w-full p-2 border rounded mb-4"
+                placeholder="Link"
+                value={selectedPolicy.link}
+                onChange={(e) => setSelectedPolicy({ ...selectedPolicy, link: e.target.value })}
+              />
+              <div className="flex justify-end space-x-2">
+                <button onClick={() => setIsEditing(false)} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancel</button>
+                <button disabled={loading} onClick={updatePolicy} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">{!loading ? "Update" : "Updating"}</button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </motion.div>
     </div>
   );

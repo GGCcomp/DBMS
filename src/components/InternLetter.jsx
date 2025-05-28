@@ -6,7 +6,7 @@ import { Toaster, toast } from 'sonner';
 
 export default function InternLetter({ onClose, candidateEmail }) {
   const [form, setForm] = useState({
-    email: candidateEmail.length > 0 ? candidateEmail : '',
+    email: candidateEmail && candidateEmail.length > 0 ? candidateEmail : '',
     candidate_name: '',
     position: '',
     department: '',

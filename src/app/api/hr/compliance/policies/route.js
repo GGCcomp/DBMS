@@ -18,6 +18,28 @@ export async function POST(req) {
   return NextResponse.json(newPolicy);
 }
 
+export async function PATCH(req) {
+  await connectMongo();
+
+  const { _id, title, link } = await req.json();
+
+  if (!_id || !title || !link) {
+    return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
+  }
+
+  const updatedPolicy = await Policy.findByIdAndUpdate(
+    _id,
+    { title, link },
+    { new: true }
+  );
+
+  if (!updatedPolicy) {
+    return NextResponse.json({ error: "Policy not found." }, { status: 404 });
+  }
+
+  return NextResponse.json(updatedPolicy);
+}
+
 // DELETE: Remove a policy
 export async function DELETE(req) {
   await connectMongo();
